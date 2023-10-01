@@ -1,0 +1,33 @@
+{
+  "name": "cryos",
+  "version": "0.0.1",
+  "description": "Declarative Web Components in 1Kb",
+  "main": "lib/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && vite build",
+    "watch": "run-p watch:*",
+    "watch:build": "tsc -w --preserveWatchOutput",
+    "watch:build-vite": "vite build --watch",
+    "--watch:test": "vitest watch src",
+    "watch:web": "vite --port 8080",
+    "test": "vitest run src",
+    "clean": "rm -rf lib",
+    "deploy": "npm run clean && npm run build && npm publish --access public"
+  },
+  "exports": {
+    "./*": "./lib/*.js"
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.35",
+    "lit": "^2.8.0",
+    "nodemon": "^3.0.1",
+    "npm-run-all": "^4.1.5",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "^5.2.2",
+    "vite": "^4.3.9",
+    "vitest": "^0.34.1"
+  },
+  "author": "krisnye@gmail.com",
+  "license": "MIT"
+}
