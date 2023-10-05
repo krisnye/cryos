@@ -1,4 +1,4 @@
-import { GPUContext, GPUShaderDescriptor, GPUVertexAttributeNamed, GPUVertexBufferLayoutNamed, WGSLType } from "./types.js"
+import { GPUContext, GPUEncoderContext, GPURenderPipelineAndDescriptor, GPURenderPipelineProperties, GPUVertexAttributeNamed, GPUVertexBufferLayoutNamed, WGSLType } from "./types.js"
 
 const vertexFormatToSize = {
     uint8x2: 2, uint8x4: 4,
@@ -109,7 +109,7 @@ export function createStaticVertexBuffer(device: GPUDevice, vertexBufferLayout: 
     return buffer
 }
 
-export async function createGPUContext<Shaders extends string>(canvas: HTMLCanvasElement, shaders: Record<Shaders, GPUShaderDescriptor>): Promise<GPUContext<Shaders>> {
+export async function createGPUContext<Shaders extends string>(canvas: HTMLCanvasElement, shaders: Record<Shaders, GPURenderPipelineProperties>): Promise<GPUContext<Shaders>> {
     const device = await requestGPUDevice()
     const canvasContext = canvas.getContext("webgpu")
     if (!canvasContext) {
@@ -135,29 +135,33 @@ export async function createGPUContext<Shaders extends string>(canvas: HTMLCanva
 
     const c = { canvas, canvasContext, device, depthTexture, renderPipelines: {} }
 
-    const renderPipelines: Record<Shaders, GPURenderPipeline> = {} as Record<Shaders, GPURenderPipeline>
+    const renderPipelines: Record<Shaders, GPURenderPipelineAndDescriptor> = {} as Record<Shaders, GPURenderPipelineAndDescriptor>
     for (let [name, shader] of Object.entries(shaders)) {
-        renderPipelines[name] = await createRenderPipeline(c, shader as GPUShaderDescriptor)
+        renderPipelines[name] = await createRenderPipeline(c, shader as GPURenderPipelineProperties)
     }
 
     return { ...c, renderPipelines }
 }
 
 export function addRenderPipeline<RP extends string, Name extends string>(
-    c: GPUContext<RP>, name: Name, renderPipeline: GPURenderPipeline
+    c: GPUContext<RP>, name: Name, renderPipeline: GPURenderPipelineAndDescriptor
 ): GPUContext<RP | Name> {
     return { ...c, renderPipelines: { ...c.renderPipelines, [name]: renderPipeline } } as GPUContext<RP | Name>
 }
 
 export async function createRenderPipeline(
     c: GPUContext,
-    shaderDescriptor: GPUShaderDescriptor
-) {
-    const { vertexInput: vertexLayout, shader, vertexMain = "vertex_main", fragmentMain = "fragment_main" } = shaderDescriptor
+    rp: GPURenderPipelineProperties
+): Promise<GPURenderPipelineAndDescriptor> {
+    const { vertexInput: vertexLayout, shader, vertexMain = "vertex_main", fragmentMain = "fragment_main" } = rp
     const shaderModule = await compileGPUShaderModule(c.device, shader);
 
-    const renderPipeline = c.device.createRenderPipeline({
-        layout: c.device.createPipelineLayout({ bindGroupLayouts: [] }),
+    const bindGroupLayouts = rp.layout ? Object.entries(rp.layout).map(
+        ([label, entries]) => c.device.createBindGroupLayout({ label, entries })
+    ) : []
+
+    const descriptor = {
+        layout: c.device.createPipelineLayout({ bindGroupLayouts }),
         vertex: {
             module: shaderModule, entryPoint: vertexMain, buffers: [vertexLayout]
         },
@@ -166,13 +170,17 @@ export async function createRenderPipeline(
             targets: [{ format: c.canvasContext.getCurrentTexture().format }]
         },
         depthStencil: { format: c.depthTexture.format, depthWriteEnabled: true, depthCompare: "less" }
-    });
+    } as const satisfies GPURenderPipelineDescriptor;
 
-    return renderPipeline
+    console.log({ firstVertexLayout: descriptor.vertex })
 
+    const renderPipeline = c.device.createRenderPipeline(descriptor);
+
+    return Object.assign(renderPipeline, { descriptor })
 }
 
-export function createRenderFunction(c: GPUContext, callback: (renderPass: GPURenderPassEncoder) => void) {
+export function createRenderFunction(
+    c: GPUContext, callback: (commandEncoder: GPUCommandEncoder, renderPassDescriptor: GPURenderPassDescriptor) => void) {
     const renderPassDesc = {
         colorAttachments: [{
             // view will be set to the current render target each frame
@@ -189,9 +197,19 @@ export function createRenderFunction(c: GPUContext, callback: (renderPass: GPURe
     return function () {
         renderPassDesc.colorAttachments[0].view = c.canvasContext.getCurrentTexture().createView();
         const commandEncoder = c.device.createCommandEncoder();
-        const renderPass = commandEncoder.beginRenderPass(renderPassDesc);
-        callback(renderPass)
-        renderPass.end();
+        // const renderPass = commandEncoder.beginRenderPass(renderPassDesc);
+        callback(commandEncoder, renderPassDesc)
+        // renderPass.end();
         c.device.queue.submit([commandEncoder.finish()]);
     };
+}
+
+export function copyToBuffer(device: GPUDevice, commandEncoder: GPUCommandEncoder, data: number[], buffer: GPUBuffer) {
+    const upload = device.createBuffer(
+        { size: 16 * 4, usage: GPUBufferUsage.COPY_SRC, mappedAtCreation: true }
+    )
+    var map = new Float32Array(upload.getMappedRange())
+    map.set(data)
+    upload.unmap()
+    commandEncoder.copyBufferToBuffer(upload, 0, buffer, 0, 16 * 4)
 }

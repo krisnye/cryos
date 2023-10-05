@@ -1,6 +1,8 @@
 
 import { Factory, html } from "lithos/index"
-import { FirstTriangle } from "../FirstTriangle.js";
+import { FirstTriangle } from "./01_FirstTriangle.js";
+import { BindGroups } from "./02_BindGroups.js";
+import { GLTFMesh } from "./03_GLTF_Mesh.js";
 const { H2, P, Section } = html;
 
 function addSample(name: string, sample: () => Factory<HTMLElement>) {
@@ -13,7 +15,9 @@ function addSample(name: string, sample: () => Factory<HTMLElement>) {
 }
 
 const samples = {
-    "FirstTriangle": FirstTriangle
+    "3 GLTF Mesh": GLTFMesh,
+    "2 Bind Groups": BindGroups,
+    "1 First Triangle": FirstTriangle,
 }
 
 Object.entries(samples).forEach(entry => addSample(...entry))
