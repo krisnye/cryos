@@ -1,38 +1,40 @@
-import { createCustomElement, html, useConnected } from "lithos";
-import { createVertexBufferLayoutNamed } from "../core/functions.js";
-import { GPUContext } from "../core/GPUContext.js";
-import shader from "./02_BindGroups.wgsl"
+import { createCustomElement, html, useConnected } from "lithos"
+import { createVertexBufferLayoutNamed } from "../core/functions.js"
+import { GPURenderPipelineProperties } from "../core/types.js"
+import { uploadGLB } from "../render/glb.js"
+import { GPUContext } from "../core/GPUContext.js"
+import shader from "./03_GLTFMesh.wgsl"
 
-const positionColorVertexLayout = createVertexBufferLayoutNamed({
+const positionColor = createVertexBufferLayoutNamed({
     position: "float32x4",
     color: "float32x4"
 })
 
-export const BindGroups = createCustomElement(function () {
+const triangleShader: GPURenderPipelineProperties = {
+    layout: {
+        view_params: [{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } }]
+    },
+    vertexInput: positionColor,
+    shader
+}
+
+export const GLTFMesh = createCustomElement(function () {
     useConnected(() => {
         (async () => {
 
-            let c = await GPUContext.create(this)
+            const c = await GPUContext.create(this)
 
             const pipeline = await c.createRenderPipeline({
                 layout: {
                     view_params: [{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } }]
                 },
-                vertexInput: positionColorVertexLayout,
+                vertexInput: positionColor,
                 shader
             })
 
-            const vertexBuffer = c.createStaticVertexBuffer(
-                positionColorVertexLayout,
-                [
-                    1, -1, 0, 1,  // 0 position
-                    1, 0, 0, 1,   // 0 color
-                    -1, -1, 0, 1, // 1 position
-                    0, 1, 0, 1,   // 1 color
-                    0, 1, 0, 1,   // 2 position
-                    0, 0, 1, 1,   // 2 color
-                ]
-            )
+
+            //  TODO: Still could use some easier abstraction for setting bind group properties, maybe well typed.
+            //  Maybe wait until we have more resource types to simplify this.
 
             // Create a buffer to store the view parameters
             const viewParamsBuffer = c.device.createBuffer({
@@ -47,13 +49,24 @@ export const BindGroups = createCustomElement(function () {
             })
 
             // TODO: Use a camera to create this view.
-            const s = 0.5
+            const s = 20
             const viewProjMatrix = [
                 s, 0, 0, 0,
                 0, s, 0, 0,
                 0, 0, s, 0,
-                0, 0, 0, 1,
+                0, -0.5, 0, 1,
             ]
+
+            // load glb
+            const buffer = await (await fetch("./avocado.glb")).arrayBuffer()
+            const glbMesh = uploadGLB(buffer, c.device)
+
+            glbMesh.buildRenderPipeline(c.device,
+                pipeline.descriptor.vertex.module,
+                c.canvasContext.getCurrentTexture().format,
+                c.depthTexture.format,
+                pipeline.getBindGroupLayout(0)
+            )
 
             const frame = () => {
                 c.beginCommands()
@@ -61,10 +74,7 @@ export const BindGroups = createCustomElement(function () {
                     c.commandCopyToBuffer(viewProjMatrix, viewParamsBuffer)
                     c.beginRenderPass()
                     {
-                        c.render.setPipeline(pipeline)
-                        c.render.setBindGroup(0, viewParamBG)
-                        c.render.setVertexBuffer(0, vertexBuffer)
-                        c.render.draw(3, 1, 0, 0)
+                        glbMesh.render(c.render, viewParamBG);
                     }
                     c.endRenderPass()
                 }

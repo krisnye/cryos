@@ -8,8 +8,6 @@ export interface GPUEncoderContext {
     renderPass: GPURenderPassEncoder
 }
 
-export type GPURenderPipelineAndDescriptor = GPURenderPipeline & { descriptor: GPURenderPipelineDescriptor }
-
 export interface GPURenderPipelineProperties {
     layout?: Record<string, GPUBindGroupLayoutEntry[]>
     vertexInput: GPUVertexBufferLayoutNamed
@@ -18,10 +16,15 @@ export interface GPURenderPipelineProperties {
     fragmentMain?: string
 }
 
+export type GPURenderPipelineAndMeta = GPURenderPipeline & {
+    descriptor: GPURenderPipelineDescriptor
+    properties: GPURenderPipelineProperties
+}
+
 export interface GPUContext<RP extends string = never> {
     canvas: HTMLCanvasElement
     device: GPUDevice
     canvasContext: GPUCanvasContext
     depthTexture: GPUTexture
-    renderPipelines: Record<RP, GPURenderPipelineAndDescriptor>
+    renderPipelines: Record<RP, GPURenderPipelineAndMeta>
 }

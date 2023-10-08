@@ -1,10 +1,5 @@
 
-declare module '*.frag' {
-    const content: string;
-    export default content;
-}
-
-declare module '*.vert' {
+declare module '*.wgsl' {
     const content: string;
     export default content;
 }

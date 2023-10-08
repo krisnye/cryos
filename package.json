@@ -26,8 +26,12 @@
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "^5.2.2",
     "vite": "^4.3.9",
+    "vite-plugin-string": "^1.2.1",
     "vitest": "^0.34.1"
   },
   "author": "krisnye@gmail.com",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "gl-matrix": "^3.4.3"
+  }
 }

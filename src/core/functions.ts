@@ -1,4 +1,4 @@
-import { GPUContext, GPUEncoderContext, GPURenderPipelineAndDescriptor, GPURenderPipelineProperties, GPUVertexAttributeNamed, GPUVertexBufferLayoutNamed, WGSLType } from "./types.js"
+import { GPURenderPipelineAndMeta, GPURenderPipelineProperties, GPUVertexAttributeNamed, GPUVertexBufferLayoutNamed, WGSLType } from "./types.js"
 
 const vertexFormatToSize = {
     uint8x2: 2, uint8x4: 4,
@@ -52,6 +52,10 @@ export function toWGSLStructBody(vertexBufferLayout: GPUVertexBufferLayoutNamed)
     return `{\n${vertexBufferLayout.attributes.map((value, index) => `    @location(${index}) ${value.name}: ${toWGSLType(value.format)},\n`).join(``)}}\n`
 }
 
+export function defineRenderPipeline(vertexInput: GPUVertexBufferLayoutNamed, shader: string): GPURenderPipelineProperties {
+    return { vertexInput, shader } satisfies GPURenderPipelineProperties;
+}
+
 export async function requestGPUDevice(): Promise<GPUDevice> {
     const adapter = await navigator.gpu.requestAdapter()
     if (!adapter) {
@@ -89,127 +93,4 @@ export function createVertexBufferLayoutNamed(properties: Record<string, GPUVert
     }
 
     return { arrayStride, attributes }
-}
-
-export function createStaticVertexBuffer(device: GPUDevice, vertexBufferLayout: GPUVertexBufferLayoutNamed, data: number[], usage = GPUBufferUsage.VERTEX) {
-    const sizePerElement = 4 // for now assume numbers are floats
-    const expectedElementMultiple = vertexBufferLayout.arrayStride / sizePerElement
-    if (data.length % expectedElementMultiple !== 0) {
-        throw new Error(`Unexpected data length: ${data.length}, expected multiple of ${expectedElementMultiple}`)
-    }
-    const buffer = device.createBuffer({
-        size: data.length * sizePerElement,
-        usage,
-        mappedAtCreation: true
-    })
-
-    // Interleaved positions and colors
-    new Float32Array(buffer.getMappedRange()).set(data)
-    buffer.unmap()
-    return buffer
-}
-
-export async function createGPUContext<Shaders extends string>(canvas: HTMLCanvasElement, shaders: Record<Shaders, GPURenderPipelineProperties>): Promise<GPUContext<Shaders>> {
-    const device = await requestGPUDevice()
-    const canvasContext = canvas.getContext("webgpu")
-    if (!canvasContext) {
-        throw new Error(`Could not get a webgpu context`)
-    }
-
-    const depthTexture = device.createTexture({
-        size: {
-            width: canvas.width,
-            height: canvas.height,
-            depthOrArrayLayers: 1   //  was depth
-        },
-        format: "depth24plus-stencil8",
-        usage: GPUTextureUsage.RENDER_ATTACHMENT
-    });
-
-    // Setup render outputs
-    canvasContext.configure({
-        device,
-        format: "bgra8unorm",
-        usage: GPUTextureUsage.RENDER_ATTACHMENT,
-    });
-
-    const c = { canvas, canvasContext, device, depthTexture, renderPipelines: {} }
-
-    const renderPipelines: Record<Shaders, GPURenderPipelineAndDescriptor> = {} as Record<Shaders, GPURenderPipelineAndDescriptor>
-    for (let [name, shader] of Object.entries(shaders)) {
-        renderPipelines[name] = await createRenderPipeline(c, shader as GPURenderPipelineProperties)
-    }
-
-    return { ...c, renderPipelines }
-}
-
-export function addRenderPipeline<RP extends string, Name extends string>(
-    c: GPUContext<RP>, name: Name, renderPipeline: GPURenderPipelineAndDescriptor
-): GPUContext<RP | Name> {
-    return { ...c, renderPipelines: { ...c.renderPipelines, [name]: renderPipeline } } as GPUContext<RP | Name>
-}
-
-export async function createRenderPipeline(
-    c: GPUContext,
-    rp: GPURenderPipelineProperties
-): Promise<GPURenderPipelineAndDescriptor> {
-    const { vertexInput: vertexLayout, shader, vertexMain = "vertex_main", fragmentMain = "fragment_main" } = rp
-    const shaderModule = await compileGPUShaderModule(c.device, shader);
-
-    const bindGroupLayouts = rp.layout ? Object.entries(rp.layout).map(
-        ([label, entries]) => c.device.createBindGroupLayout({ label, entries })
-    ) : []
-
-    const descriptor = {
-        layout: c.device.createPipelineLayout({ bindGroupLayouts }),
-        vertex: {
-            module: shaderModule, entryPoint: vertexMain, buffers: [vertexLayout]
-        },
-        fragment: {
-            module: shaderModule, entryPoint: fragmentMain,
-            targets: [{ format: c.canvasContext.getCurrentTexture().format }]
-        },
-        depthStencil: { format: c.depthTexture.format, depthWriteEnabled: true, depthCompare: "less" }
-    } as const satisfies GPURenderPipelineDescriptor;
-
-    console.log({ firstVertexLayout: descriptor.vertex })
-
-    const renderPipeline = c.device.createRenderPipeline(descriptor);
-
-    return Object.assign(renderPipeline, { descriptor })
-}
-
-export function createRenderFunction(
-    c: GPUContext, callback: (commandEncoder: GPUCommandEncoder, renderPassDescriptor: GPURenderPassDescriptor) => void) {
-    const renderPassDesc = {
-        colorAttachments: [{
-            // view will be set to the current render target each frame
-            view: undefined as unknown as GPUTextureView,
-            loadOp: "clear", storeOp: "store"
-        }],
-        depthStencilAttachment: {
-            view: c.depthTexture.createView(),
-            depthLoadOp: "clear", depthClearValue: 1.0, depthStoreOp: "store",
-            stencilLoadOp: "clear", stencilClearValue: 0, stencilStoreOp: "store"
-        }
-    } satisfies GPURenderPassDescriptor;
-
-    return function () {
-        renderPassDesc.colorAttachments[0].view = c.canvasContext.getCurrentTexture().createView();
-        const commandEncoder = c.device.createCommandEncoder();
-        // const renderPass = commandEncoder.beginRenderPass(renderPassDesc);
-        callback(commandEncoder, renderPassDesc)
-        // renderPass.end();
-        c.device.queue.submit([commandEncoder.finish()]);
-    };
-}
-
-export function copyToBuffer(device: GPUDevice, commandEncoder: GPUCommandEncoder, data: number[], buffer: GPUBuffer) {
-    const upload = device.createBuffer(
-        { size: 16 * 4, usage: GPUBufferUsage.COPY_SRC, mappedAtCreation: true }
-    )
-    var map = new Float32Array(upload.getMappedRange())
-    map.set(data)
-    upload.unmap()
-    commandEncoder.copyBufferToBuffer(upload, 0, buffer, 0, 16 * 4)
 }

@@ -2,9 +2,12 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path'
 import { terser } from 'rollup-plugin-terser';
+import vitePluginString from 'vite-plugin-string'
 
 export default defineConfig({
-    plugins: [],
+    plugins: [
+        vitePluginString({ compress: false })
+    ],
     build: {
         minify: true,
         lib: {

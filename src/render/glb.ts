@@ -315,8 +315,6 @@ export class GLTFPrimitive {
 
         const layout = device.createPipelineLayout({ bindGroupLayouts: [uniformsBGLayout] });
 
-        console.log({ vertexState })
-
         this.renderPipeline = device.createRenderPipeline({
             layout: layout,
             vertex: vertexState,
