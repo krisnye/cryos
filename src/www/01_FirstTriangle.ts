@@ -1,7 +1,7 @@
-import { createCustomElement, html, useConnected } from "lithos";
-import { createVertexBufferLayoutNamed } from "../core/functions.js";
-import { GPUContext } from "../core/GPUContext.js";
-import shader from "./01_FirstTriangle.wgsl";
+import { createCustomElement, html, useConnected } from "lithos"
+import { createVertexBufferLayoutNamed } from "../core/functions.js"
+import { GPUContext } from "../core/GPUContext.js"
+import shader from "./01_FirstTriangle.wgsl"
 
 export const FirstTriangle = createCustomElement(function () {
     const positionColorVertexLayout = createVertexBufferLayoutNamed({

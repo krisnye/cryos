@@ -1,6 +1,8 @@
 //  imported from https://github.com/Twinklebear/webgpu-0-to-gltf/tree/main
 //  and converted to typescript
 
+//  These classes not really designed by us yet. Just ported from above over to typescript.
+
 const GLTFRenderMode = {
     POINTS: 0,
     LINE: 1,

@@ -10,14 +10,6 @@ const positionColor = createVertexBufferLayoutNamed({
     color: "float32x4"
 })
 
-const triangleShader: GPURenderPipelineProperties = {
-    layout: {
-        view_params: [{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } }]
-    },
-    vertexInput: positionColor,
-    shader
-}
-
 export const GLTFMesh = createCustomElement(function () {
     useConnected(() => {
         (async () => {
@@ -74,7 +66,7 @@ export const GLTFMesh = createCustomElement(function () {
                     c.commandCopyToBuffer(viewProjMatrix, viewParamsBuffer)
                     c.beginRenderPass()
                     {
-                        glbMesh.render(c.render, viewParamBG);
+                        glbMesh.render(c.render, viewParamBG)
                     }
                     c.endRenderPass()
                 }
