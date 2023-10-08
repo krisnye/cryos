@@ -109,7 +109,7 @@ export class GPUContext {
      * Queues a command to copy the data to the buffer
      * The intermediate upload buffer used will be automatically recycled when the command queue finishes.
      */
-    commandCopyToBuffer(data: number[], buffer: GPUBuffer) {
+    commandCopyToBuffer(data: ArrayLike<number>, buffer: GPUBuffer) {
         this.assertState(State.command)
         const size = data.length * 4
         const upload = this.borrowUploadBuffer(size)

@@ -1,6 +1,8 @@
 import { createCustomElement, html, useConnected } from "lithos"
 import { createVertexBufferLayoutNamed } from "../core/functions.js"
 import { GPUContext } from "../core/GPUContext.js"
+import { Vector4 } from "../math/Vector4.js"
+import { Color } from "../math/Color.js"
 import shader from "./01_FirstTriangle.wgsl"
 
 export const FirstTriangle = createCustomElement(function () {
@@ -21,12 +23,12 @@ export const FirstTriangle = createCustomElement(function () {
             const vertexBuffer = c.createStaticVertexBuffer(
                 positionColorVertexLayout,
                 [
-                    1, -1, 0, 1,  // 0 position
-                    1, 0, 0, 1,   // 0 color
-                    -1, -1, 0, 1, // 1 position
-                    0, 1, 0, 1,   // 1 color
-                    0, 1, 0, 1,   // 2 position
-                    0, 0, 1, 1,   // 2 color
+                    ...new Vector4(1, -1, 0, 1),
+                    ...Color.red,
+                    ...new Vector4(-1, -1, 0, 1),
+                    ...Color.green,
+                    ...new Vector4(0, 1, 0, 1),
+                    ...Color.blue
                 ]
             )
 

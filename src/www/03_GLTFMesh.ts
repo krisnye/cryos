@@ -1,8 +1,8 @@
 import { createCustomElement, html, useConnected } from "lithos"
 import { createVertexBufferLayoutNamed } from "../core/functions.js"
-import { GPURenderPipelineProperties } from "../core/types.js"
 import { uploadGLB } from "../render/glb.js"
 import { GPUContext } from "../core/GPUContext.js"
+import { Matrix4 } from "../math/Matrix4.js"
 import shader from "./03_GLTFMesh.wgsl"
 
 const positionColor = createVertexBufferLayoutNamed({
@@ -24,10 +24,6 @@ export const GLTFMesh = createCustomElement(function () {
                 shader
             })
 
-
-            //  TODO: Still could use some easier abstraction for setting bind group properties, maybe well typed.
-            //  Maybe wait until we have more resource types to simplify this.
-
             // Create a buffer to store the view parameters
             const viewParamsBuffer = c.device.createBuffer({
                 size: 16 * 4,
@@ -40,14 +36,7 @@ export const GLTFMesh = createCustomElement(function () {
                 entries: [{ binding: 0, resource: { buffer: viewParamsBuffer } }]
             })
 
-            // TODO: Use a camera to create this view.
-            const s = 20
-            const viewProjMatrix = [
-                s, 0, 0, 0,
-                0, s, 0, 0,
-                0, 0, s, 0,
-                0, -0.5, 0, 1,
-            ]
+            const viewProjMatrix = Matrix4.translation(0, -0.5, 0).multiply(Matrix4.scaling(20))
 
             // load glb
             const buffer = await (await fetch("./avocado.glb")).arrayBuffer()
@@ -63,7 +52,7 @@ export const GLTFMesh = createCustomElement(function () {
             const frame = () => {
                 c.beginCommands()
                 {
-                    c.commandCopyToBuffer(viewProjMatrix, viewParamsBuffer)
+                    c.commandCopyToBuffer(viewProjMatrix.toArray(), viewParamsBuffer)
                     c.beginRenderPass()
                     {
                         glbMesh.render(c.render, viewParamBG)

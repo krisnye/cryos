@@ -1,6 +1,9 @@
 import { createCustomElement, html, useConnected } from "lithos"
 import { createVertexBufferLayoutNamed } from "../core/functions.js"
 import { GPUContext } from "../core/GPUContext.js"
+import { Vector4 } from "../math/Vector4.js"
+import { Color } from "../math/Color.js"
+import { Matrix4 } from "../math/Matrix4.js"
 import shader from "./02_BindGroups.wgsl"
 
 const positionColorVertexLayout = createVertexBufferLayoutNamed({
@@ -25,13 +28,14 @@ export const BindGroups = createCustomElement(function () {
             const vertexBuffer = c.createStaticVertexBuffer(
                 positionColorVertexLayout,
                 [
-                    1, -1, 0, 1,  // 0 position
-                    1, 0, 0, 1,   // 0 color
-                    -1, -1, 0, 1, // 1 position
-                    0, 1, 0, 1,   // 1 color
-                    0, 1, 0, 1,   // 2 position
-                    0, 0, 1, 1,   // 2 color
+                    ...new Vector4(1, -1, 0, 1),
+                    ...Color.red,
+                    ...new Vector4(-1, -1, 0, 1),
+                    ...Color.green,
+                    ...new Vector4(0, 1, 0, 1),
+                    ...Color.blue
                 ]
+
             )
 
             // Create a buffer to store the view parameters
@@ -46,19 +50,12 @@ export const BindGroups = createCustomElement(function () {
                 entries: [{ binding: 0, resource: { buffer: viewParamsBuffer } }]
             })
 
-            // TODO: Use a camera to create this view.
-            const s = 0.5
-            const viewProjMatrix = [
-                s, 0, 0, 0,
-                0, s, 0, 0,
-                0, 0, s, 0,
-                0, 0, 0, 1,
-            ]
+            const viewProjMatrix = Matrix4.scaling(0.5)
 
             const frame = () => {
                 c.beginCommands()
                 {
-                    c.commandCopyToBuffer(viewProjMatrix, viewParamsBuffer)
+                    c.commandCopyToBuffer(viewProjMatrix.toArray(), viewParamsBuffer)
                     c.beginRenderPass()
                     {
                         c.render.setPipeline(pipeline)
