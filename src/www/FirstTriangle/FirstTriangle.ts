@@ -3,7 +3,7 @@ import { createVertexBufferLayoutNamed } from "../../core/functions.js"
 import { GPUContext } from "../../core/GPUContext.js"
 import { Vector4 } from "../../math/Vector4.js"
 import { Color } from "../../math/Color.js"
-import shader from "./01_FirstTriangle.wgsl"
+import shader from "./FirstTriangle.wgsl"
 
 export const FirstTriangle = createCustomElement(function () {
     const positionColorVertexLayout = createVertexBufferLayoutNamed({

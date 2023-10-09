@@ -29,12 +29,12 @@ fn main(
     let nearbyAlive
         = isAlive(num_workgroups, workgroup_id, -1, -1, 0)  //  top left
         + isAlive(num_workgroups, workgroup_id, -1,  0, 0)  //  top
-        + isAlive(num_workgroups, workgroup_id, -1,  0, 1)  //  top right
+        + isAlive(num_workgroups, workgroup_id, -1,  1, 0)  //  top right
         + isAlive(num_workgroups, workgroup_id,  0, -1, 0)  //  left
-        + isAlive(num_workgroups, workgroup_id,  0,  0, 1)  //  right
+        + isAlive(num_workgroups, workgroup_id,  0,  1, 0)  //  right
         + isAlive(num_workgroups, workgroup_id,  1, -1, 0)  //  right top
         + isAlive(num_workgroups, workgroup_id,  1,  0, 0)  //  right
-        + isAlive(num_workgroups, workgroup_id,  1,  0, 1); //  right bottom
+        + isAlive(num_workgroups, workgroup_id,  1,  1, 0); //  right bottom
     if (((wasAlive == 1 && (nearbyAlive == 2 || nearbyAlive == 3)) || (wasAlive == 0 && nearbyAlive == 3))) {
         output[index] = 1;
     }

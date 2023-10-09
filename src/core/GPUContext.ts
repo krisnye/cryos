@@ -83,16 +83,8 @@ export class GPUContext {
         return onSubmittedWorkDone
     }
 
-    private availableUploadBuffers: GPUBuffer[] = []
     private borrowedUploadBuffers: GPUBuffer[] = []
     private createUploadBuffer(minSize: number): GPUBuffer {
-        for (let i = this.availableUploadBuffers.length - 1; i >= 0; i--) {
-            const buffer = this.availableUploadBuffers[i]
-            if (buffer.size >= minSize) {
-                this.availableUploadBuffers.splice(i, 1)
-                return buffer
-            }
-        }
         return this.device.createBuffer(
             { size: minSize, usage: GPUBufferUsage.COPY_SRC, mappedAtCreation: true }
         )
@@ -104,7 +96,7 @@ export class GPUContext {
     }
 
     private returnUploadBuffer(buffer: GPUBuffer) {
-        this.availableUploadBuffers.push(buffer)
+        buffer.destroy()
     }
 
     /**

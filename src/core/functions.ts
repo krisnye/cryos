@@ -36,6 +36,14 @@ const vertexFormatToWGSLType = {
     sint32: "i32", sint32x2: "i32", sint32x3: "i32", sint32x4: "i32",
 } as const satisfies Record<GPUVertexFormat, WGSLType>
 
+export const sizeof = {
+    "bool": 1,
+    "f16": 2,
+    "f32": 4,
+    "i32": 4,
+    "u32": 4
+} as const satisfies Record<WGSLType, number>
+
 export function toWGSLType(format: GPUVertexFormat): string {
     const count = vertexFormatToCount[format]
     const scalarType = vertexFormatToWGSLType[format]
