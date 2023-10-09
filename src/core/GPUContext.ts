@@ -28,6 +28,11 @@ export class GPUContext {
         this.depthTexture = depthTexture
     }
 
+    public destroy() {
+        // this.canvasContext.unconfigure()
+        this.device.destroy()
+    }
+
     private get state() {
         return this._renderPassEncoder ? State.render : this._commandEncoder ? State.command : State.default
     }

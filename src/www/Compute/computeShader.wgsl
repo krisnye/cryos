@@ -21,7 +21,7 @@ fn isAlive(
     return 0;
 }
 
-@compute @workgroup_size(1)
+@compute @workgroup_size(64)
 fn main(
     @builtin(workgroup_id) workgroup_id : vec3u,
     @builtin(num_workgroups) num_workgroups : vec3u,
