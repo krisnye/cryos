@@ -63,17 +63,17 @@ export const Compute = createCustomElement(function () {
             const vertices =
                 [
                     ...new Vector4(0, 0, 0, 1),
-                    ...Color.red,
+                    ...Color.white,
                     ...new Vector4(s, 0, 0, 1),
-                    ...Color.green,
+                    ...Color.white,
                     ...new Vector4(0, s, 0, 1),
-                    ...Color.blue,
+                    ...Color.white,
                     ...new Vector4(s, s, 0, 1),
                     ...Color.white,
                     ...new Vector4(0, s, 0, 1),
-                    ...Color.blue,
+                    ...Color.white,
                     ...new Vector4(s, 0, 0, 1),
-                    ...Color.green,
+                    ...Color.white,
                 ]
             const vertexBuffer = c.createStaticVertexBuffer(
                 positionColorVertexLayout,
