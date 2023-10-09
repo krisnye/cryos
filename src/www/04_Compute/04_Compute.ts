@@ -83,7 +83,7 @@ export const Compute = createCustomElement(function () {
                 c.beginCommands()
                 {
                     //  compute
-                    computePipeline.encodePass({ size: gpuVolume.size, buffers: gpuVolume.buffers }, c.command);
+                    computePipeline.encodePass(gpuVolume, c.command);
 
                     //  render
                     c.commandCopyToBuffer(viewProjMatrix.toArray(), viewParamsBuffer)
