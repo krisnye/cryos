@@ -1,4 +1,4 @@
-import { GPURenderPipelineAndMeta, GPURenderPipelineProperties, GPUVertexAttributeNamed, GPUVertexBufferLayoutNamed, WGSLType } from "./types.js"
+import { GPURenderPipelineProperties, GPUVertexAttributeNamed, GPUVertexBufferLayoutNamed, StringKeyOf, WGSLType } from "./types.js"
 
 const vertexFormatToSize = {
     uint8x2: 2, uint8x4: 4,
@@ -93,4 +93,12 @@ export function createVertexBufferLayoutNamed(properties: Record<string, GPUVert
     }
 
     return { arrayStride, attributes }
+}
+
+export function stringKeys<T extends object>(object: T): StringKeyOf<T>[] {
+    return Object.keys(object).filter(value => typeof value === "string") as StringKeyOf<T>[];
+}
+
+export function stringEntries<T extends object>(object: T): [StringKeyOf<T>, T[StringKeyOf<T>]][] {
+    return stringKeys(object).map(name => [name, object[name]]);
 }

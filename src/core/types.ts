@@ -1,4 +1,6 @@
 
+export type StringKeyOf<T extends object> = Extract<keyof T, string>;
+
 export type WGSLType = "bool" | "i32" | "u32" | "f32" | "f16"
 export type GPUVertexAttributeNamed = GPUVertexAttribute & { name: string }
 export type GPUVertexBufferLayoutNamed = GPUVertexBufferLayout & { attributes: GPUVertexAttributeNamed[] }

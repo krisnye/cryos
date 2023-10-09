@@ -48,6 +48,10 @@ export class Vector4 {
         return this.x === v.x && this.y === v.y && this.z === v.z && this.w === v.w
     }
 
+    productOfComponents() {
+        return this.x * this.y * this.z * this.w
+    }
+
     equivalent(v: Vector4) {
         return equivalent(this.x, v.x)
             && equivalent(this.y, v.y)
@@ -91,7 +95,7 @@ export class Vector4 {
         array[index + 3] = this.w
     }
 
-    toArray() {
+    toArray(): [number, number, number, number] {
         return [this.x, this.y, this.z, this.w]
     }
 

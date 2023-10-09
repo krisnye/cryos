@@ -70,15 +70,17 @@ export class GPUContext {
         this._renderPassEncoder!.end()
         this._renderPassEncoder = undefined
     }
-    public endCommands() {
+    public endCommands(): Promise<void> {
         this.assertState(State.command)
-        this.device.queue.submit([this._commandEncoder!.finish()]);
-        this.device.queue.onSubmittedWorkDone().then(() => {
+        this.device.queue.submit([this._commandEncoder!.finish()])
+        const onSubmittedWorkDone = this.device.queue.onSubmittedWorkDone()
+        onSubmittedWorkDone.then(() => {
             for (let buffer of this.borrowedUploadBuffers) {
                 this.returnUploadBuffer(buffer)
             }
             this.borrowedUploadBuffers.length = 0
         })
+        return onSubmittedWorkDone
     }
 
     private availableUploadBuffers: GPUBuffer[] = []
@@ -123,8 +125,7 @@ export class GPUContext {
         properties: GPURenderPipelineProperties
     ): Promise<GPURenderPipelineAndMeta> {
         const { vertexInput: vertexLayout, shader, vertexMain = "vertex_main", fragmentMain = "fragment_main" } = properties
-        const shaderModule = await compileGPUShaderModule(this.device, shader);
-
+        const shaderModule = await compileGPUShaderModule(this.device, shader)
         const bindGroupLayouts = properties.layout ? Object.entries(properties.layout).map(
             ([label, entries]) => this.device.createBindGroupLayout({ label, entries })
         ) : []
@@ -139,10 +140,8 @@ export class GPUContext {
                 targets: [{ format: this.canvasContext.getCurrentTexture().format }]
             },
             depthStencil: { format: this.depthTexture.format, depthWriteEnabled: true, depthCompare: "less" }
-        } as const satisfies GPURenderPipelineDescriptor;
-
-        const renderPipeline = this.device.createRenderPipeline(descriptor);
-
+        } as const satisfies GPURenderPipelineDescriptor
+        const renderPipeline = this.device.createRenderPipeline(descriptor)
         return Object.assign(renderPipeline, { descriptor, properties })
     }
 
@@ -181,15 +180,13 @@ export class GPUContext {
             },
             format: "depth24plus-stencil8",
             usage: GPUTextureUsage.RENDER_ATTACHMENT
-        });
-
+        })
         // Setup render outputs
         canvasContext.configure({
             device,
             format: "bgra8unorm",
             usage: GPUTextureUsage.RENDER_ATTACHMENT,
-        });
-
+        })
         return new GPUContext({ canvas, canvasContext, device, depthTexture })
     }
 }

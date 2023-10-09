@@ -56,6 +56,10 @@ export class Vector2 {
         )
     }
 
+    productOfComponents() {
+        return this.x * this.y
+    }
+
     lengthSquared() {
         return this.x * this.x + this.y * this.y
     }
@@ -105,7 +109,7 @@ export class Vector2 {
         array[index + 1] = this.y
     }
 
-    toArray() {
+    toArray(): [number, number] {
         return [this.x, this.y]
     }
 
