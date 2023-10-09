@@ -18,3 +18,28 @@ export function lerp(a: any, b: any, alpha = 0.5) {
 export function easeInOutCubic(x: number) {
     return x ** 2 * 3 - x ** 3 * 2
 }
+
+export function arrayEqualsPercent<T>(arr1: ArrayLike<T>, arr2: ArrayLike<T>): number {
+    let same = 0
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] === arr2[i]) {
+            same++
+        }
+    }
+
+    return same / arr1.length
+}
+
+export function arrayEquals<T>(arr1: ArrayLike<T>, arr2: ArrayLike<T>): boolean {
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
+
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}

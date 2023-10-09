@@ -15,7 +15,10 @@ fn isAlive(
         return 0;
     }
     let fromIndex = getIndex(num_workgroups, vec3u(u32(ix), u32(iy), u32(iz)));
-    return input[fromIndex];
+    if (input[fromIndex] >= 1) {
+        return 1;
+    }
+    return 0;
 }
 
 @compute @workgroup_size(1)
@@ -25,7 +28,7 @@ fn main(
 ) {
     //  this should give me index into volume data
     let index = getIndex(num_workgroups, workgroup_id);
-    let wasAlive = input[index];
+    let wasAlive = min(input[index], 1);
     let nearbyAlive
         = isAlive(num_workgroups, workgroup_id, -1, -1, 0)  //  top left
         + isAlive(num_workgroups, workgroup_id, -1,  0, 0)  //  top
@@ -36,7 +39,7 @@ fn main(
         + isAlive(num_workgroups, workgroup_id,  1,  0, 0)  //  right
         + isAlive(num_workgroups, workgroup_id,  1,  1, 0); //  right bottom
     if (((wasAlive == 1 && (nearbyAlive == 2 || nearbyAlive == 3)) || (wasAlive == 0 && nearbyAlive == 3))) {
-        output[index] = 1;
+        output[index] = input[index] + 1;
     }
     else {
         output[index] = 0;
