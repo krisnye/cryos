@@ -8,9 +8,9 @@ import { Volume } from "../../data/Volume.js"
 import { GPUVolume } from "../../compute/GPUVolume.js"
 import { Vector3 } from "../../math/Vector3.js"
 import { randomNumberGenerator } from "../../math/RandomNumberGenerator.js"
+import { FPSWrapper } from "../FPSWrapper.js"
 import computeShader from "./computeShader.wgsl"
 import renderShader from "./renderShader.wgsl"
-import { FPSWrapper } from "../FPSWrapper.js"
 
 const positionVertexLayout = createVertexBufferLayoutNamed({
     position: "float32x4",
@@ -64,40 +64,36 @@ export const ComputeCanvas = createCustomElement(function (this: HTMLCanvasEleme
                 shader: renderShader.replace("{{inject_width}}", gridWidth.toString())
             })
 
-            const s = 1
             const vertices =
                 [
                     ...new Vector4(0, 0, 0, 1),
-                    ...new Vector4(s, 0, 0, 1),
-                    ...new Vector4(0, s, 0, 1),
-                    ...new Vector4(s, s, 0, 1),
-                    ...new Vector4(0, s, 0, 1),
-                    ...new Vector4(s, 0, 0, 1),
+                    ...new Vector4(1, 0, 0, 1),
+                    ...new Vector4(0, 1, 0, 1),
+                    ...new Vector4(1, 1, 0, 1),
+                    ...new Vector4(0, 1, 0, 1),
+                    ...new Vector4(1, 0, 0, 1),
                 ]
-            const vertexBuffer = c.createStaticVertexBuffer(
-                positionVertexLayout,
-                vertices
-            )
+            const vertexBuffer = c.createStaticVertexBuffer(positionVertexLayout, vertices)
 
             // Create a buffer to store the view parameters
             const viewParamsBuffer = c.device.createBuffer({
-                size: vertices.length * sizeof.f32 + sizeof.f32,
+                size: vertices.length * sizeof.f32,
                 usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
             })
 
             // Create a bind group which places our view params buffer at binding 0
-            const viewParamBG = c.device.createBindGroup({
+            const viewParamBGs = [gpuVolume.buffers.input, gpuVolume.buffers.output].map(buffer => c.device.createBindGroup({
                 layout: renderPipeline.getBindGroupLayout(0),
                 entries: [
                     { binding: 0, resource: { buffer: viewParamsBuffer } },
-                    { binding: 1, resource: { buffer: gpuVolume.buffers.output } }
+                    { binding: 1, resource: { buffer } }
                 ]
-            })
-
+            }))
 
             const scale = 1.9
             const viewProjMatrix = Matrix4.translation(- scale / 2, - scale / 2, 0).multiply(Matrix4.scaling(scale / size.x))
 
+            let count = 0
             const frame = async () => {
                 c.beginCommands()
                 {
@@ -109,8 +105,8 @@ export const ComputeCanvas = createCustomElement(function (this: HTMLCanvasEleme
                     c.beginRenderPass()
                     {
                         c.render.setPipeline(renderPipeline)
-                        //  set compute buffer output as input
-                        c.render.setBindGroup(0, viewParamBG)
+                        //  set compute buffer output as input, but alternate which one to show each frame
+                        c.render.setBindGroup(0, viewParamBGs[count++ % 2])
                         c.render.setVertexBuffer(0, vertexBuffer)
                         const instances = size.productOfComponents()
                         c.render.draw(6, instances, 0, 0)

@@ -15,7 +15,7 @@ export class VolumePipeline<
     ) {
     }
 
-    encodePass(volume: Pick<GPUVolume<Bindings>, "size" | "buffers">, encoder: GPUCommandEncoder) {
+    encodePass(volume: GPUVolume<Bindings>, encoder: GPUCommandEncoder) {
         const bindGroup = this.device.createBindGroup({
             layout: this.layout,
             entries: this.bindings.map((name, index) => {
