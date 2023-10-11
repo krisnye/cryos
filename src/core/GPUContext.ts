@@ -80,28 +80,30 @@ export class GPUContext {
         this.device.queue.submit([this._commandEncoder!.finish()])
         const onSubmittedWorkDone = this.device.queue.onSubmittedWorkDone()
         onSubmittedWorkDone.then(() => {
-            for (let buffer of this.borrowedUploadBuffers) {
-                this.returnUploadBuffer(buffer)
+            for (let buffer of this.borrowedBuffers) {
+                buffer.destroy()
             }
-            this.borrowedUploadBuffers.length = 0
+            this.borrowedBuffers.length = 0
         })
         return onSubmittedWorkDone
     }
 
-    private borrowedUploadBuffers: GPUBuffer[] = []
-    private createUploadBuffer(minSize: number): GPUBuffer {
-        return this.device.createBuffer(
+    private borrowedBuffers: GPUBuffer[] = []
+    public borrowUploadBuffer(minSize: number): GPUBuffer {
+        const buffer = this.device.createBuffer(
             { size: minSize, usage: GPUBufferUsage.COPY_SRC, mappedAtCreation: true }
         )
-    }
-    private borrowUploadBuffer(minSize: number): GPUBuffer {
-        const buffer = this.createUploadBuffer(minSize)
-        this.borrowedUploadBuffers.push(buffer)
+        this.borrowedBuffers.push(buffer)
         return buffer
     }
 
-    private returnUploadBuffer(buffer: GPUBuffer) {
-        buffer.destroy()
+    public borrowDownloadBuffer(device: GPUDevice, minSize: number) {
+        const buffer = device.createBuffer({
+            size: minSize,
+            usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST
+        });
+        this.borrowedBuffers.push(buffer)
+        return buffer
     }
 
     /**

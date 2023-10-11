@@ -1,15 +1,15 @@
+import { GPUContext } from "../core/GPUContext.js";
 import { stringEntries } from "../core/functions.js";
 import { StringKeyOf } from "../core/types.js";
 import { Volume } from "../data/Volume.js";
 import { bitsToBytes, typeDescriptors } from "../data/constants.js";
 import { GPUTypeId, TypedArrayElementGPUTypeId } from "../data/types.js";
 import { Vector3 } from "../math/Vector3.js";
-import { GPUHelper } from "./GPUHelper.js";
 
 export class GPUVolume<Types extends Record<string, GPUTypeId>> {
 
     private constructor(
-        private readonly device: GPUDevice,
+        private readonly context: GPUContext,
         public readonly size: Vector3,
         public readonly types: Types,
         public readonly buffers: Record<StringKeyOf<Types>, GPUBuffer>,
@@ -19,17 +19,17 @@ export class GPUVolume<Types extends Record<string, GPUTypeId>> {
     async copyToCPU<T extends Record<string, TypedArrayElementGPUTypeId>>(
         this: GPUVolume<T>, volume = Volume.create<T>(this.size, this.types)
     ) {
-        const encoder = this.device.createCommandEncoder()
+        const encoder = this.context.device.createCommandEncoder()
         const stagingBuffers: Record<string, GPUBuffer> = {}
         //  add command to copy buffers out to staging buffers
         for (let name in this.types) {
             const buffer = this.buffers[name]
-            const stagingBuffer = stagingBuffers[name] = GPUHelper.borrowReadBuffer(this.device, buffer.size)
+            const stagingBuffer = stagingBuffers[name] = this.context.borrowDownloadBuffer(this.context.device, buffer.size)
             encoder.copyBufferToBuffer(buffer, 0, stagingBuffer, 0, buffer.size)
         }
 
-        this.device.queue.submit([encoder.finish()])
-        await this.device.queue.onSubmittedWorkDone()
+        this.context.device.queue.submit([encoder.finish()])
+        await this.context.device.queue.onSubmittedWorkDone()
         // read from the staging buffers into
         for (let name in stagingBuffers) {
             const stagingBuffer = stagingBuffers[name]
@@ -42,8 +42,6 @@ export class GPUVolume<Types extends Record<string, GPUTypeId>> {
             volumeDataArray.set(new typeDescriptors[volume.types[name]].arrayType(copyArrayBuffer), 0)
             // then unmap that staging buffer to release it
             stagingBuffer.unmap()
-            // finally, return the staging buffer so it can be reused later.
-            GPUHelper.returnReadBuffer(stagingBuffer)
         }
 
         return volume
@@ -81,9 +79,9 @@ export class GPUVolume<Types extends Record<string, GPUTypeId>> {
     }
 
     static createFromCPUVolume<Types extends Record<string, TypedArrayElementGPUTypeId>>(
-        device: GPUDevice, volume: Volume<Types>, props: { read?: boolean } = {},
+        context: GPUContext, volume: Volume<Types>, props: { read?: boolean } = {},
     ) {
-        const gpuVolume = GPUVolume.create(device, {
+        const gpuVolume = GPUVolume.create(context, {
             ...props,
             size: volume.size,
             types: volume.types,
@@ -97,7 +95,7 @@ export class GPUVolume<Types extends Record<string, GPUTypeId>> {
         return gpuVolume
     }
 
-    static create<Types extends Record<string, GPUTypeId>>(device: GPUDevice, props: {
+    static create<Types extends Record<string, GPUTypeId>>(context: GPUContext, props: {
         size: Vector3,
         types: Types,
         read?: boolean,
@@ -121,13 +119,13 @@ export class GPUVolume<Types extends Record<string, GPUTypeId>> {
                 // we will have to copy from this to staging buffer
                 usage |= GPUBufferUsage.COPY_SRC
             }
-            return [name, device.createBuffer({
+            return [name, context.device.createBuffer({
                 mappedAtCreation,
                 size: length * bitsToBytes(typeDescriptors[type].bits),
                 usage
             })]
         }))
-        return new GPUVolume(device, size, types, buffers as any)
+        return new GPUVolume(context, size, types, buffers as any)
     }
 
     toString() {

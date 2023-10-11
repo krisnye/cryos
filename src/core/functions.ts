@@ -110,3 +110,10 @@ export function stringKeys<T extends object>(object: T): StringKeyOf<T>[] {
 export function stringEntries<T extends object>(object: T): [StringKeyOf<T>, T[StringKeyOf<T>]][] {
     return stringKeys(object).map(name => [name, object[name]]);
 }
+
+export function readFlag<Flag extends number>(flags: Flag, check: Flag) {
+    return (flags & check) !== 0
+}
+export function writeFlag<Flag extends number>(a: Flag, b: Flag, value: boolean): Flag {
+    return (value ? a | b : a & ~b) as Flag
+}

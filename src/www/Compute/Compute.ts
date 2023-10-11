@@ -1,12 +1,12 @@
 import { CustomElementProperties, createCustomElement, html, useConnected, useState } from "lithos"
 import { createVertexBufferLayoutNamed, sizeof } from "../../core/functions.js"
 import { GPUContext } from "../../core/GPUContext.js"
+import { Vector3 } from "../../math/Vector3.js"
 import { Vector4 } from "../../math/Vector4.js"
 import { Matrix4 } from "../../math/Matrix4.js"
-import { VolumePipeline } from "../../compute/GPUVolumePipeline.js"
 import { Volume } from "../../data/Volume.js"
+import { VolumePipeline } from "../../compute/GPUVolumePipeline.js"
 import { GPUVolume } from "../../compute/GPUVolume.js"
-import { Vector3 } from "../../math/Vector3.js"
 import { randomNumberGenerator } from "../../math/RandomNumberGenerator.js"
 import { FPSWrapper } from "../FPSWrapper.js"
 import computeShader from "./computeShader.wgsl"
@@ -15,11 +15,6 @@ import renderShader from "./renderShader.wgsl"
 const positionVertexLayout = createVertexBufferLayoutNamed({
     position: "float32x4",
 })
-
-export type LifeVolumeType = Volume<{
-    input: "f32";
-    output: "f32";
-}>;
 
 interface ComputeProps extends CustomElementProperties {
     width?: number,
@@ -51,7 +46,7 @@ export const ComputeCanvas = createCustomElement(function (this: HTMLCanvasEleme
             for (let i = 0; i < volume.data.input.length; i++) {
                 volume.data.input[i] = random() >= 0.5 ? 1 : 0
             }
-            const gpuVolume = GPUVolume.createFromCPUVolume(c.device, volume, { read: true });
+            const gpuVolume = GPUVolume.createFromCPUVolume(c, volume, { read: true });
 
             const renderPipeline = await c.createRenderPipeline({
                 layout: {
@@ -152,8 +147,8 @@ export const ComputeCanvas = createCustomElement(function (this: HTMLCanvasEleme
 }, { extends: "canvas" })
 
 export const Compute = createCustomElement(function () {
-    const minSize = 64
-    const maxSize = 4096
+    const minSize = 128
+    const maxSize = 2048
     const [width, setWidth] = useState(256)
 
     return html.Div(
