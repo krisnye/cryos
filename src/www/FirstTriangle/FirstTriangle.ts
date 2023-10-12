@@ -15,20 +15,14 @@ export const FirstTriangle = createCustomElement(function () {
         (async () => {
 
             let c = await GPUContext.create(this)
-
-            const pipeline = await c.createRenderPipeline(
-                { vertexInput: positionColorVertexLayout, shader }
-            )
+            const pipeline = await c.createRenderPipeline({ vertexInput: positionColorVertexLayout, shader })
 
             const vertexBuffer = c.createStaticVertexBuffer(
                 positionColorVertexLayout,
                 [
-                    ...new Vector4(1, -1, 0, 1),
-                    ...Color.red,
-                    ...new Vector4(-1, -1, 0, 1),
-                    ...Color.green,
-                    ...new Vector4(0, 1, 0, 1),
-                    ...Color.blue
+                    ...new Vector4(1, -1, 0, 1), ...Color.red,
+                    ...new Vector4(-1, -1, 0, 1), ...Color.green,
+                    ...new Vector4(0, 1, 0, 1), ...Color.blue
                 ]
             )
 
