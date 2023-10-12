@@ -17,6 +17,7 @@ struct VertexOutput {
 // through the uniform buffer
 struct ViewParams {
     view_proj: mat4x4<f32>,
+    color: vec4<f32>
 };
 
 // New: create a uniform variable of our struct type
@@ -27,7 +28,7 @@ var<uniform> view_params: ViewParams;
 @vertex
 fn vertex_main(vert: VertexInput) -> VertexOutput {
     var out: VertexOutput;
-    out.color = vert.color;
+    out.color = view_params.color;
     out.position = view_params.view_proj * vert.position;
     return out;
 };

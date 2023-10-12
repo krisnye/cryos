@@ -1,4 +1,4 @@
-import { GPURenderPipelineProperties, GPUVertexAttributeNamed, GPUVertexBufferLayoutNamed, StringKeyOf, WGSLType } from "./types.js"
+import { GPURenderPipelineProperties, GPUVertexAttributeNamed, GPUVertexBufferLayoutNamed, StringKeyOf, WGSLScalarType, WGSLType, WGSLVectorSize, WGSLVectorType } from "./types.js"
 
 const vertexFormatToSize = {
     uint8x2: 2, uint8x4: 4,
@@ -34,7 +34,7 @@ const vertexFormatToWGSLType = {
     float32: "f32", float32x2: "f32", float32x3: "f32", float32x4: "f32",
     uint32: "u32", uint32x2: "u32", uint32x3: "u32", uint32x4: "u32",
     sint32: "i32", sint32x2: "i32", sint32x3: "i32", sint32x4: "i32",
-} as const satisfies Record<GPUVertexFormat, WGSLType>
+} as const satisfies Record<GPUVertexFormat, WGSLScalarType>
 
 export const sizeof = {
     "bool": 1,
@@ -42,7 +42,35 @@ export const sizeof = {
     "f32": 4,
     "i32": 4,
     "u32": 4
-} as const satisfies Record<WGSLType, number>
+} as const satisfies Record<WGSLScalarType, number>
+
+export type Sizeof<T extends WGSLScalarType> = typeof sizeof[T]
+
+export const elements = {
+    "mat2x2": 4,
+    "mat2x3": 6,
+    "mat2x4": 8,
+    "mat3x2": 6,
+    "mat3x3": 9,
+    "mat3x4": 12,
+    "mat4x2": 8,
+    "mat4x3": 12,
+    "mat4x4": 16,
+    "vec2": 2,
+    "vec3": 3,
+    "vec4": 4,
+} as const satisfies Record<WGSLVectorSize, number | undefined>
+
+export type Elements<T extends WGSLVectorSize> = typeof elements[T]
+
+export function getWGSLSize(type: WGSLType) {
+    if (Array.isArray(type)) {
+        return elements[type[0]] * sizeof[type[1]]
+    }
+    else {
+        return sizeof[type]
+    }
+}
 
 export function toWGSLType(format: GPUVertexFormat): string {
     const count = vertexFormatToCount[format]
@@ -91,7 +119,6 @@ export async function compileGPUShaderModule(device: GPUDevice, code: string): P
 }
 
 export function createVertexBufferLayoutNamed(properties: Record<string, GPUVertexFormat>): GPUVertexBufferLayoutNamed {
-
     let arrayStride = 0
     let attributes: GPUVertexAttributeNamed[] = []
     for (let [name, format] of Object.entries(properties)) {
@@ -99,7 +126,6 @@ export function createVertexBufferLayoutNamed(properties: Record<string, GPUVert
         let size = vertexFormatToSize[format]
         arrayStride += size
     }
-
     return { arrayStride, attributes }
 }
 

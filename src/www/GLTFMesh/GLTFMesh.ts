@@ -16,9 +16,7 @@ export const GLTFMesh = createCustomElement(function () {
             const c = await GPUContext.create(this)
 
             const pipeline = await c.createRenderPipeline({
-                layout: {
-                    view_params: [{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } }]
-                },
+                layout: [[{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } }]],
                 vertexInput: positionColor,
                 shader
             })

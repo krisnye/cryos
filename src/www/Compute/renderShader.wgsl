@@ -17,7 +17,7 @@ struct VertexOutput {
 // through the uniform buffer
 struct ViewParams {
     view_proj: mat4x4<f32>,
-    width: u32,
+    width: f32
 };
 
 // New: create a uniform variable of our struct type
@@ -28,15 +28,14 @@ var<uniform> view_params: ViewParams;
 @group(0) @binding(1)
 var<storage, read> cells: array<u32>;
 
-const width = {{inject_width}}f;    //  TODO: Uniform.
 const old = vec4<f32>(0.5, 0.25, 0.1, 1.0);
 const young = vec4<f32>(0.0, 0.8, 0.5, 1.0);
 
 @vertex
 fn vertex_main(vert: VertexInput) -> VertexOutput {
     var out: VertexOutput;
-    var x = f32(vert.instance % u32(width));
-    var y = f32(vert.instance / u32(width));
+    var x = f32(vert.instance % u32(view_params.width));
+    var y = f32(vert.instance / u32(view_params.width));
     var alive = cells[vert.instance];
     if (alive == 0) {
         out.position = vec4(1000, 1000, 1000, 1);

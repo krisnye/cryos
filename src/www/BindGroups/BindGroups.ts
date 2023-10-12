@@ -14,16 +14,7 @@ const positionColorVertexLayout = createVertexBufferLayoutNamed({
 export const BindGroups = createCustomElement(function () {
     useConnected(() => {
         (async () => {
-
             let c = await GPUContext.create(this)
-
-            const pipeline = await c.createRenderPipeline({
-                layout: {
-                    view_params: [{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } }]
-                },
-                vertexInput: positionColorVertexLayout,
-                shader
-            })
 
             const vertexBuffer = c.createStaticVertexBuffer(
                 positionColorVertexLayout,
@@ -35,31 +26,35 @@ export const BindGroups = createCustomElement(function () {
                     ...new Vector4(0, 1, 0, 1),
                     ...Color.blue
                 ]
-
             )
 
-            // Create a buffer to store the view parameters
-            const viewParamsBuffer = c.device.createBuffer({
-                size: 16 * 4,
-                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+            const uniforms = c.createUniformHelper(
+                { binding: 0, visibility: GPUShaderStage.VERTEX },
+                {
+                    view_proj: ["mat4x4", "f32"],
+                    color: ["vec4", "f32"]
+                }
+            )
+
+            const pipeline = await c.createRenderPipeline({
+                layout: [[uniforms.layout]],
+                vertexInput: positionColorVertexLayout,
+                shader
             })
 
-            // Create a bind group which places our view params buffer at binding 0
-            const viewParamBG = c.device.createBindGroup({
+            const bindGroup = c.device.createBindGroup({
                 layout: pipeline.getBindGroupLayout(0),
-                entries: [{ binding: 0, resource: { buffer: viewParamsBuffer } }]
+                entries: [uniforms.entry]
             })
-
-            const viewProjMatrix = Matrix4.scaling(0.5)
 
             const frame = () => {
                 c.beginCommands()
                 {
-                    c.commandCopyToBuffer(viewProjMatrix.toArray(), viewParamsBuffer)
+                    uniforms.commandCopyToBuffer({ view_proj: Matrix4.scaling(0.5), color: Color.fuchsia })
                     c.beginRenderPass()
                     {
                         c.render.setPipeline(pipeline)
-                        c.render.setBindGroup(0, viewParamBG)
+                        c.render.setBindGroup(0, bindGroup)
                         c.render.setVertexBuffer(0, vertexBuffer)
                         c.render.draw(3, 1, 0, 0)
                     }

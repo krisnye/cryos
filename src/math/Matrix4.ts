@@ -24,6 +24,26 @@ export class Matrix4 {
         return 16
     }
 
+    *[Symbol.iterator]() {
+        yield this.m00
+        yield this.m01
+        yield this.m02
+        yield this.m03
+        yield this.m10
+        yield this.m11
+        yield this.m12
+        yield this.m13
+        yield this.m20
+        yield this.m21
+        yield this.m22
+        yield this.m23
+        yield this.m30
+        yield this.m31
+        yield this.m32
+        yield this.m33
+    }
+
+
     multiply(b: Matrix4) {
         let a = this
         return new Matrix4(

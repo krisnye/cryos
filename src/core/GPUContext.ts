@@ -1,5 +1,6 @@
+import { GPUUniformEntryHelper } from "./GPUUniformEntryHelper.js"
 import { compileGPUShaderModule, requestGPUDevice } from "./functions.js"
-import { GPURenderPipelineAndMeta, GPURenderPipelineProperties, GPUVertexBufferLayoutNamed } from "./types.js"
+import { GPURenderPipelineAndMeta, GPURenderPipelineProperties, GPUVertexBufferLayoutNamed, WGSLType } from "./types.js"
 
 enum State {
     default = 0,
@@ -106,6 +107,17 @@ export class GPUContext {
         return buffer
     }
 
+    // private readonly context: GPUContext,
+    public createUniformHelper<Bindings extends Record<string, WGSLType>>(
+        layout: {
+            binding: GPUIndex32,
+            visibility: GPUShaderStageFlags,
+        },
+        bindings: Bindings,
+    ): GPUUniformEntryHelper<Bindings> {
+        return new GPUUniformEntryHelper<Bindings>(this, layout, bindings)
+    }
+
     /**
      * Queues a command to copy the data to the buffer
      * The intermediate upload buffer used will be automatically recycled when the command queue finishes.
@@ -126,7 +138,7 @@ export class GPUContext {
         const { vertexInput: vertexLayout, shader, vertexMain = "vertex_main", fragmentMain = "fragment_main" } = properties
         const shaderModule = await compileGPUShaderModule(this.device, shader)
         const bindGroupLayouts = properties.layout ? Object.entries(properties.layout).map(
-            ([label, entries]) => this.device.createBindGroupLayout({ label, entries })
+            ([label, entries]) => this.device.createBindGroupLayout({ entries })
         ) : []
 
         const descriptor = {

@@ -17,10 +17,15 @@ export const Instancing = createCustomElement(function () {
 
             let c = await GPUContext.create(this)
 
+            const uniforms = c.createUniformHelper(
+                { binding: 0, visibility: GPUShaderStage.VERTEX },
+                {
+                    view_proj: ["mat4x4", "f32"]
+                }
+            )
+
             const pipeline = await c.createRenderPipeline({
-                layout: {
-                    view_params: [{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } }]
-                },
+                layout: [[uniforms.layout]],
                 vertexInput: positionColorVertexLayout,
                 shader
             })
@@ -38,28 +43,19 @@ export const Instancing = createCustomElement(function () {
 
             )
 
-            // Create a buffer to store the view parameters
-            const viewParamsBuffer = c.device.createBuffer({
-                size: 16 * 4,
-                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-            })
-
-            // Create a bind group which places our view params buffer at binding 0
-            const viewParamBG = c.device.createBindGroup({
+            const bindGroup = c.device.createBindGroup({
                 layout: pipeline.getBindGroupLayout(0),
-                entries: [{ binding: 0, resource: { buffer: viewParamsBuffer } }]
+                entries: [uniforms.entry]
             })
-
-            const viewProjMatrix = Matrix4.scaling(0.5)
 
             const frame = () => {
                 c.beginCommands()
                 {
-                    c.commandCopyToBuffer(viewProjMatrix.toArray(), viewParamsBuffer)
+                    uniforms.commandCopyToBuffer({ view_proj: Matrix4.scaling(0.5) })
                     c.beginRenderPass()
                     {
                         c.render.setPipeline(pipeline)
-                        c.render.setBindGroup(0, viewParamBG)
+                        c.render.setBindGroup(0, bindGroup)
                         c.render.setVertexBuffer(0, vertexBuffer)
                         c.render.draw(3, 10, 0, 0)
                     }

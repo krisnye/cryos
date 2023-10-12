@@ -1,5 +1,6 @@
+
 import { CustomElementProperties, createCustomElement, html, useConnected, useState } from "lithos"
-import { createVertexBufferLayoutNamed, sizeof } from "../../core/functions.js"
+import { createVertexBufferLayoutNamed } from "../../core/functions.js"
 import { GPUContext } from "../../core/GPUContext.js"
 import { Vector3 } from "../../math/Vector3.js"
 import { Vector4 } from "../../math/Vector4.js"
@@ -30,7 +31,7 @@ export const ComputeCanvas = createCustomElement(function (this: HTMLCanvasEleme
         (async () => {
             c = await GPUContext.create(this)
 
-            const computePipeline = await VolumePipeline.create(c.device, {
+            const computePipeline = await VolumePipeline.create(c, {
                 bindings: {
                     input: "u32",
                     output: "u32"
@@ -48,15 +49,21 @@ export const ComputeCanvas = createCustomElement(function (this: HTMLCanvasEleme
             }
             const gpuVolume = GPUVolume.createFromCPUVolume(c, volume, { read: true });
 
+            const uniforms = c.createUniformHelper(
+                { binding: 0, visibility: GPUShaderStage.VERTEX },
+                {
+                    view_proj: ["mat4x4", "f32"],
+                    width: "f32"
+                }
+            )
+
             const renderPipeline = await c.createRenderPipeline({
-                layout: {
-                    view_params: [
-                        { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
-                        { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: "read-only-storage" } },
-                    ]
-                },
+                layout: [[
+                    uniforms.layout,
+                    { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: "read-only-storage" } },
+                ]],
                 vertexInput: positionVertexLayout,
-                shader: renderShader.replace("{{inject_width}}", gridWidth.toString())
+                shader: renderShader
             })
 
             const vertices =
@@ -70,17 +77,11 @@ export const ComputeCanvas = createCustomElement(function (this: HTMLCanvasEleme
                 ]
             const vertexBuffer = c.createStaticVertexBuffer(positionVertexLayout, vertices)
 
-            // Create a buffer to store the view parameters
-            const viewParamsBuffer = c.device.createBuffer({
-                size: vertices.length * sizeof.f32,
-                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-            })
-
             // Create a bind group which places our view params buffer at binding 0
-            const viewParamBGs = [gpuVolume.buffers.input, gpuVolume.buffers.output].map(buffer => c.device.createBindGroup({
+            const alternatingBindGroups = [gpuVolume.buffers.input, gpuVolume.buffers.output].map(buffer => c.device.createBindGroup({
                 layout: renderPipeline.getBindGroupLayout(0),
                 entries: [
-                    { binding: 0, resource: { buffer: viewParamsBuffer } },
+                    uniforms.entry,
                     { binding: 1, resource: { buffer } }
                 ]
             }))
@@ -96,12 +97,12 @@ export const ComputeCanvas = createCustomElement(function (this: HTMLCanvasEleme
                     computePipeline.encodePass(gpuVolume, c.command);
 
                     //  render
-                    c.commandCopyToBuffer([...viewProjMatrix.toArray(), gridWidth], viewParamsBuffer)
+                    uniforms.commandCopyToBuffer({ view_proj: viewProjMatrix, width: size.x })
                     c.beginRenderPass()
                     {
                         c.render.setPipeline(renderPipeline)
                         //  set compute buffer output as input, but alternate which one to show each frame
-                        c.render.setBindGroup(0, viewParamBGs[count++ % 2])
+                        c.render.setBindGroup(0, alternatingBindGroups[count++ % 2])
                         c.render.setVertexBuffer(0, vertexBuffer)
                         const instances = size.productOfComponents()
                         c.render.draw(6, instances, 0, 0)

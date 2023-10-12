@@ -2,13 +2,14 @@ import { stringEntries, stringKeys } from "../core/functions.js";
 import { GPUTypeId } from "../data/types.js";
 import { typeDescriptors } from "../data/constants.js";
 import { GPUVolume } from "./GPUVolume.js";
+import { GPUContext } from "../core/GPUContext.js";
 
 export class VolumePipeline<
     Bindings extends Record<string, GPUTypeId>
 > {
 
     private constructor(
-        public readonly device: GPUDevice,
+        public readonly context: GPUContext,
         public readonly layout: GPUBindGroupLayout,
         public readonly pipeline: GPUComputePipeline,
         private readonly bindings: string[],
@@ -16,7 +17,7 @@ export class VolumePipeline<
     }
 
     encodePass(volume: GPUVolume<Bindings>, encoder: GPUCommandEncoder) {
-        const bindGroup = this.device.createBindGroup({
+        const bindGroup = this.context.device.createBindGroup({
             layout: this.layout,
             entries: this.bindings.map((name, index) => {
                 const buffer = volume.buffers[name]
@@ -42,16 +43,16 @@ export class VolumePipeline<
 
     static create<
         Bindings extends Record<string, GPUTypeId>,
-    >(device: GPUDevice, props: { bindings: Bindings, shader: string })
+    >(context: GPUContext, props: { bindings: Bindings, shader: string })
         : VolumePipeline<Bindings> {
         const { bindings, shader } = props
         // create GPUShaderModule
         const declarations = `${stringEntries(bindings).map(([name, type], index) => `@group(0) @binding(${index})\nvar<storage, read_write> ${name}: array<${typeDescriptors[type].gpuType}>;\n`).join("")}`
         const code = `${declarations}${shader}`
 
-        const shaderModule = device.createShaderModule({ code })
+        const shaderModule = context.device.createShaderModule({ code })
         // create bindGroupLayout with bindings for each data type in the volume
-        const bindGroupLayout = device.createBindGroupLayout({
+        const bindGroupLayout = context.device.createBindGroupLayout({
             entries: stringKeys(bindings).map((_name, index) => ({
                 binding: index,
                 visibility: GPUShaderStage.COMPUTE,
@@ -61,8 +62,8 @@ export class VolumePipeline<
             }))
         })
         // pipeline is created with the bindGroupLayout
-        const computePipeline = device.createComputePipeline({
-            layout: device.createPipelineLayout({
+        const computePipeline = context.device.createComputePipeline({
+            layout: context.device.createPipelineLayout({
                 bindGroupLayouts: [bindGroupLayout],
             }),
             compute: {
@@ -70,6 +71,6 @@ export class VolumePipeline<
                 entryPoint: "main",
             },
         })
-        return new VolumePipeline(device as any, bindGroupLayout, computePipeline, Object.keys(bindings))
+        return new VolumePipeline(context, bindGroupLayout, computePipeline, Object.keys(bindings))
     }
 }
