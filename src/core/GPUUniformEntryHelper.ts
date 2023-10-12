@@ -1,12 +1,20 @@
 import { GPUContext } from "./GPUContext.js";
 import { getWGSLSize } from "./functions.js";
-import { StringKeyOf, WGSLToCPUType, WGSLType } from "./types.js";
+import { StringKeyOf, WGSLToCPUType, WGSLType, WGSLVectorType } from "./types.js";
 
 type WGSLTypesToCPUTypes<Bindings extends Record<string, WGSLType>> = {
     [K in StringKeyOf<Bindings>]: WGSLToCPUType<Bindings[K]>
 }
 
-export class GPUUniformEntryHelper<Bindings extends Record<string, WGSLType>> {
+const PAD_SIZE = 16
+
+/**
+ * We only support f32 or vector/matrix of f32 as uniform inputs.
+ */
+export type UniformType = WGSLVectorType | "f32"
+export type UniformBindings = Record<string, UniformType>
+
+export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
 
     public readonly layout: Readonly<GPUBindGroupLayoutEntry>
     private buffer: GPUBuffer
@@ -22,7 +30,7 @@ export class GPUUniformEntryHelper<Bindings extends Record<string, WGSLType>> {
     ) {
         this.layout = { ...layout, buffer: { type: "uniform" } }
         let size = Object.values(bindings).map(getWGSLSize).reduce((a, b) => a + b, 0)
-        size = Math.ceil(size / 16) * 16    // pad to units of 16 bytes
+        size = Math.ceil(size / PAD_SIZE) * PAD_SIZE    // pad to units of 16 bytes
         this.buffer = context.device.createBuffer({
             size,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST

@@ -1,4 +1,4 @@
-import { GPURenderPipelineProperties, GPUVertexAttributeNamed, GPUVertexBufferLayoutNamed, StringKeyOf, WGSLScalarType, WGSLType, WGSLVectorSize, WGSLVectorType } from "./types.js"
+import { GPURenderPipelineProperties, GPUVertexAttributeNamed, GPUVertexBufferLayoutNamed, StringKeyOf, WGSLScalarType, WGSLType, WGSLVectorType } from "./types.js"
 
 const vertexFormatToSize = {
     uint8x2: 2, uint8x4: 4,
@@ -59,17 +59,12 @@ export const elements = {
     "vec2": 2,
     "vec3": 3,
     "vec4": 4,
-} as const satisfies Record<WGSLVectorSize, number | undefined>
+} as const satisfies Record<WGSLVectorType, number | undefined>
 
-export type Elements<T extends WGSLVectorSize> = typeof elements[T]
+export type Elements<T extends WGSLVectorType> = typeof elements[T]
 
 export function getWGSLSize(type: WGSLType) {
-    if (Array.isArray(type)) {
-        return elements[type[0]] * sizeof[type[1]]
-    }
-    else {
-        return sizeof[type]
-    }
+    return (elements[type] ?? 1) * sizeof.f32
 }
 
 export function toWGSLType(format: GPUVertexFormat): string {

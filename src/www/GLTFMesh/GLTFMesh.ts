@@ -17,7 +17,7 @@ export const GLTFMesh = createCustomElement(function () {
 
             const uniforms = c.createUniformHelper(
                 { binding: 0, visibility: GPUShaderStage.VERTEX },
-                { view_proj: ["mat4x4", "f32"] }
+                { view_proj: "mat4x4" }
             )
 
             const pipeline = await c.createRenderPipeline({

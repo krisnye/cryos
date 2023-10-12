@@ -52,7 +52,7 @@ export const ComputeCanvas = createCustomElement(function (this: HTMLCanvasEleme
             const uniforms = c.createUniformHelper(
                 { binding: 0, visibility: GPUShaderStage.VERTEX },
                 {
-                    view_proj: ["mat4x4", "f32"],
+                    view_proj: "mat4x4",
                     width: "f32"
                 }
             )
@@ -123,6 +123,9 @@ export const ComputeCanvas = createCustomElement(function (this: HTMLCanvasEleme
                     gpuVolume.buffers.output = temp;
                 }
                 // request new frame every n seconds
+                if (count >= 1000) {
+                    return
+                }
                 let seconds = 0
                 if (seconds === 0) {
                     requestAnimationFrame(frame)

@@ -31,8 +31,8 @@ export const BindGroups = createCustomElement(function () {
             const uniforms = c.createUniformHelper(
                 { binding: 0, visibility: GPUShaderStage.VERTEX },
                 {
-                    view_proj: ["mat4x4", "f32"],
-                    color: ["vec4", "f32"]
+                    view_proj: "mat4x4",
+                    color: "vec4",
                 }
             )
 

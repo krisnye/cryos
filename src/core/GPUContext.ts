@@ -1,4 +1,4 @@
-import { GPUUniformEntryHelper } from "./GPUUniformEntryHelper.js"
+import { GPUUniformEntryHelper, UniformBindings } from "./GPUUniformEntryHelper.js"
 import { compileGPUShaderModule, requestGPUDevice } from "./functions.js"
 import { GPURenderPipelineAndMeta, GPURenderPipelineProperties, GPUVertexBufferLayoutNamed, WGSLType } from "./types.js"
 
@@ -108,7 +108,7 @@ export class GPUContext {
     }
 
     // private readonly context: GPUContext,
-    public createUniformHelper<Bindings extends Record<string, WGSLType>>(
+    public createUniformHelper<Bindings extends UniformBindings>(
         layout: {
             binding: GPUIndex32,
             visibility: GPUShaderStageFlags,
