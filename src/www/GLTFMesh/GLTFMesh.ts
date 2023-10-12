@@ -15,22 +15,21 @@ export const GLTFMesh = createCustomElement(function () {
         (async () => {
             const c = await GPUContext.create(this)
 
+            const uniforms = c.createUniformHelper(
+                { binding: 0, visibility: GPUShaderStage.VERTEX },
+                { view_proj: ["mat4x4", "f32"] }
+            )
+
             const pipeline = await c.createRenderPipeline({
-                layout: [[{ binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } }]],
+                layout: [[uniforms.layout]],
                 vertexInput: positionColor,
                 shader
             })
 
-            // Create a buffer to store the view parameters
-            const viewParamsBuffer = c.device.createBuffer({
-                size: 16 * 4,
-                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-            })
-
             // Create a bind group which places our view params buffer at binding 0
-            const viewParamBG = c.device.createBindGroup({
+            const bindGroup = c.device.createBindGroup({
                 layout: pipeline.getBindGroupLayout(0),
-                entries: [{ binding: 0, resource: { buffer: viewParamsBuffer } }]
+                entries: [uniforms.entry]
             })
 
             const viewProjMatrix = Matrix4.translation(0, -0.5, 0).multiply(Matrix4.scaling(20))
@@ -49,10 +48,10 @@ export const GLTFMesh = createCustomElement(function () {
             const frame = () => {
                 c.beginCommands()
                 {
-                    c.commandCopyToBuffer(viewProjMatrix.toArray(), viewParamsBuffer)
+                    uniforms.commandCopyToBuffer({ view_proj: viewProjMatrix })
                     c.beginRenderPass()
                     {
-                        glbMesh.render(c.render, viewParamBG)
+                        glbMesh.render(c.render, bindGroup)
                     }
                     c.endRenderPass()
                 }
