@@ -52,7 +52,7 @@ export const ComputeCanvas = createCustomElement(function (this: HTMLCanvasEleme
             const uniforms = c.createUniformHelper(
                 { binding: 0, visibility: GPUShaderStage.VERTEX },
                 {
-                    view_proj: "mat4x4",
+                    viewProjection: "mat4x4",
                     width: "f32"
                 }
             )
@@ -97,7 +97,7 @@ export const ComputeCanvas = createCustomElement(function (this: HTMLCanvasEleme
                     computePipeline.encodePass(gpuVolume, c.command);
 
                     //  render
-                    uniforms.commandCopyToBuffer({ view_proj: viewProjMatrix, width: size.x })
+                    uniforms.commandCopyToBuffer({ viewProjection: viewProjMatrix, width: size.x })
                     c.beginRenderPass()
                     {
                         c.render.setPipeline(renderPipeline)

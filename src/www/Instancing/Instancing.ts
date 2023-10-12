@@ -14,44 +14,31 @@ const positionColorVertexLayout = createVertexBufferLayoutNamed({
 export const Instancing = createCustomElement(function () {
     useConnected(() => {
         (async () => {
-
             let c = await GPUContext.create(this)
 
-            const uniforms = c.createUniformHelper(
-                { binding: 0, visibility: GPUShaderStage.VERTEX },
-                {
-                    view_proj: "mat4x4"
-                }
-            )
+            const camera = c.createCameraUniformHelper({ viewProjection: Matrix4.scaling(0.5), position: Vector4.zero })
 
             const pipeline = await c.createRenderPipeline({
-                layout: [[uniforms.layout]],
-                vertexInput: positionColorVertexLayout,
-                shader
+                layout: [[camera.layout]], vertexInput: positionColorVertexLayout, shader
             })
 
             const vertexBuffer = c.createStaticVertexBuffer(
                 positionColorVertexLayout,
                 [
-                    ...new Vector4(1, -1, 0, 1),
-                    ...Color.red,
-                    ...new Vector4(-1, -1, 0, 1),
-                    ...Color.green,
-                    ...new Vector4(0, 1, 0, 1),
-                    ...Color.blue
+                    ...new Vector4(1, -1, 0, 1), ...Color.red,
+                    ...new Vector4(-1, -1, 0, 1), ...Color.green,
+                    ...new Vector4(0, 1, 0, 1), ...Color.blue
                 ]
-
             )
 
             const bindGroup = c.device.createBindGroup({
-                layout: pipeline.getBindGroupLayout(0),
-                entries: [uniforms.entry]
+                layout: pipeline.getBindGroupLayout(0), entries: [camera.entry]
             })
 
             const frame = () => {
                 c.beginCommands()
                 {
-                    uniforms.commandCopyToBuffer({ view_proj: Matrix4.scaling(0.5) })
+                    camera.commandCopyToBuffer()
                     c.beginRenderPass()
                     {
                         c.render.setPipeline(pipeline)

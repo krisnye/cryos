@@ -15,21 +15,20 @@ struct VertexOutput {
 
 // New: define a struct that contains the data we want to pass
 // through the uniform buffer
-struct ViewParams {
-    view_proj: mat4x4<f32>,
-    color: vec4<f32>
+struct Camera {
+    viewProjection: mat4x4<f32>,
 };
 
 // New: create a uniform variable of our struct type
 // and assign it group and binding indices
 @group(0) @binding(0)
-var<uniform> view_params: ViewParams;
+var<uniform> camera: Camera;
 
 @vertex
 fn vertex_main(vert: VertexInput) -> VertexOutput {
     var out: VertexOutput;
-    out.color = view_params.color;
-    out.position = view_params.view_proj * vert.position;
+    out.color = vert.color;
+    out.position = camera.viewProjection * vert.position;
     return out;
 };
 

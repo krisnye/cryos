@@ -1,24 +1,17 @@
+import { arrayEquals } from "../math/functions.js";
 import { GPUContext } from "./GPUContext.js";
 import { getWGSLSize } from "./functions.js";
-import { StringKeyOf, WGSLToCPUType, WGSLType, WGSLVectorType } from "./types.js";
-
-type WGSLTypesToCPUTypes<Bindings extends Record<string, WGSLType>> = {
-    [K in StringKeyOf<Bindings>]: WGSLToCPUType<Bindings[K]>
-}
+import { UniformBindings, UniformValues } from "./types.js";
 
 const PAD_SIZE = 16
-
-/**
- * We only support f32 or vector/matrix of f32 as uniform inputs.
- */
-export type UniformType = WGSLVectorType | "f32"
-export type UniformBindings = Record<string, UniformType>
 
 export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
 
     public readonly layout: Readonly<GPUBindGroupLayoutEntry>
     private buffer: GPUBuffer
     public readonly entry: Readonly<GPUBindGroupEntry>
+    private _data?: number[]
+    private dirty = true
 
     constructor(
         private readonly context: GPUContext,
@@ -27,6 +20,7 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
             visibility: GPUShaderStageFlags,
         },
         private readonly bindings: Bindings,
+        values?: UniformValues<Bindings>
     ) {
         this.layout = { ...layout, buffer: { type: "uniform" } }
         let size = Object.values(bindings).map(getWGSLSize).reduce((a, b) => a + b, 0)
@@ -36,9 +30,13 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         })
         this.entry = { binding: layout.binding, resource: { buffer: this.buffer } }
+        if (values) {
+            this.setValues(values)
+        }
     }
 
-    commandCopyToBuffer(values: WGSLTypesToCPUTypes<Bindings>) {
+    // TODO: HERE, set values, only flush to buffer when actually changed.
+    private toData(values: UniformValues<Bindings>): number[] {
         let data: number[] = []
         // read in order of bindings
         for (let name of Object.keys(this.bindings)) {
@@ -50,7 +48,33 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
                 data.push(value as number)
             }
         }
-        this.context.commandCopyToBuffer(data, this.buffer)
+        return data
+    }
+
+    /**
+     * Sets the values for this uniform binding.
+     * You will still have to call commandCopyToBuffer before rendering
+     * to copy the data to the GPUBuffer.
+     */
+    public setValues(values: UniformValues<Bindings>) {
+        const data = this.toData(values)
+        if (!this._data || !arrayEquals(this._data, data)) {
+            this.dirty = true
+            this._data = data
+        }
+    }
+
+    commandCopyToBuffer(values?: UniformValues<Bindings>) {
+        if (values) {
+            this.setValues(values)
+        }
+        if (this.dirty) {
+            if (!this._data) {
+                throw new Error("You have to set values before copying to buffer")
+            }
+            this.context.commandCopyToBuffer(this._data, this.buffer)
+            this.dirty = false
+        }
     }
 
 }

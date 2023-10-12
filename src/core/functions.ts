@@ -59,6 +59,7 @@ export const elements = {
     "vec2": 2,
     "vec3": 3,
     "vec4": 4,
+    "color": 4,
 } as const satisfies Record<WGSLVectorType, number | undefined>
 
 export type Elements<T extends WGSLVectorType> = typeof elements[T]

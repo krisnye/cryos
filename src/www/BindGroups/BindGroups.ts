@@ -19,38 +19,29 @@ export const BindGroups = createCustomElement(function () {
             const vertexBuffer = c.createStaticVertexBuffer(
                 positionColorVertexLayout,
                 [
-                    ...new Vector4(1, -1, 0, 1),
-                    ...Color.red,
-                    ...new Vector4(-1, -1, 0, 1),
-                    ...Color.green,
-                    ...new Vector4(0, 1, 0, 1),
-                    ...Color.blue
+                    ...new Vector4(1, -1, 0, 1), ...Color.red,
+                    ...new Vector4(-1, -1, 0, 1), ...Color.green,
+                    ...new Vector4(0, 1, 0, 1), ...Color.blue
                 ]
             )
 
-            const uniforms = c.createUniformHelper(
-                { binding: 0, visibility: GPUShaderStage.VERTEX },
-                {
-                    view_proj: "mat4x4",
-                    color: "vec4",
-                }
-            )
+            const camera = c.createCameraUniformHelper({ viewProjection: Matrix4.scaling(0.5), position: Vector4.zero })
 
             const pipeline = await c.createRenderPipeline({
-                layout: [[uniforms.layout]],
+                layout: [[camera.layout]],
                 vertexInput: positionColorVertexLayout,
                 shader
             })
 
             const bindGroup = c.device.createBindGroup({
                 layout: pipeline.getBindGroupLayout(0),
-                entries: [uniforms.entry]
+                entries: [camera.entry]
             })
 
             const frame = () => {
                 c.beginCommands()
                 {
-                    uniforms.commandCopyToBuffer({ view_proj: Matrix4.scaling(0.5), color: Color.fuchsia })
+                    camera.commandCopyToBuffer()
                     c.beginRenderPass()
                     {
                         c.render.setPipeline(pipeline)

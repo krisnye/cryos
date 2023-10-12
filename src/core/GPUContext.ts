@@ -1,6 +1,9 @@
-import { GPUUniformEntryHelper, UniformBindings } from "./GPUUniformEntryHelper.js"
+import { Matrix4 } from "../math/Matrix4.js"
+import { Vector4 } from "../math/Vector4.js"
+import { Camera, CameraBindings, cameraBindings } from "./Camera.js"
+import { GPUUniformEntryHelper } from "./GPUUniformEntryHelper.js"
 import { compileGPUShaderModule, requestGPUDevice } from "./functions.js"
-import { GPURenderPipelineAndMeta, GPURenderPipelineProperties, GPUVertexBufferLayoutNamed, WGSLType } from "./types.js"
+import { GPURenderPipelineAndMeta, GPURenderPipelineProperties, GPUVertexBufferLayoutNamed, UniformBindings, UniformValues, WGSLType } from "./types.js"
 
 enum State {
     default = 0,
@@ -16,6 +19,7 @@ export class GPUContext {
     public readonly depthTexture: GPUTexture
     private _commandEncoder?: GPUCommandEncoder
     private _renderPassEncoder?: GPURenderPassEncoder
+    public camera: Camera = { viewProjection: Matrix4.identity, position: Vector4.zero }
 
     private constructor({ canvas, canvasContext, device, depthTexture }: {
         canvas: HTMLCanvasElement
@@ -107,15 +111,25 @@ export class GPUContext {
         return buffer
     }
 
-    // private readonly context: GPUContext,
+    /**
+     * Creates a new uniform helper that provides it's own buffer, copying and type checking.
+     */
     public createUniformHelper<Bindings extends UniformBindings>(
         layout: {
             binding: GPUIndex32,
             visibility: GPUShaderStageFlags,
         },
         bindings: Bindings,
+        values?: UniformValues<Bindings>
     ): GPUUniformEntryHelper<Bindings> {
-        return new GPUUniformEntryHelper<Bindings>(this, layout, bindings)
+        return new GPUUniformEntryHelper<Bindings>(this, layout, bindings, values)
+    }
+
+    /**
+     * Creates a uniform helper for the camera bind group entry.
+     */
+    public createCameraUniformHelper(value = this.camera, visibility = GPUShaderStage.VERTEX, binding = 0): GPUUniformEntryHelper<CameraBindings> {
+        return this.createUniformHelper({ binding, visibility }, cameraBindings, value)
     }
 
     /**

@@ -4,6 +4,7 @@ import { uploadGLB } from "../../render/glb.js"
 import { GPUContext } from "../../core/GPUContext.js"
 import { Matrix4 } from "../../math/Matrix4.js"
 import shader from "./GLTFMesh.wgsl"
+import { Vector4 } from "../../math/Vector4.js"
 
 const positionColor = createVertexBufferLayoutNamed({
     position: "float32x4",
@@ -15,13 +16,10 @@ export const GLTFMesh = createCustomElement(function () {
         (async () => {
             const c = await GPUContext.create(this)
 
-            const uniforms = c.createUniformHelper(
-                { binding: 0, visibility: GPUShaderStage.VERTEX },
-                { view_proj: "mat4x4" }
-            )
+            const camera = c.createCameraUniformHelper({ viewProjection: Matrix4.translation(0, -0.5, 0).multiply(Matrix4.scaling(20)), position: Vector4.zero })
 
             const pipeline = await c.createRenderPipeline({
-                layout: [[uniforms.layout]],
+                layout: [[camera.layout]],
                 vertexInput: positionColor,
                 shader
             })
@@ -29,10 +27,8 @@ export const GLTFMesh = createCustomElement(function () {
             // Create a bind group which places our view params buffer at binding 0
             const bindGroup = c.device.createBindGroup({
                 layout: pipeline.getBindGroupLayout(0),
-                entries: [uniforms.entry]
+                entries: [camera.entry]
             })
-
-            const viewProjMatrix = Matrix4.translation(0, -0.5, 0).multiply(Matrix4.scaling(20))
 
             // load glb
             const buffer = await (await fetch("./avocado.glb")).arrayBuffer()
@@ -48,7 +44,7 @@ export const GLTFMesh = createCustomElement(function () {
             const frame = () => {
                 c.beginCommands()
                 {
-                    uniforms.commandCopyToBuffer({ view_proj: viewProjMatrix })
+                    camera.commandCopyToBuffer()
                     c.beginRenderPass()
                     {
                         glbMesh.render(c.render, bindGroup)
