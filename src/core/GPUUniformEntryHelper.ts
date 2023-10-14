@@ -35,6 +35,10 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
         }
     }
 
+    public destroy() {
+        this.buffer.destroy()
+    }
+
     // TODO: HERE, set values, only flush to buffer when actually changed.
     private toData(values: UniformValues<Bindings>): number[] {
         let data: number[] = []

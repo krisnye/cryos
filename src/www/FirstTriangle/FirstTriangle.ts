@@ -1,22 +1,18 @@
-import { createCustomElement, html, useConnected } from "lithos"
 import { createVertexBufferLayoutNamed } from "../../core/functions.js"
 import { GPUContext } from "../../core/GPUContext.js"
 import { Vector4 } from "../../math/Vector4.js"
 import { Color } from "../../math/Color.js"
+import { SampleCanvas } from "../SampleCanvas.js"
 import shader from "./FirstTriangle.wgsl"
 
-export const FirstTriangle = createCustomElement(function () {
-    const positionColorVertexLayout = createVertexBufferLayoutNamed({
-        position: "float32x4",
-        color: "float32x4"
-    })
+const positionColorVertexLayout = createVertexBufferLayoutNamed({
+    position: "float32x4",
+    color: "float32x4"
+})
 
-    useConnected(() => {
-        (async () => {
-
-            let c = await GPUContext.create(this)
-            const pipeline = await c.createRenderPipeline({ vertexInput: positionColorVertexLayout, shader })
-
+export function FirstTriangle() {
+    return SampleCanvas({
+        create: async (c: GPUContext) => {
             const vertexBuffer = c.createStaticVertexBuffer(
                 positionColorVertexLayout,
                 [
@@ -25,27 +21,21 @@ export const FirstTriangle = createCustomElement(function () {
                     ...new Vector4(0, 1, 0, 1), ...Color.blue
                 ]
             )
-
-            const frame = () => {
-                c.beginCommands()
-                {
+            const pipeline = await c.createRenderPipeline({ vertexInput: positionColorVertexLayout, shader })
+            return {
+                render(c: GPUContext) {
+                    c.beginCommands()
                     c.beginRenderPass()
-                    {
-                        c.render.setPipeline(pipeline)
-                        c.render.setVertexBuffer(0, vertexBuffer)
-                        c.render.draw(3, 1, 0, 0)
-                    }
+                    c.render.setPipeline(pipeline)
+                    c.render.setVertexBuffer(0, vertexBuffer)
+                    c.render.draw(3, 1, 0, 0)
                     c.endRenderPass()
+                    c.endCommands()
+                },
+                destroy() {
+                    vertexBuffer.destroy()
                 }
-                c.endCommands()
             }
-
-            requestAnimationFrame(frame)
-        })()
+        }
     })
-
-    return html.Canvas({
-        width: 320, height: 240,
-        style: { border: "solid 1px black", background: "beige" }
-    })
-}, { extends: "canvas" })
+}

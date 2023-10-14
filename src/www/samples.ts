@@ -1,11 +1,11 @@
 
 import { Factory, html } from "lithos/index"
-import { FirstTriangle } from "./FirstTriangle/FirstTriangle.js";
-import { BindGroups } from "./BindGroups/BindGroups.js";
-import { GLTFMesh } from "./GLTFMesh/GLTFMesh.js";
-import { Compute } from "./Compute/Compute.js";
-import { Instancing } from "./Instancing/Instancing.js";
-const { H2, P, Section } = html;
+import { FirstTriangle } from "./FirstTriangle/FirstTriangle.js"
+import { BindGroups } from "./BindGroups/BindGroups.js"
+import { Compute } from "./Compute/Compute.js"
+import { Instancing } from "./Instancing/Instancing.js"
+import { GPUMeshSample } from "./GPUMeshSample/GPUMeshSample.js"
+const { H2, P, Section } = html
 
 function addSample(name: string, sample: () => Factory<HTMLElement>) {
     document.body.appendChild(Section(
@@ -17,8 +17,8 @@ function addSample(name: string, sample: () => Factory<HTMLElement>) {
 }
 
 const samples = {
-    "5 Compute": Compute,
-    "4 GLTF Mesh": GLTFMesh,
+    "5 GPU Mesh": GPUMeshSample,
+    "4 Compute": Compute,
     "3 Instancing": Instancing,
     "2 Bind Groups": BindGroups,
     "1 First Triangle": FirstTriangle,
