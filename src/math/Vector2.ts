@@ -1,5 +1,5 @@
 import { Vector3 } from "./Vector3.js"
-import { equivalent } from "./functions.js"
+import { equivalent, hypot2 } from "./functions.js"
 import { Rectangle } from "./Rectangle.js"
 
 export class Vector2 {
@@ -65,7 +65,7 @@ export class Vector2 {
     }
 
     length() {
-        return Math.hypot(this.x, this.y)
+        return hypot2(this.x, this.y)
     }
 
     normalize() {
