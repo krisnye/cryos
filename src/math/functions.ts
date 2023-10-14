@@ -27,6 +27,10 @@ export function hypot3(x: number, y: number, z: number) {
     return Math.sqrt(x * x + y * y + z * z)
 }
 
+export function hypot4(x: number, y: number, z: number, w: number) {
+    return Math.sqrt(x * x + y * y + z * z + w * w)
+}
+
 export function arrayEqualsPercent<T>(arr1: ArrayLike<T>, arr2: ArrayLike<T>): number {
     let same = 0
     for (let i = 0; i < arr1.length; i++) {
