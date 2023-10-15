@@ -8,6 +8,7 @@ import { GPUMesh } from "../render/GPUMesh.js"
 import { GPUModel } from "../render/GPUModel.js"
 import { Matrix4 } from "../math/Matrix4.js"
 import { GPUNode } from "../render/GPUNode.js"
+import { Quaternion } from "../math/Quaternion.js"
 
 export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUModel> {
     const response = await fetch(url)
@@ -98,11 +99,14 @@ export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUMode
         if (node.translation) {
             localTransform = Matrix4.multiply(localTransform, Matrix4.translation(...node.translation))
         }
+        if (node.rotation) {
+            console.log({ rotation: node.rotation })
+            localTransform = Matrix4.multiply(localTransform, new Quaternion(
+                ...node.rotation
+            ).toMatrix4())
+        }
         if (node.scale) {
             localTransform = Matrix4.multiply(localTransform, Matrix4.scaling(...node.scale))
-        }
-        if (node.rotation) {
-            console.error("No rotation yet")
         }
         let modelTransform = Matrix4.multiply(localTransform, parentTransform)
         let children = node.children?.map(id => loadNode(id, modelTransform))
