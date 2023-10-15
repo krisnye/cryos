@@ -95,6 +95,10 @@ export class Quaternion {
         )
     }
 
+    static fromMatrix(m: Matrix4) {
+        throw new Error("Not correctly implemented")
+    }
+
     // Generated using: https://gist.github.com/KodyJKing/1042645c24c212017867a9495a76aca6
     toMatrix4() {
         let q = this

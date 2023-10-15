@@ -60,6 +60,10 @@ export class Vector4 {
         return hypot4(this.x, this.y, this.z, this.w)
     }
 
+    inverse() {
+        return new Vector4(1 / this.x, 1 / this.y, 1 / this.z, 1 / this.w)
+    }
+
     normalize() {
         let invLength = 1 / this.length()
         return new Vector4(this.x * invLength, this.y * invLength, this.z * invLength, this.w * invLength);

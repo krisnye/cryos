@@ -68,6 +68,10 @@ export class Vector2 {
         return hypot2(this.x, this.y)
     }
 
+    inverse() {
+        return new Vector2(1 / this.x, 1 / this.y)
+    }
+
     normalize() {
         let invLength = 1 / this.length()
         return new Vector2(this.x * invLength, this.y * invLength);
