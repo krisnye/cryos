@@ -51,7 +51,7 @@ export class Quaternion {
 
     /*
         Times table:
-             x  y  z    w
+        L\R  x  y  z    w
           +--------------
         x | -w  z -y    x
         y | -z -w  x    y
