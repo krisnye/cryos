@@ -1,5 +1,6 @@
 import { createVertexBufferLayoutNamed } from "../../core/functions.js"
 import { GPUContext } from "../../core/GPUContext.js"
+import { useArcBallCamera } from "../../hooks/useArcBallCamera.js"
 import { loadGPUMeshes } from "../../loaders/GLTFLoader.js"
 import { Matrix4 } from "../../math/Matrix4.js"
 import { Vector3 } from "../../math/Vector3.js"
@@ -17,20 +18,24 @@ export function GPUMeshSample() {
     return SampleCanvas({
         width: 640,
         height: 480,
-        create: async (c: GPUContext) => {
-            const position = new Vector3(100, 500, 500)
-            c.camera.values = {
-                viewProjection:
-                    Matrix4.perspective(Math.PI / 3, c.canvas.width / c.canvas.height, -10, 10)
-                        .multiply(
-                            Matrix4.lookAt(
-                                position,
-                                Vector3.zero,
-                                new Vector3(0, 1, 0),
-                            )
-                        ),
-                position: new Vector4(...position.toArray(), 0),
+        create: async function (c: GPUContext, requestFrame) {
+
+            const updateCamera = (view: Matrix4, eye: Vector3) => {
+                let projection = Matrix4.perspective(Math.PI / 3, c.canvas.width / c.canvas.height, -10, 10)
+                c.camera.values = {
+                    viewProjection: projection.multiply(view),
+                    position: new Vector4(...eye.toArray(), 0),
+                }
             }
+
+            const disposeArcballCamera = useArcBallCamera(this,
+                new Vector3(100, 500, 500),
+                Vector3.zero, new Vector3(0, 1, 0),
+                (view, eye) => {
+                    updateCamera(view, eye)
+                    requestFrame()
+                })
+
             const pipeline = await c.createRenderPipeline({
                 layout: [defaultBindGroup0Layout],
                 vertexInput: positionColor,
@@ -53,6 +58,7 @@ export function GPUMeshSample() {
                 },
                 destroy() {
                     model.destroy()
+                    disposeArcballCamera()
                 }
             }
         }
