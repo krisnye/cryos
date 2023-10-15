@@ -78,7 +78,7 @@ export class Quaternion {
     }
 
     rotateVector(v: Vector3) {
-        return this.inverse().multiply(new Quaternion(v.x, v.y, v.z, 0)).multiply(this).axis()
+        return this.multiply(new Quaternion(v.x, v.y, v.z, 0)).multiply(this.inverse()).axis()
     }
 
     static fromAxisAngle(axis: Vector3, angle: number) {
