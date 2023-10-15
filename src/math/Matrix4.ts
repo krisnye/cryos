@@ -342,4 +342,21 @@ export class Matrix4 {
         )
     }
 
+    toString(fractionDigits = 2) {
+        let a = Array.from(this)
+        let result = ""
+        for (let y = 0; y < 4; y++) {
+            result += "| "
+            for (let x = 0; x < 4; x++) {
+                result += a[y + x * 4].toFixed(fractionDigits).padStart(fractionDigits + 3, " ")
+                if (x < 3)
+                    result += ", "
+            }
+            result += " |"
+            if (y < 3)
+                result += "\n"
+        }
+        return result
+    }
+
 }
