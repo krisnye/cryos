@@ -107,14 +107,16 @@ export class Quaternion {
     }
 
     // Taken from: https://github.com/toji/gl-matrix/blob/2534c9d0dd8c947ec7ddd4223d99447de017bac9/src/quat.js#L416
+    // See https://www.cs.cmu.edu/~kiranb/animation/p245-shoemake.pdf#page=9
     static fromMatrix4(m: Matrix4) {
+
         let a = Array.from(m)
         let trace = a[0] + a[5] + a[10]
 
         if (trace > 0.0) {
-            let root = Math.sqrt(trace + 1)
+            let root = Math.sqrt(trace + 1) // = 2 Q.w
             let w = .5 * root
-            root = .5 / root
+            root = .5 / root // = 1 / (4 Q.w)
             return new Quaternion(
                 (a[6] - a[9]) * root,
                 (a[8] - a[2]) * root,
@@ -124,18 +126,20 @@ export class Quaternion {
         } else {
             let out: [number, number, number, number] = [0, 0, 0, 0]
 
+            // Pick largest component of quaternion to solve for, Q[i].
             let i = 0
             if (a[5] > a[0]) i = 1
             if (a[10] > a[i * 4 + i]) i = 2
             let j = (i + 1) % 3
             let k = (i + 2) % 3
 
-            let root = Math.sqrt(a[i * 4 + i] - a[j * 4 + j] - a[k * 4 + k] + 1)
+            let root = Math.sqrt(a[i * 4 + i] - a[j * 4 + j] - a[k * 4 + k] + 1) // = 2 Q[i]
+
             out[i] = .5 * root
-            root = .5 / root
-            out[3] = (a[j * 4 + k] - a[k * 4 + j]) * root
-            out[j] = (a[j * 4 + i] + a[i * 4 + j]) * root
-            out[k] = (a[k * 4 + i] + a[i * 4 + k]) * root
+            root = .5 / root // = 1 / (4 Q[i])
+            out[3] = (a[j * 4 + k] - a[k * 4 + j]) * root // = 4 Q[i] Q.w
+            out[j] = (a[j * 4 + i] + a[i * 4 + j]) * root // = 4 Q[i] Q[j] * root
+            out[k] = (a[k * 4 + i] + a[i * 4 + k]) * root // = 4 Q[i] Q[k] * root
 
             return new Quaternion(...out)
         }
