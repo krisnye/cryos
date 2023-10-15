@@ -137,7 +137,7 @@ export class Quaternion {
 
             out[i] = .5 * root
             root = .5 / root // = 1 / (4 Q[i])
-            out[3] = (a[j * 4 + k] - a[k * 4 + j]) * root // = 4 Q[i] Q.w
+            out[3] = (a[j * 4 + k] - a[k * 4 + j]) * root // = 4 Q[i] Q.w * root
             out[j] = (a[j * 4 + i] + a[i * 4 + j]) * root // = 4 Q[i] Q[j] * root
             out[k] = (a[k * 4 + i] + a[i * 4 + k]) * root // = 4 Q[i] Q[k] * root
 
