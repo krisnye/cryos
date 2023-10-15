@@ -81,6 +81,8 @@ export class Quaternion {
         return this.inverse().multiply(new Quaternion(v.x, v.y, v.z, 0)).multiply(this).axis()
     }
 
+    static readonly identity = new Quaternion(0, 0, 0, 1)
+
     static fromAxisAngle(axis: Vector3, angle: number) {
         let { x, y, z } = axis
         let theta = angle / 2

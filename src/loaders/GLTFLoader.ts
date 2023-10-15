@@ -9,6 +9,7 @@ import { GPUModel } from "../render/GPUModel.js"
 import { Matrix4 } from "../math/Matrix4.js"
 import { GPUNode } from "../render/GPUNode.js"
 import { Quaternion } from "../math/Quaternion.js"
+import { Vector3 } from "../math/Vector3.js"
 
 export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUModel> {
     const response = await fetch(url)
@@ -55,8 +56,6 @@ export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUMode
     // Create GLTFBufferView objects for all the buffer views in the glTF file
     let bufferViews = json.bufferViews.map(view => new GPUBufferView(binaryChunk, view))
 
-    console.log(json)
-
     console.log(`glTF file has ${json.meshes.length} meshes`)
     const accessors = json.accessors.map(accessor => {
         const view = bufferViews[accessor.bufferView]
@@ -95,20 +94,18 @@ export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUMode
     function loadNode(id: number, parentTransform: Matrix4) {
         let node = json.nodes[id]
         let mesh = node.mesh !== undefined ? meshes[node.mesh] : undefined
-        let localTransform = node.matrix ? new Matrix4(...node.matrix) : undefined
-        if (node.translation) {
-            localTransform = Matrix4.multiply(localTransform, Matrix4.translation(...node.translation))
+        let localTransform: Matrix4 | undefined
+        if (node.matrix) {
+            localTransform = new Matrix4(...node.matrix)
         }
-        if (node.rotation) {
-            console.log({ rotation: node.rotation })
-            localTransform = Matrix4.multiply(localTransform, new Quaternion(
-                ...node.rotation
-            ).toMatrix4())
+        else if (node.translation || node.rotation || node.scale) {
+            localTransform = Matrix4.transformation(
+                node.rotation ? new Quaternion(...node.rotation) : Quaternion.identity,
+                node.translation ? new Vector3(...node.translation) : Vector3.zero,
+                node.scale ? new Vector3(...node.scale) : Vector3.zero
+            )
         }
-        if (node.scale) {
-            localTransform = Matrix4.multiply(localTransform, Matrix4.scaling(...node.scale))
-        }
-        let modelTransform = Matrix4.multiply(localTransform, parentTransform)
+        let modelTransform = Matrix4.multiply(parentTransform, localTransform)
         let children = node.children?.map(id => loadNode(id, modelTransform))
         return new GPUNode({ mesh, children, localTransform, modelTransform })
     }
@@ -117,8 +114,6 @@ export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUMode
         let children = scene.nodes.map(id => loadNode(id, Matrix4.identity))
         return new GPUNode({ children })
     })
-
-    console.log({ scenes })
 
     //  upload the buffer views that are needed
     for (let i = 0; i < bufferViews.length; ++i) {

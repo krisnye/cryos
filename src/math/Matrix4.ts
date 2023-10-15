@@ -1,3 +1,4 @@
+import { Quaternion } from "./Quaternion.js";
 import { Vector3 } from "./Vector3.js"
 import { epsilon } from "./constants.js";
 import { hypot3 } from "./functions.js";
@@ -116,6 +117,15 @@ export class Matrix4 {
             (m00 * b09 - m01 * b07 + m02 * b06) * det,
             (m31 * b01 - m30 * b03 - m32 * b00) * det,
             (m20 * b03 - m21 * b01 + m22 * b00) * det,
+        )
+    }
+
+    transpose() {
+        return new Matrix4(
+            this.m00, this.m10, this.m20, this.m30,
+            this.m01, this.m11, this.m21, this.m31,
+            this.m02, this.m12, this.m22, this.m32,
+            this.m03, this.m13, this.m23, this.m33,
         )
     }
 
@@ -291,20 +301,45 @@ export class Matrix4 {
     }
 
     static transformation(
-        translation: Vector3,
-        scaling: Vector3 = new Vector3(1, 1, 1),
-        axis: Vector3 = new Vector3(0, 0, 0),
-        angle = 0
+        rotation: Quaternion, translation: Vector3, scaling: Vector3
     ) {
-        // TODO: This can be made much more efficient than this later.
-        let transform = Matrix4.translation(translation.x, translation.y, translation.z)
-        if (scaling.x !== 1 || scaling.y !== 1 || scaling.z != 1) {
-            transform = transform.multiply(Matrix4.scaling(scaling.x, scaling.y, scaling.z))
-        }
-        if (angle !== 0) {
-            transform = transform.multiply(Matrix4.rotation(axis, angle)!)
-        }
-        return transform
+        // Quaternion math
+        let { x, y, z, w } = rotation
+        let x2 = x + x;
+        let y2 = y + y;
+        let z2 = z + z;
+
+        let xx = x * x2;
+        let xy = x * y2;
+        let xz = x * z2;
+        let yy = y * y2;
+        let yz = y * z2;
+        let zz = z * z2;
+        let wx = w * x2;
+        let wy = w * y2;
+        let wz = w * z2;
+        let sx = scaling[0];
+        let sy = scaling[1];
+        let sz = scaling[2];
+
+        return new Matrix4(
+            (1 - (yy + zz)) * sx,
+            (xy + wz) * sx,
+            (xz - wy) * sx,
+            0,
+            (xy - wz) * sy,
+            (1 - (xx + zz)) * sy,
+            (yz + wx) * sy,
+            0,
+            (xz + wy) * sz,
+            (yz - wx) * sz,
+            (1 - (xx + yy)) * sz,
+            0,
+            translation.x,
+            translation.y,
+            translation.z,
+            1,
+        )
     }
 
 }

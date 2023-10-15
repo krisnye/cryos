@@ -18,7 +18,7 @@ export function GPUMeshSample() {
         width: 640,
         height: 480,
         create: async (c: GPUContext) => {
-            const position = new Vector3(4, 2, 10)
+            const position = new Vector3(100, 500, 500)
             c.camera.values = {
                 viewProjection:
                     Matrix4.perspective(Math.PI / 3, c.canvas.width / c.canvas.height, -10, 10)
@@ -38,7 +38,7 @@ export function GPUMeshSample() {
             })
 
             // will have to change the mesh and create a real camera soon.
-            const model = await loadGPUMeshes(c, "./person.glb")
+            const model = await loadGPUMeshes(c, "./2CylinderEngine.glb")
             model.buildRenderPipeline(c, pipeline)
 
             return {
