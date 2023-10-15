@@ -106,4 +106,39 @@ export class Quaternion {
         )
     }
 
+    // Taken from: https://github.com/toji/gl-matrix/blob/2534c9d0dd8c947ec7ddd4223d99447de017bac9/src/quat.js#L416
+    static fromMatrix4(m: Matrix4) {
+        let a = Array.from(m)
+        let trace = a[0] + a[5] + a[10]
+
+        if (trace > 0.0) {
+            let root = Math.sqrt(trace + 1)
+            let w = .5 * root
+            root = .5 / root
+            return new Quaternion(
+                (a[6] - a[9]) * root,
+                (a[8] - a[2]) * root,
+                (a[1] - a[4]) * root,
+                w
+            )
+        } else {
+            let out: [number, number, number, number] = [0, 0, 0, 0]
+
+            let i = 0
+            if (a[5] > a[0]) i = 1
+            if (a[10] > a[i * 4 + i]) i = 2
+            let j = (i + 1) % 3
+            let k = (i + 2) % 3
+
+            let root = Math.sqrt(a[i * 4 + i] - a[j * 4 + j] - a[k * 4 + k] + 1)
+            out[i] = .5 * root
+            root = .5 / root
+            out[3] = (a[j * 4 + k] - a[k * 4 + j]) * root
+            out[j] = (a[j * 4 + i] + a[i * 4 + j]) * root
+            out[k] = (a[k * 4 + i] + a[i * 4 + k]) * root
+
+            return new Quaternion(...out)
+        }
+    }
+
 }
