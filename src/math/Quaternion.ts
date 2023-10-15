@@ -78,7 +78,7 @@ export class Quaternion {
     }
 
     rotateVector(v: Vector3) {
-        return this.inverse().multiply(new Quaternion(v.x, v.y, v.z, 0)).multiply(this).axis()
+        return this.multiply(new Quaternion(v.x, v.y, v.z, 0)).multiply(this.inverse()).axis()
     }
 
     static readonly identity = new Quaternion(0, 0, 0, 1)
@@ -95,6 +95,7 @@ export class Quaternion {
         )
     }
 
+    // Generated using: https://gist.github.com/KodyJKing/1042645c24c212017867a9495a76aca6
     toMatrix4() {
         let q = this
         return new Matrix4(
@@ -106,60 +107,3 @@ export class Quaternion {
     }
 
 }
-
-
-/*
-python code generation of the above toMatrix4 function
-
-from sympy import Symbol
-
-def quaternion(name):
-    return [
-        Symbol(name + "x"),
-        Symbol(name + "y"),
-        Symbol(name + "z"), 
-        Symbol(name + "w"),
-    ]
-
-def inverse(r):
-    return [
-        - r[0],
-        - r[1],
-        - r[2],
-        r[3],
-    ]
-    
-def multiply(L, R):
-    Lx = L[0]
-    Ly = L[1]
-    Lz = L[2]
-    Lw = L[3]
-
-    Rx = R[0]
-    Ry = R[1]
-    Rz = R[2]
-    Rw = R[3]
-
-    x = Lx * Rw + Lw * Rx + Ly * Rz - Lz * Ry
-    y = Ly * Rw + Lw * Ry + Lz * Rx - Lx * Rz
-    z = Lz * Rw + Lw * Rz + Lx * Ry - Ly * Rx
-    w = Lw * Rw - Lx * Rx - Ly * Ry - Lz * Rz
-
-    return [x, y, z, w]
-
-def rotate(r, v):
-    return multiply(multiply(r, v), inverse(r))
-
-q = quaternion("q.")
-
-bases = [
-    [1, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 1, 0],
-]
-
-# Print in column major order.
-for basis in bases:
-    print( rotate( q, basis ) )
- 
- */
