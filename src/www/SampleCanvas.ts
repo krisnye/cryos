@@ -5,7 +5,7 @@ import { GPUComponent } from "../render/GPUComponent.js"
 interface SampleProperties extends CustomElementProperties {
     width?: number
     height?: number
-    create(c: GPUContext): Promise<GPUComponent>
+    create(this: HTMLCanvasElement, c: GPUContext, requestFrame: () => void): Promise<GPUComponent>
 }
 
 export const SampleCanvas = createCustomElement(function (props: SampleProperties) {
@@ -14,8 +14,13 @@ export const SampleCanvas = createCustomElement(function (props: SamplePropertie
         let component: GPUComponent
         (async () => {
             let c = await GPUContext.create(this)
-            component = await create(c)
-            const frame = () => {
+            let frame: () => void
+            component = await create.call(this, c, () => {
+                if (frame) {
+                    requestAnimationFrame(frame)
+                }
+            })
+            frame = () => {
                 let animated = component.update?.(c)
                 component.render(c)
                 if (animated) {

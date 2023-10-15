@@ -46,19 +46,19 @@ export class ArcballCamera {
             0, 0, 0, 1
         ).transpose()
 
-        this.rotation = Quaternion.fromMatrix(rotMat).normalize()
+        this.rotation = Quaternion.fromMatrix4(rotMat).normalize()
         this.updateCameraMatrix()
     }
 
     rotate(prevMouse: Vector2, curMouse: Vector2) {
         let mPrev = new Vector2(
             clamp(prevMouse.x * 2 * this.invScreen.x - 1, -1, 1),
-            clamp(1 - prevMouse.x * 2 * this.invScreen.y, -1, 1)
+            clamp(1 - prevMouse.y * 2 * this.invScreen.y, -1, 1)
         )
 
         let mCur = new Vector2(
             clamp(curMouse.x * 2 * this.invScreen.x - 1, -1, 1),
-            clamp(1 - curMouse.x * 2 * this.invScreen.y, -1, 1)
+            clamp(1 - curMouse.y * 2 * this.invScreen.y, -1, 1)
         )
 
         let mPrevBall = screenToArcball(mPrev)
