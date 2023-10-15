@@ -78,7 +78,7 @@ export class Quaternion {
     }
 
     rotateVector(v: Vector3) {
-        return this.inverse().multiply(new Quaternion(0, v.x, v.y, v.z)).multiply(this).axis()
+        return this.inverse().multiply(new Quaternion(v.x, v.y, v.z, 0)).multiply(this).axis()
     }
 
     static fromAxisAngle(axis: Vector3, angle: number) {
@@ -96,9 +96,9 @@ export class Quaternion {
     toMatrix4() {
         let q = this
         return new Matrix4(
-            q.w ** 2 + q.x ** 2 - q.y ** 2 - q.z ** 2, -2 * q.w * q.z + 2 * q.x * q.y, 2 * q.w * q.y + 2 * q.x * q.z, 0,
-            2 * q.w * q.z + 2 * q.x * q.y, q.w ** 2 - q.x ** 2 + q.y ** 2 - q.z ** 2, -2 * q.w * q.x + 2 * q.y * q.z, 0,
-            -2 * q.w * q.y + 2 * q.x * q.z, 2 * q.w * q.x + 2 * q.y * q.z, q.w ** 2 - q.x ** 2 - q.y ** 2 + q.z ** 2, 0,
+            q.w ** 2 + q.x ** 2 - q.y ** 2 - q.z ** 2, 2 * q.w * q.z + 2 * q.x * q.y, -2 * q.w * q.y + 2 * q.x * q.z, 0,
+            -2 * q.w * q.z + 2 * q.x * q.y, q.w ** 2 - q.x ** 2 + q.y ** 2 - q.z ** 2, 2 * q.w * q.x + 2 * q.y * q.z, 0,
+            2 * q.w * q.y + 2 * q.x * q.z, -2 * q.w * q.x + 2 * q.y * q.z, q.w ** 2 - q.x ** 2 - q.y ** 2 + q.z ** 2, 0,
             0, 0, 0, 1
         )
     }
@@ -146,7 +146,7 @@ def multiply(L, R):
     return [x, y, z, w]
 
 def rotate(r, v):
-    return multiply(multiply(inverse(r), v), r)
+    return multiply(multiply(r, v), inverse(r))
 
 q = quaternion("q.")
 
