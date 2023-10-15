@@ -1,5 +1,5 @@
 import { Matrix4 } from "./Matrix4.js"
-import { equivalent } from "./functions.js"
+import { equivalent, hypot3 } from "./functions.js"
 
 export class Vector3 {
 
@@ -104,7 +104,7 @@ export class Vector3 {
     }
 
     length() {
-        return Math.hypot(this.x, this.y, this.z)
+        return hypot3(this.x, this.y, this.z)
     }
 
     normalize() {

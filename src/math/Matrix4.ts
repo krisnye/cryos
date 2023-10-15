@@ -1,5 +1,6 @@
 import { Vector3 } from "./Vector3.js"
 import { epsilon } from "./constants.js";
+import { hypot3 } from "./functions.js";
 
 export class Matrix4 {
 
@@ -167,7 +168,7 @@ export class Matrix4 {
 
     static rotation(axis: Vector3, angle: number) {
         let { x, y, z } = axis
-        let len = Math.hypot(x, y, z)
+        let len = hypot3(x, y, z)
         let s, c, t
 
         if (len < epsilon) {
@@ -249,14 +250,14 @@ export class Matrix4 {
         let z0 = eye.x - center.x
         let z1 = eye.y - center.y
         let z2 = eye.z - center.z
-        let inverseZLength = 1 / Math.hypot(z0, z1, z2)
+        let inverseZLength = 1 / hypot3(z0, z1, z2)
         z0 *= inverseZLength
         z1 *= inverseZLength
         z2 *= inverseZLength
         let x0 = up.y * z2 - up.z * z1
         let x1 = up.z * z0 - up.x * z2
         let x2 = up.x * z1 - up.y * z0
-        let xLength = Math.hypot(x0, x1, x2)
+        let xLength = hypot3(x0, x1, x2)
         if (!xLength) {
             x0 = x1 = x2 = 0
         }
@@ -268,7 +269,7 @@ export class Matrix4 {
         let y0 = z1 * x2 - z2 * x1
         let y1 = z2 * x0 - z0 * x2
         let y2 = z0 * x1 - z1 * x0
-        let yLength = Math.hypot(y0, y1, y2)
+        let yLength = hypot3(y0, y1, y2)
         if (!yLength) {
             y0 = y1 = y2 = 0
         }

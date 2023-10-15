@@ -1,5 +1,5 @@
 import { Matrix4 } from "./Matrix4.js"
-import { equivalent } from "./functions.js"
+import { equivalent, hypot3, hypot4 } from "./functions.js"
 import { Vector3 } from "./Vector3.js"
 import { Color } from "./Color.js"
 
@@ -50,6 +50,19 @@ export class Vector4 {
 
     productOfComponents() {
         return this.x * this.y * this.z * this.w
+    }
+
+    lengthSquared() {
+        return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w
+    }
+
+    length() {
+        return hypot4(this.x, this.y, this.z, this.w)
+    }
+
+    normalize() {
+        let invLength = 1 / this.length()
+        return new Vector4(this.x * invLength, this.y * invLength, this.z * invLength, this.w * invLength);
     }
 
     equivalent(v: Vector4) {
