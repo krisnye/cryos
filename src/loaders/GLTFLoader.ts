@@ -1,10 +1,19 @@
 import { GPUContext } from "../core/GPUContext.js"
-import { gltfRenderModeToGPUPrimitiveTopology, gltfTypeSize, gltfVertexType } from "./GLTFFunctions.js"
+import { gltfRenderModeToGPUPrimitiveTopology, gltfTypeSize, gltfVertexType } from "./GLBFunctions.js"
 import { GLBJSON, GLTFAttributes, GLTFRenderMode, GLTFType } from "./GLTFTypes.js"
-import { GPUBufferView, GPUAccessor, GPUMesh, GPUPrimitive } from "../render/GPUMesh.js"
+import { GPUAccessor } from "../render/GPUAccessor.js"
+import { GPUBufferView } from "../render/GPUBufferView.js"
+import { GPUPrimitive } from "../render/GPUPrimitive.js"
+import { GPUMesh } from "../render/GPUMesh.js"
+import { GPUModel } from "../render/GPUModel.js"
+import { Matrix4 } from "../math/Matrix4.js"
+import { GPUNode } from "../render/GPUNode.js"
 
-export async function loadGPUMeshes(c: GPUContext, url: string): Promise<Record<string, GPUMesh>> {
+export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUModel> {
     const response = await fetch(url)
+    if (!response.ok) {
+        throw new Error(response.statusText)
+    }
     const buffer = await response.arrayBuffer()
 
     // .glB has a JSON chunk and a binary chunk, potentially followed by
@@ -45,7 +54,7 @@ export async function loadGPUMeshes(c: GPUContext, url: string): Promise<Record<
     // Create GLTFBufferView objects for all the buffer views in the glTF file
     let bufferViews = json.bufferViews.map(view => new GPUBufferView(binaryChunk, view))
 
-    // { bufferView: 3, componentType: 5126, count: 406, type: 'VEC2' }
+    console.log(json)
 
     console.log(`glTF file has ${json.meshes.length} meshes`)
     const accessors = json.accessors.map(accessor => {
@@ -62,9 +71,8 @@ export async function loadGPUMeshes(c: GPUContext, url: string): Promise<Record<
         } satisfies GPUAccessor
     })
 
-    // Load the first mesh
-    const meshes: Record<string, GPUMesh> = {}
-    json.meshes.forEach(mesh => {
+    // Load the meshes
+    const meshes = json.meshes.map(mesh => {
         const meshPrimitives = mesh.primitives.map(primitive => {
             const topology = gltfRenderModeToGPUPrimitiveTopology(primitive.mode ?? GLTFRenderMode.TRIANGLES)
             const indices = primitive.indices ? accessors[primitive.indices] : undefined
@@ -73,21 +81,47 @@ export async function loadGPUMeshes(c: GPUContext, url: string): Promise<Record<
                 return index !== undefined ? accessors[index] : undefined
             }
             const positions = getAccessor("POSITION")
-            console.log({ indices, positions })
             if (!positions) {
                 throw new Error(`POSITION attribute required`)
             }
 
             return new GPUPrimitive(positions, topology, indices)
         })
-        meshes[mesh.name] = new GPUMesh(meshPrimitives)
+        return new GPUMesh(mesh.name, meshPrimitives)
     })
 
+    //  load the nodes.
+    function loadNode(id: number, parentTransform: Matrix4) {
+        let node = json.nodes[id]
+        let mesh = node.mesh !== undefined ? meshes[node.mesh] : undefined
+        let localTransform = node.matrix ? new Matrix4(...node.matrix) : undefined
+        if (node.translation) {
+            localTransform = Matrix4.multiply(localTransform, Matrix4.translation(...node.translation))
+        }
+        if (node.scale) {
+            localTransform = Matrix4.multiply(localTransform, Matrix4.scaling(...node.scale))
+        }
+        if (node.rotation) {
+            console.error("No rotation yet")
+        }
+        let modelTransform = Matrix4.multiply(localTransform, parentTransform)
+        let children = node.children?.map(id => loadNode(id, modelTransform))
+        return new GPUNode({ mesh, children, localTransform, modelTransform })
+    }
+
+    let scenes = json.scenes.map(scene => {
+        let children = scene.nodes.map(id => loadNode(id, Matrix4.identity))
+        return new GPUNode({ children })
+    })
+
+    console.log({ scenes })
+
+    //  upload the buffer views that are needed
     for (let i = 0; i < bufferViews.length; ++i) {
         if (bufferViews[i].needsUpload) {
             bufferViews[i].upload(c.device)
         }
     }
 
-    return meshes
+    return new GPUModel(meshes, scenes)
 }

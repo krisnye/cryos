@@ -17,11 +17,13 @@ struct Camera {
 
 @group(0) @binding(0)
 var<uniform> camera: Camera;
+@group(0) @binding(1)
+var<uniform> model: mat4x4<f32>;
 
 @vertex
 fn vertex_main(vert: VertexInput) -> VertexOutput {
     var out: VertexOutput;
-    out.position = camera.viewProjection * float4(vert.position, 1.0);
+    out.position = camera.viewProjection * model * float4(vert.position, 1.0);
     out.world_pos = vert.position.xyz;
     return out;
 };

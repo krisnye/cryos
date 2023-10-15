@@ -145,12 +145,15 @@ export class Matrix4 {
             && a.m30 === b.m30 && a.m31 === b.m31 && a.m32 === b.m32 && a.m33 === b.m33
     }
 
-    static multiply(a?: Matrix4 | null, b?: Matrix4 | null): Matrix4 | null {
+    static multiply(a: Matrix4, b?: Matrix4 | null): Matrix4
+    static multiply(a: Matrix4 | null | undefined, b: Matrix4): Matrix4
+    static multiply(a?: Matrix4 | null, b?: Matrix4 | null): Matrix4 | undefined
+    static multiply(a?: Matrix4 | null, b?: Matrix4 | null): Matrix4 | undefined {
         if (a == null) {
-            return b || null
+            return b ?? undefined
         }
         if (b == null) {
-            return a || null
+            return a ?? undefined
         }
         return a.multiply(b)
     }

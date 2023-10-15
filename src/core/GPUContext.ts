@@ -1,9 +1,11 @@
 import { Matrix4 } from "../math/Matrix4.js"
 import { Vector4 } from "../math/Vector4.js"
-import { Camera, CameraBindings, cameraBindings } from "./Camera.js"
 import { GPUUniformEntryHelper } from "./GPUUniformEntryHelper.js"
 import { compileGPUShaderModule, requestGPUDevice } from "./functions.js"
 import { GPURenderPipelineAndMeta, GPURenderPipelineProperties, GPUVertexBufferLayoutNamed, UniformBindings, UniformValues, WGSLType } from "./types.js"
+
+export const cameraBindings = { viewProjection: "mat4x4", position: "vec4", } as const satisfies UniformBindings
+export const cameraLayout = { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } } satisfies GPUBindGroupLayoutEntry
 
 enum State {
     default = 0,
@@ -19,7 +21,7 @@ export class GPUContext {
     public readonly depthTexture: GPUTexture
     private _commandEncoder?: GPUCommandEncoder
     private _renderPassEncoder?: GPURenderPassEncoder
-    public camera: Camera = { viewProjection: Matrix4.identity, position: Vector4.zero }
+    public readonly camera: GPUUniformEntryHelper<typeof cameraBindings>
 
     private constructor({ canvas, canvasContext, device, depthTexture }: {
         canvas: HTMLCanvasElement
@@ -31,6 +33,11 @@ export class GPUContext {
         this.device = device
         this.canvasContext = canvasContext
         this.depthTexture = depthTexture
+        this.camera = this.createUniformHelper(
+            cameraLayout,
+            cameraBindings,
+            { viewProjection: Matrix4.identity, position: Vector4.zero }
+        )
     }
 
     public destroy() {
@@ -115,21 +122,11 @@ export class GPUContext {
      * Creates a new uniform helper that provides it's own buffer, copying and type checking.
      */
     public createUniformHelper<Bindings extends UniformBindings>(
-        layout: {
-            binding: GPUIndex32,
-            visibility: GPUShaderStageFlags,
-        },
+        layout: GPUBindGroupLayoutEntry,
         bindings: Bindings,
         values?: UniformValues<Bindings>
     ): GPUUniformEntryHelper<Bindings> {
         return new GPUUniformEntryHelper<Bindings>(this, layout, bindings, values)
-    }
-
-    /**
-     * Creates a uniform helper for the camera bind group entry.
-     */
-    public createCameraUniformHelper(value = this.camera, visibility = GPUShaderStage.VERTEX, binding = 0): GPUUniformEntryHelper<CameraBindings> {
-        return this.createUniformHelper({ binding, visibility }, cameraBindings, value)
     }
 
     /**
@@ -151,8 +148,8 @@ export class GPUContext {
     ): Promise<GPURenderPipelineAndMeta> {
         const { vertexInput: vertexLayout, shader, vertexMain = "vertex_main", fragmentMain = "fragment_main" } = properties
         const shaderModule = await compileGPUShaderModule(this.device, shader)
-        const bindGroupLayouts = properties.layout ? Object.entries(properties.layout).map(
-            ([label, entries]) => this.device.createBindGroupLayout({ entries })
+        const bindGroupLayouts = properties.layout ? properties.layout.map(
+            (entries) => this.device.createBindGroupLayout({ entries })
         ) : []
 
         const descriptor = {

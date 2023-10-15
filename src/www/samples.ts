@@ -1,7 +1,6 @@
 
 import { Factory, html } from "lithos/index"
 import { FirstTriangle } from "./FirstTriangle/FirstTriangle.js"
-import { BindGroups } from "./BindGroups/BindGroups.js"
 import { Compute } from "./Compute/Compute.js"
 import { Instancing } from "./Instancing/Instancing.js"
 import { GPUMeshSample } from "./GPUMeshSample/GPUMeshSample.js"
@@ -17,10 +16,9 @@ function addSample(name: string, sample: () => Factory<HTMLElement>) {
 }
 
 const samples = {
-    "5 GPU Mesh": GPUMeshSample,
-    "4 Compute": Compute,
-    "3 Instancing": Instancing,
-    "2 Bind Groups": BindGroups,
+    "4 GPU Mesh": GPUMeshSample,
+    "3 Compute": Compute,
+    "2 Instancing": Instancing,
     "1 First Triangle": FirstTriangle,
 }
 

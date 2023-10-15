@@ -14,9 +14,10 @@ const positionColorVertexLayout = createVertexBufferLayoutNamed({
 export function Instancing() {
     return SampleCanvas({
         create: async (c: GPUContext) => {
-            const camera = c.createCameraUniformHelper({ viewProjection: Matrix4.scaling(0.5), position: Vector4.zero })
+            c.camera.values = { viewProjection: Matrix4.scaling(0.5), position: Vector4.zero }
             const pipeline = await c.createRenderPipeline({
-                layout: [[camera.layout]], vertexInput: positionColorVertexLayout, shader
+                layout: [[c.camera.layout]],
+                vertexInput: positionColorVertexLayout, shader
             })
             const vertexBuffer = c.createStaticVertexBuffer(
                 positionColorVertexLayout,
@@ -27,12 +28,12 @@ export function Instancing() {
                 ]
             )
             const bindGroup = c.device.createBindGroup({
-                layout: pipeline.getBindGroupLayout(0), entries: [camera.entry]
+                layout: pipeline.getBindGroupLayout(0), entries: [c.camera.entry]
             })
             return {
                 render(c: GPUContext) {
                     c.beginCommands()
-                    camera.commandCopyToBuffer()
+                    c.camera.commandCopyToBuffer()
                     c.beginRenderPass()
                     c.render.setPipeline(pipeline)
                     c.render.setBindGroup(0, bindGroup)
@@ -42,7 +43,6 @@ export function Instancing() {
                     c.endCommands()
                 },
                 destroy() {
-                    camera.destroy()
                     vertexBuffer.destroy()
                 }
             }

@@ -12,6 +12,7 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
     public readonly entry: Readonly<GPUBindGroupEntry>
     private _data?: number[]
     private dirty = true
+    private _values?: UniformValues<Bindings>
 
     constructor(
         private readonly context: GPUContext,
@@ -31,7 +32,7 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
         })
         this.entry = { binding: layout.binding, resource: { buffer: this.buffer } }
         if (values) {
-            this.setValues(values)
+            this.values = values
         }
     }
 
@@ -60,7 +61,7 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
      * You will still have to call commandCopyToBuffer before rendering
      * to copy the data to the GPUBuffer.
      */
-    public setValues(values: UniformValues<Bindings>) {
+    public set values(values: UniformValues<Bindings>) {
         const data = this.toData(values)
         if (!this._data || !arrayEquals(this._data, data)) {
             this.dirty = true
@@ -68,9 +69,16 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
         }
     }
 
+    public get values(): UniformValues<Bindings> {
+        if (this._values == null) {
+            throw new Error("values not defined")
+        }
+        return this._values
+    }
+
     commandCopyToBuffer(values?: UniformValues<Bindings>) {
         if (values) {
-            this.setValues(values)
+            this.values = values
         }
         if (this.dirty) {
             if (!this._data) {

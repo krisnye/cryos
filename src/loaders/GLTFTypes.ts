@@ -37,9 +37,12 @@ export interface GLTFBufferView {
     byteLength: number
 }
 export interface GLTFNode {
-    mesh: number,
-    name: string,
-    rotation: [number, number, number, number]
+    mesh?: number,
+    rotation?: [number, number, number, number]
+    scale?: [number, number, number]
+    translation?: [number, number, number]
+    matrix?: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number,]
+    children?: number[]
 }
 export interface GLTFImage {
     mimeType: string
