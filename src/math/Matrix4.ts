@@ -129,7 +129,7 @@ export class Matrix4 {
         )
     }
 
-    toArray() {
+    toArray(): [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number,] {
         return [
             this.m00, this.m01, this.m02, this.m03,
             this.m10, this.m11, this.m12, this.m13,

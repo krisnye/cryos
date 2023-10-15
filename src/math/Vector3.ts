@@ -95,6 +95,10 @@ export class Vector3 {
         )
     }
 
+    inverse() {
+        return new Vector3(1 / this.x, 1 / this.y, 1 / this.z)
+    }
+
     productOfComponents() {
         return this.x * this.y * this.z
     }
