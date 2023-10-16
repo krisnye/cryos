@@ -77,8 +77,12 @@ export class GPUContext {
             }],
             depthStencilAttachment: {
                 view: this.depthTexture.createView(),
-                depthLoadOp: "clear", depthClearValue: 1.0, depthStoreOp: "store",
-                stencilLoadOp: "clear", stencilClearValue: 0, stencilStoreOp: "store"
+                depthLoadOp: "clear",
+                depthStoreOp: "store",
+                depthClearValue: 1.0,
+                stencilLoadOp: "clear",
+                stencilStoreOp: "store",
+                stencilClearValue: 0,
             }
         })
     }
@@ -152,6 +156,8 @@ export class GPUContext {
             (entries) => this.device.createBindGroupLayout({ entries })
         ) : []
 
+        type Foo = GPUBlendComponent
+
         const descriptor = {
             layout: this.device.createPipelineLayout({ bindGroupLayouts }),
             vertex: {
@@ -159,7 +165,24 @@ export class GPUContext {
             },
             fragment: {
                 module: shaderModule, entryPoint: fragmentMain,
-                targets: [{ format: this.canvasContext.getCurrentTexture().format }]
+                targets: [{
+                    format: this.canvasContext.getCurrentTexture().format,
+                    // blend: {
+                    //     alpha: {
+                    //         operation: "add",
+                    //         srcFactor: "src-alpha",
+                    //         dstFactor: "one-minus-src-alpha"
+                    //     },
+                    //     color: {
+                    //         operation: "add",
+                    //         srcFactor: "src-alpha",
+                    //         dstFactor: "one-minus-src-alpha"
+                    //     }
+                    // }
+                }],
+            },
+            primitive: {
+                cullMode: "none"    //  for now
             },
             depthStencil: { format: this.depthTexture.format, depthWriteEnabled: true, depthCompare: "less" }
         } as const satisfies GPURenderPipelineDescriptor

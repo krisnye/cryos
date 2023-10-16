@@ -21,16 +21,19 @@ export function GPUMeshSample() {
         create: async function (c: GPUContext, requestFrame) {
 
             const updateCamera = (view: Matrix4, eye: Vector3) => {
-                let projection = Matrix4.perspective(Math.PI / 3, c.canvas.width / c.canvas.height, -10, 10)
+                let projection = Matrix4.perspective(Math.PI * 0.5, c.canvas.width / c.canvas.height, 1, 1000)
+                // let projection = Matrix4.orthographic(-1000, 1000, -1000, 1000, -10, 10)
                 c.camera.values = {
+                    // viewProjection: view.multiply(projection),
                     viewProjection: projection.multiply(view),
                     position: new Vector4(...eye.toArray(), 0),
                 }
             }
 
             const disposeArcballCamera = useArcBallCamera(this,
-                new Vector3(100, 500, 500),
-                Vector3.zero, new Vector3(0, 1, 0),
+                new Vector3(0, 0, 500),
+                Vector3.zero,
+                new Vector3(0, 1, 0),
                 (view, eye) => {
                     updateCamera(view, eye)
                     requestFrame()

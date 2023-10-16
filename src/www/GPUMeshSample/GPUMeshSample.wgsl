@@ -33,5 +33,5 @@ fn fragment_main(in: VertexOutput) -> @location(0) float4 {
     let dx = dpdx(in.world_pos);
     let dy = dpdy(in.world_pos);
     let n = normalize(cross(dx, dy));
-    return float4((n + 1.0) * 0.5, 1.0);
+    return float4((n + 1.0) * 0.5, 0.5);
 }
