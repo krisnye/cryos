@@ -4,21 +4,25 @@ import { FirstTriangle } from "./FirstTriangle/FirstTriangle.js"
 import { Compute } from "./Compute/Compute.js"
 import { Instancing } from "./Instancing/Instancing.js"
 import { GPUMeshSample } from "./GPUMeshSample/GPUMeshSample.js"
+import { TextureSample } from "./TextureSample/TextureSample.js"
 const { H2, P, Section } = html
 
 function addSample(name: string, sample: () => Factory<HTMLElement>) {
-    document.body.appendChild(Section(
-        H2(name),
-        P(
-            sample()
-        )
-    ).build())
+    document.body.appendChild(
+        Section(
+            H2(name),
+            P(
+                sample()
+            )
+        ).build()
+    )
 }
 
 const samples = {
-    "4 GPU Mesh": GPUMeshSample,
-    "3 Compute": Compute,
-    "2 Instancing": Instancing,
+    "5 GPU Mesh": GPUMeshSample,
+    "4 Compute": Compute,
+    "3 Instancing": Instancing,
+    "2 Textures": TextureSample,
     "1 First Triangle": FirstTriangle,
 }
 

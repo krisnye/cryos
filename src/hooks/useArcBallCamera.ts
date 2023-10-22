@@ -43,6 +43,7 @@ export function useArcBallCamera(element: HTMLElement,
     }
 
     const onPointerLeave = (e: PointerEvent) => {
+        pointerdown = false
     }
 
     element.addEventListener("pointerdown", onPointerDown)

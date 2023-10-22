@@ -1,7 +1,8 @@
 import { Matrix4 } from "../math/Matrix4.js"
 import { Vector4 } from "../math/Vector4.js"
+import { GPUTextureHelper } from "./GPUTextureHelper.js"
 import { GPUUniformEntryHelper } from "./GPUUniformEntryHelper.js"
-import { compileGPUShaderModule, requestGPUDevice } from "./functions.js"
+import { compileGPUShaderModule, loadImageBitmap, requestGPUDevice } from "./functions.js"
 import { GPURenderPipelineAndMeta, GPURenderPipelineProperties, GPUVertexBufferLayoutNamed, UniformBindings, UniformValues, WGSLType } from "./types.js"
 
 export const cameraBindings = { viewProjection: "mat4x4", position: "vec4", } as const satisfies UniformBindings
@@ -156,8 +157,6 @@ export class GPUContext {
             (entries) => this.device.createBindGroupLayout({ entries })
         ) : []
 
-        type Foo = GPUBlendComponent
-
         const descriptor = {
             layout: this.device.createPipelineLayout({ bindGroupLayouts }),
             vertex: {
@@ -206,6 +205,11 @@ export class GPUContext {
         new Float32Array(buffer.getMappedRange()).set(data)
         buffer.unmap()
         return buffer
+    }
+
+    async loadTextureFromUrl(url: string): Promise<GPUTextureHelper> {
+        const source = await loadImageBitmap(url)
+        return new GPUTextureHelper(this, source)
     }
 
     public static async create(

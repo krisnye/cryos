@@ -11,7 +11,7 @@ import { GPUNode } from "../render/GPUNode.js"
 import { Quaternion } from "../math/Quaternion.js"
 import { Vector3 } from "../math/Vector3.js"
 
-export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUModel> {
+export async function loadGPUModel(c: GPUContext, url: string): Promise<GPUModel> {
     const response = await fetch(url)
     if (!response.ok) {
         throw new Error(response.statusText)
@@ -49,6 +49,8 @@ export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUMode
     if (binaryHeader[1] != 0x004E4942) {
         throw Error("Invalid glB: The second chunk of the glB file is not a binary chunk!")
     }
+
+    console.log(json)
     // Make a GLTFBuffer that is a view of the entire binary chunk's data,
     // we'll use this to create buffer views within the chunk for memory referenced
     // by objects in the glTF scene
@@ -109,6 +111,9 @@ export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUMode
         let children = node.children?.map(id => loadNode(id, modelTransform))
         return new GPUNode({ mesh, children, localTransform, modelTransform })
     }
+
+    //  load the textures
+    console.log(`Mesh has ${json.textures.length} textures`)
 
     let scenes = json.scenes.map(scene => {
         let children = scene.nodes.map(id => loadNode(id, Matrix4.identity))
