@@ -95,13 +95,26 @@ export class Quaternion {
         )
     }
 
-    // Generated using: https://gist.github.com/KodyJKing/1042645c24c212017867a9495a76aca6
+    // https://gist.github.com/KodyJKing/1042645c24c212017867a9495a76aca6
     toMatrix4() {
-        let q = this
+        let { x, y, z, w } = this
+
+        let xx = x * x
+        let yy = y * y
+        let zz = z * z
+        let ww = w * w
+
+        let xy = x * y * 2
+        let xz = x * z * 2
+        let xw = x * w * 2
+        let yz = y * z * 2
+        let yw = y * w * 2
+        let zw = z * w * 2
+
         return new Matrix4(
-            q.w ** 2 + q.x ** 2 - q.y ** 2 - q.z ** 2, 2 * q.w * q.z + 2 * q.x * q.y, -2 * q.w * q.y + 2 * q.x * q.z, 0,
-            -2 * q.w * q.z + 2 * q.x * q.y, q.w ** 2 - q.x ** 2 + q.y ** 2 - q.z ** 2, 2 * q.w * q.x + 2 * q.y * q.z, 0,
-            2 * q.w * q.y + 2 * q.x * q.z, -2 * q.w * q.x + 2 * q.y * q.z, q.w ** 2 - q.x ** 2 - q.y ** 2 + q.z ** 2, 0,
+            ww + xx - yy - zz, zw + xy, -yw + xz, 0,
+            -zw + xy, ww - xx + yy - zz, xw + yz, 0,
+            yw + xz, -xw + yz, ww - xx - yy + zz, 0,
             0, 0, 0, 1
         )
     }
