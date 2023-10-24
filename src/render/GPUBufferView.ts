@@ -7,18 +7,16 @@ export class GPUBufferView {
     public gpuBuffer?: GPUBuffer;
     public usage: GPUBufferUsageFlags;
 
-    constructor(buffer: Uint8Array, view) {
-        this.length = view["byteLength"];
-        this.byteStride = 0;
-        if (view["byteStride"] !== undefined) {
-            this.byteStride = view["byteStride"];
-        }
+    constructor(buffer: Uint8Array, view: {
+        byteOffset: number
+        byteLength: number
+        byteStride: number
+    }) {
+        this.length = view.byteLength;
+        this.byteStride = view.byteStride ?? 0
         // Create the buffer view. Note that subarray creates a new typed
         // view over the same array buffer, we do not make a copy here.
-        let viewOffset = 0;
-        if (view["byteOffset"] !== undefined) {
-            viewOffset = view["byteOffset"];
-        }
+        let viewOffset = view.byteOffset
         this.view = buffer.subarray(viewOffset, viewOffset + this.length);
         this.needsUpload = false;
         this.usage = 0;

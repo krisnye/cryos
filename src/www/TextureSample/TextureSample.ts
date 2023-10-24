@@ -1,10 +1,9 @@
 import { createVertexBufferLayoutNamed } from "../../core/functions.js"
 import { GPUContext } from "../../core/GPUContext.js"
-import { Vector4 } from "../../math/Vector4.js"
 import { SampleCanvas } from "../SampleCanvas.js"
 import shader from "./TextureSample.wgsl"
 import textureUrl from "./f.png";
-import { Vector2 } from "../../math/Vector2.js"
+import { GPUTextureHelper } from "../../core/GPUTextureHelper.js";
 
 const positionTextureVertexLayout = createVertexBufferLayoutNamed({
     position: "float32x4",
@@ -14,39 +13,37 @@ const positionTextureVertexLayout = createVertexBufferLayoutNamed({
 export function TextureSample() {
     return SampleCanvas({
         create: async (c: GPUContext) => {
-            const textureHelper = await c.loadTextureFromUrl(textureUrl)
-            const sampler = c.device.createSampler();
+            const texture = await c.loadTextureFromUrl(textureUrl)
 
             const s = 0.9
             const vertices = [
-                ...new Vector4(s, -s, 0, 1), ...new Vector2(1, -1),
-                ...new Vector4(-s, -s, 0, 1), ...new Vector2(-1, -1),
-                ...new Vector4(-s, s, 0, 1), ...new Vector2(-1, 1),
-                ...new Vector4(-s, s, 0, 1), ...new Vector2(-1, 1),
-                ...new Vector4(s, s, 0, 1), ...new Vector2(1, 1),
-                ...new Vector4(s, -s, 0, 1), ...new Vector2(1, -1),
+                //  x, y, z, u, v
+                s, -s, 0, 1, 1, -1,
+                -s, -s, 0, 1, -1, -1,
+                -s, s, 0, 1, -1, 1,
+                -s, s, 0, 1, -1, 1,
+                s, s, 0, 1, 1, 1,
+                s, -s, 0, 1, 1, -1,
             ]
             const vertexBuffer = c.createStaticVertexBuffer(positionTextureVertexLayout, vertices)
             const pipeline = await c.createRenderPipeline({
-                vertexInput: positionTextureVertexLayout, shader, layout: [
-                    [
-                        { binding: 0, sampler: { "type": "filtering" }, visibility: GPUShaderStage.FRAGMENT },
-                        { binding: 1, texture: { sampleType: "float", viewDimension: "2d" }, visibility: GPUShaderStage.FRAGMENT },
-                    ]
+                vertexInput: positionTextureVertexLayout,
+                shader,
+                layout: [
+                    [...GPUTextureHelper.getBindGroupLayoutEntries(0)]
                 ]
             })
             const bindGroup = c.device.createBindGroup({
                 layout: pipeline.getBindGroupLayout(0),
                 entries: [
-                    { binding: 0, resource: sampler },
-                    { binding: 1, resource: textureHelper.texture.createView() },
+                    ...texture.getBindGroupEntries(0)
                 ],
             });
 
             return {
                 render(c: GPUContext) {
                     c.beginCommands()
-                    textureHelper.commandCopyToTexture()
+                    texture.commandCopyToGPU()
                     c.beginRenderPass()
                     c.render.setPipeline(pipeline)
                     c.render.setBindGroup(0, bindGroup)

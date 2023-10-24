@@ -35,6 +35,8 @@ export interface GLTFBufferView {
     buffer: number
     byteOffset: number
     byteLength: number
+    byteStride: number
+    // target: number
 }
 export interface GLTFNode {
     mesh?: number,
@@ -53,7 +55,9 @@ export interface GLBMaterial {
     normalTexture: { index: number }
     pbrMetallicRoughness: {
         baseColorTexture: { index: 0 }
-        metallicRoughnessTexture: { index: 1 }
+        metallicRoughnessTexture?: { index: 1 }
+        metallicFactor: number
+        roughnessFactor: number
     }
 }
 export interface GLBAccessor {
@@ -62,6 +66,26 @@ export interface GLBAccessor {
     componentType: number
     count: number
     type: "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4"
+}
+export interface GLTFSampler {
+    magFilter?: GLTFSamplerFilter.NEAREST | GLTFSamplerFilter.LINEAR
+    minFilter?: GLTFSamplerFilter
+    wrapS?: GLTFSamplerWrap
+    wrapT?: GLTFSamplerWrap
+    name?: string
+}
+export enum GLTFSamplerFilter {
+    NEAREST = 9728,
+    LINEAR = 9729,
+    NEAREST_MIPMAP_NEAREST = 9984,
+    LINEAR_MIPMAP_NEAREST = 9985,
+    NEAREST_MIPMAP_LINEAR = 9986,
+    LINEAR_MIPMAP_LINEAR = 9987,
+}
+export enum GLTFSamplerWrap {
+    CLAMP_TO_EDGE = 33071,
+    MIRRORED_REPEAT = 33648,
+    REPEAT = 10497
 }
 export enum GLTFComponentType {
     BYTE = 5120,
@@ -82,16 +106,32 @@ export enum GLTFType {
     MAT3 = 5,
     MAT4 = 6
 }
+export interface GLTFTexture {
+    source: number
+    sampler: number
+}
+export interface GLTFMaterial {
+    doubleSided: boolean
+    name?: string
+    pbrMetallicRoughness: {
+        baseColorTexture: {
+            index: 0
+        }
+        metallicFactor: number
+        roughnessFactor: number
+    }
+}
 export interface GLBJSON {
     asset: { generator: string, version: string }
     accessors: GLBAccessor[]
     bufferViews: GLTFBufferView[]
     buffers: GLTFBuffer[]
-    images: GLTFImage[]
-    materials: GLBMaterial[]
+    images?: GLTFImage[]
+    materials?: GLBMaterial[]
     meshes: GLTFMesh[]
     nodes: GLTFNode[]
+    samplers?: GLTFSampler[]
     scene: number
     scenes: { nodes: number[] }[]
-    textures: { source: number }[]
+    textures?: GLTFTexture[]
 }

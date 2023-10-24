@@ -1,26 +1,45 @@
 import { GPUContext } from "./GPUContext.js";
 
-const PAD_SIZE = 16
-
 // type GPUImageCopyExternalImageSource = ImageBitmap | ImageData | HTMLImageElement | HTMLVideoElement | VideoFrame | HTMLCanvasElement | OffscreenCanvas
 type GPUTextureHelperSource = ImageBitmap | HTMLImageElement | HTMLCanvasElement | OffscreenCanvas
 
+const samplerLayout = { "type": "filtering" } satisfies GPUSamplerBindingLayout
+const textureLayout = { sampleType: "float", viewDimension: "2d" } satisfies GPUTextureBindingLayout
+
 export class GPUTextureHelper {
 
-    public readonly texture: GPUTexture;
     private dirty = true
 
     constructor(
         private readonly context: GPUContext,
-        private _source: GPUTextureHelperSource
-    ) {
-        this.texture = context.device.createTexture({
+        private _source: GPUTextureHelperSource,
+        public sampler: GPUSampler = context.device.createSampler(),
+        public readonly texture = context.device.createTexture({
             format: 'rgba8unorm',
             size: [_source.width, _source.height],
             usage: GPUTextureUsage.TEXTURE_BINDING |
                 GPUTextureUsage.COPY_DST |
                 GPUTextureUsage.RENDER_ATTACHMENT,
         })
+    ) {
+    }
+
+    static getBindGroupLayoutEntries(firstBindingIndex: number) {
+        return [
+            { binding: firstBindingIndex + 0, sampler: samplerLayout, visibility: GPUShaderStage.FRAGMENT },
+            { binding: firstBindingIndex + 1, texture: textureLayout, visibility: GPUShaderStage.FRAGMENT },
+        ]
+    }
+
+    getBindGroupEntries(firstBindingIndex: number) {
+        return [
+            { binding: firstBindingIndex + 0, resource: this.sampler },
+            { binding: firstBindingIndex + 1, resource: this.createView() },
+        ]
+    }
+
+    createView() {
+        return this.texture.createView()
     }
 
     public destroy() {
@@ -41,7 +60,7 @@ export class GPUTextureHelper {
         return this._source
     }
 
-    commandCopyToTexture() {
+    commandCopyToGPU() {
         if (this.dirty) {
             this.context.device.queue.copyExternalImageToTexture(
                 { source: this._source, flipY: true },

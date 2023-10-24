@@ -1,24 +1,35 @@
-import { GPUContext, cameraLayout } from "../core/GPUContext.js"
+import { GPUContext } from "../core/GPUContext.js"
 import { GPUUniformEntryHelper } from "../core/GPUUniformEntryHelper.js"
-import { GPURenderPipelineAndMeta, UniformBindings } from "../core/types.js"
+import { GPURenderPipelineAndMeta } from "../core/types.js"
 import { Matrix4 } from "../math/Matrix4.js"
 import { GPUMesh } from "./GPUMesh.js"
+import { TRANSFORM_BINDGROUP_ENTRY_LAYOUT, TRANSFORM_BINDINGS } from "./GPUModelConstants.js"
 
-export const transformBinding = { model: "mat4x4" } satisfies UniformBindings
-export const transformLayout = { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } } satisfies GPUBindGroupLayoutEntry
-export const defaultBindGroup0Layout = [cameraLayout, transformLayout] satisfies GPUBindGroupLayoutEntry[]
+interface Props {
+    children?: GPUNode[]
+    mesh?: GPUMesh
+    bindGroup?: GPUBindGroup
+    transformHelper?: GPUUniformEntryHelper<typeof TRANSFORM_BINDINGS>
+    localTransform?: Matrix4
+    modelTransform?: Matrix4
+}
 
 export class GPUNode {
 
     public children?: GPUNode[]
     public mesh?: GPUMesh
     private bindGroup?: GPUBindGroup
-    private transformHelper?: GPUUniformEntryHelper<typeof transformBinding>
+    private transformHelper?: GPUUniformEntryHelper<typeof TRANSFORM_BINDINGS>
     public localTransform?: Matrix4
     public modelTransform = Matrix4.identity
 
-    constructor(props: Partial<GPUNode>) {
-        Object.assign(this, props)
+    constructor(props: Props) {
+        this.children = props.children
+        this.mesh = props.mesh
+        this.bindGroup = props.bindGroup
+        this.transformHelper = props.transformHelper
+        this.localTransform = props.localTransform
+        this.modelTransform = props.modelTransform ?? Matrix4.identity
     }
 
     buildRenderPipeline(
@@ -33,7 +44,7 @@ export class GPUNode {
         }
 
         if (this.mesh) {
-            this.transformHelper = c.createUniformHelper(transformLayout, transformBinding, { model: this.modelTransform })
+            this.transformHelper = c.createUniformHelper(TRANSFORM_BINDGROUP_ENTRY_LAYOUT, TRANSFORM_BINDINGS, { model: this.modelTransform })
             this.bindGroup = c.device.createBindGroup({
                 layout: pipeline.getBindGroupLayout(0),
                 entries: [c.camera.entry, this.transformHelper.entry]
@@ -43,7 +54,7 @@ export class GPUNode {
     }
 
     prerender(c: GPUContext) {
-        this.transformHelper?.commandCopyToBuffer()
+        this.transformHelper?.commandCopyToGPU()
         if (this.children) {
             for (let child of this.children) {
                 child.prerender(c)

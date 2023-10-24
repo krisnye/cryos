@@ -1,12 +1,11 @@
 import { Matrix4 } from "../math/Matrix4.js"
-import { Vector4 } from "../math/Vector4.js"
+import { Vector3 } from "../math/Vector3.js"
+import { CAMERA_BINDGROUP_ENTRY_LAYOUT, CAMERA_BINDINGS } from "../render/GPUModelConstants.js"
 import { GPUTextureHelper } from "./GPUTextureHelper.js"
 import { GPUUniformEntryHelper } from "./GPUUniformEntryHelper.js"
 import { compileGPUShaderModule, loadImageBitmap, requestGPUDevice } from "./functions.js"
-import { GPURenderPipelineAndMeta, GPURenderPipelineProperties, GPUVertexBufferLayoutNamed, UniformBindings, UniformValues, WGSLType } from "./types.js"
+import { GPURenderPipelineAndMeta, GPURenderPipelineProperties, GPUVertexBufferLayoutNamed, UniformBindings, UniformValues } from "./types.js"
 
-export const cameraBindings = { viewProjection: "mat4x4", position: "vec4", } as const satisfies UniformBindings
-export const cameraLayout = { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } } satisfies GPUBindGroupLayoutEntry
 
 enum State {
     default = 0,
@@ -22,7 +21,7 @@ export class GPUContext {
     public readonly depthTexture: GPUTexture
     private _commandEncoder?: GPUCommandEncoder
     private _renderPassEncoder?: GPURenderPassEncoder
-    public readonly camera: GPUUniformEntryHelper<typeof cameraBindings>
+    public readonly camera: GPUUniformEntryHelper<typeof CAMERA_BINDINGS>
 
     private constructor({ canvas, canvasContext, device, depthTexture }: {
         canvas: HTMLCanvasElement
@@ -35,9 +34,9 @@ export class GPUContext {
         this.canvasContext = canvasContext
         this.depthTexture = depthTexture
         this.camera = this.createUniformHelper(
-            cameraLayout,
-            cameraBindings,
-            { viewProjection: Matrix4.identity, position: Vector4.zero }
+            CAMERA_BINDGROUP_ENTRY_LAYOUT,
+            CAMERA_BINDINGS,
+            { viewProjection: Matrix4.identity, position: Vector3.zero }
         )
     }
 
@@ -154,7 +153,7 @@ export class GPUContext {
         const { vertexInput: vertexLayout, shader, vertexMain = "vertex_main", fragmentMain = "fragment_main" } = properties
         const shaderModule = await compileGPUShaderModule(this.device, shader)
         const bindGroupLayouts = properties.layout ? properties.layout.map(
-            (entries) => this.device.createBindGroupLayout({ entries })
+            entries => this.device.createBindGroupLayout({ entries })
         ) : []
 
         const descriptor = {

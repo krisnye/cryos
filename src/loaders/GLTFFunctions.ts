@@ -1,4 +1,4 @@
-import { GLTFComponentType, GLTFRenderMode, GLTFType } from "./GLTFTypes.js";
+import { GLTFComponentType, GLTFRenderMode, GLTFSamplerFilter, GLTFSamplerWrap, GLTFType } from "./GLTFTypes.js";
 
 export function gltfRenderModeToGPUPrimitiveTopology(mode: GLTFRenderMode): GPUPrimitiveTopology {
     switch (mode) {
@@ -9,6 +9,22 @@ export function gltfRenderModeToGPUPrimitiveTopology(mode: GLTFRenderMode): GPUP
         default:
             throw new Error(`Not supported mode: ${mode}`)
     }
+}
+
+export function GLTFSamplerWrapToGPUAddressMode(value: GLTFSamplerWrap): GPUAddressMode {
+    switch (value) {
+        case GLTFSamplerWrap.CLAMP_TO_EDGE: return "clamp-to-edge"
+        case GLTFSamplerWrap.MIRRORED_REPEAT: return "mirror-repeat"
+        case GLTFSamplerWrap.REPEAT: return "repeat"
+    }
+}
+
+export function GLTFSamplerFilterToGPUFilterMode(value: GLTFSamplerFilter): GPUFilterMode {
+    switch (value) {
+        case GLTFSamplerFilter.NEAREST: return "nearest"
+    }
+    // anything else is just linear
+    return "linear"
 }
 
 export function gltfTypeNumComponents(type: GLTFType) {

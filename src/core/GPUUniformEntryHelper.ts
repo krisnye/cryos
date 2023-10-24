@@ -76,7 +76,7 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
         return this._values
     }
 
-    commandCopyToBuffer(values?: UniformValues<Bindings>) {
+    commandCopyToGPU(values?: UniformValues<Bindings>) {
         if (values) {
             this.values = values
         }
