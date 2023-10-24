@@ -66,15 +66,6 @@ export class GPUPrimitive {
 
         this.material.buildRenderPipeline(c, defaultPipeline)
 
-        const DEBUG = true
-        if (DEBUG) {
-            const view = this.texcoords!.view
-            const countPerVertex = vertexFormatToCount[this.texcoords!.vertexType]
-            const elements = this.texcoords!.count * countPerVertex
-            const floatArray = new Float32Array(view.data.buffer, view.data.byteOffset, elements)
-            console.log(`?? texcoords`, { floatArray, texcoords: this.texcoords })
-        }
-
         // Vertex attribute state and shader stage
         const vertexState = {
             // Shader stage info

@@ -75,7 +75,6 @@ export async function loadGLTFModel(c: GPUContext, props: Props): Promise<GPUMod
         return new GPUBufferView({ data, byteStride: view.byteStride })
     })
 
-    console.log(`glTF file has ${json.meshes.length} meshes`)
     const accessors = json.accessors.map((accessor, index) => {
         const view = bufferViews[accessor.bufferView]
         const gltfType = GLTFType[accessor.type]
@@ -86,7 +85,6 @@ export async function loadGLTFModel(c: GPUContext, props: Props): Promise<GPUMod
         const result = {
             view, count, byteStride, vertexType
         } satisfies GPUAccessor
-        console.log({ index, result })
         return result;
     })
 
@@ -145,9 +143,6 @@ export async function loadGLTFModel(c: GPUContext, props: Props): Promise<GPUMod
             const indices = primitive.indices ? accessors[primitive.indices] : undefined
             function getAccessor(name: keyof GLTFAttributes) {
                 const index = primitive.attributes[name]
-                if (name === "TEXCOORD_0") {
-                    console.log(`11111111`, { index, accessor: accessors[index!] })
-                }
                 return index !== undefined ? accessors[index] : undefined
             }
             const positions = getAccessor("POSITION")
