@@ -1,6 +1,6 @@
 import { GPURenderPipelineProperties, GPUVertexAttributeNamed, GPUVertexBufferLayoutNamed, StringKeyOf, WGSLScalarType, WGSLType, WGSLVectorType } from "./types.js"
 
-const vertexFormatToSize = {
+export const vertexFormatToSize = {
     uint8x2: 2, uint8x4: 4,
     sint8x2: 2, sint8x4: 4,
     unorm8x2: 2, unorm8x4: 4, snorm8x2: 2, snorm8x4: 4,
@@ -12,7 +12,7 @@ const vertexFormatToSize = {
     sint32: 4, sint32x2: 8, sint32x3: 12, sint32x4: 16,
 } as const satisfies Record<GPUVertexFormat, number>
 
-const vertexFormatToCount = {
+export const vertexFormatToCount = {
     uint8x2: 2, uint8x4: 4,
     sint8x2: 2, sint8x4: 4,
     unorm8x2: 2, unorm8x4: 4, snorm8x2: 2, snorm8x4: 4,

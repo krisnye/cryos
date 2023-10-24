@@ -1,4 +1,5 @@
 import { GPUContext } from "../core/GPUContext.js"
+import { sizeof, vertexFormatToCount, vertexFormatToSize } from "../core/functions.js"
 import { GPURenderPipelineAndMeta } from "../core/types.js"
 import { GPUAccessor } from "./GPUAccessor.js"
 import { GPUMaterial } from "./GPUMaterial.js"
@@ -51,22 +52,28 @@ export class GPUPrimitive {
 
     buildRenderPipeline(
         c: GPUContext,
-        pipeline: GPURenderPipelineAndMeta
+        defaultPipeline: GPURenderPipelineAndMeta
     ) {
         if (this.renderPipeline) {
             return
         }
         const { device } = c
-        const shaderModule = pipeline.descriptor.vertex.module
+        const shaderModule = defaultPipeline.descriptor.vertex.module
         const colorFormat = c.canvasContext.getCurrentTexture().format
         const depthFormat = c.depthTexture.format
-        const uniformsBGLayout = pipeline.getBindGroupLayout(0)
-        const materialBGLayout = pipeline.getBindGroupLayout(1)
+        const uniformsBGLayout = defaultPipeline.getBindGroupLayout(0)
+        const materialBGLayout = defaultPipeline.getBindGroupLayout(1)
 
-        this.material.buildRenderPipeline(c, pipeline)
+        this.material.buildRenderPipeline(c, defaultPipeline)
 
-        const floatArray = new Float32Array(this.texcoords!.view.view, this.texcoords!.byteOffset, this.texcoords!.byteLength)
-        console.log(`?? texcoords`, { floatArray, texcoords: this.texcoords })
+        const DEBUG = true
+        if (DEBUG) {
+            const view = this.texcoords!.view
+            const countPerVertex = vertexFormatToCount[this.texcoords!.vertexType]
+            const elements = this.texcoords!.count * countPerVertex
+            const floatArray = new Float32Array(view.data.buffer, view.data.byteOffset, elements)
+            console.log(`?? texcoords`, { floatArray, texcoords: this.texcoords })
+        }
 
         // Vertex attribute state and shader stage
         const vertexState = {
@@ -92,17 +99,27 @@ export class GPUPrimitive {
                         // and apply the offset (per-element or absolute) in setVertexBuffer.
                         {
                             format: this.positions.vertexType,
-                            offset: this.positions.byteOffset,
+                            offset: 0,
                             shaderLocation: 0,
-                        },
+                        }
+                    ]
+            }, {
+                arrayStride: this.normals!.byteStride,
+                attributes:
+                    [
                         {
                             format: this.normals!.vertexType,
-                            offset: this.normals!.byteOffset,
+                            offset: 0,
                             shaderLocation: 1,
                         },
+                    ]
+            }, {
+                arrayStride: this.texcoords!.byteStride,
+                attributes:
+                    [
                         {
                             format: this.texcoords!.vertexType,
-                            offset: this.texcoords!.byteOffset,
+                            offset: 0,
                             shaderLocation: 2,
                         }
                     ]
@@ -145,26 +162,18 @@ export class GPUPrimitive {
         // offsets if we're dealing with interleaved attributes.
         // Since we only handle positions at the moment, this isn't a problem.
         c.render.setVertexBuffer(GPU_MODEL_VERTEX_FORMAT.slots.position,
-            this.positions.view.gpuBuffer!,
-            this.positions.byteOffset,
-            this.positions.byteLength)
+            this.positions.view.gpuBuffer!)
         if (this.normals) {
             c.render.setVertexBuffer(GPU_MODEL_VERTEX_FORMAT.slots.normal,
-                this.normals.view.gpuBuffer!,
-                this.normals.byteOffset,
-                this.normals.byteLength)
+                this.normals.view.gpuBuffer!)
         }
         if (this.texcoords) {
             c.render.setVertexBuffer(GPU_MODEL_VERTEX_FORMAT.slots.texcoords,
-                this.texcoords.view.gpuBuffer!,
-                this.texcoords.byteOffset,
-                this.texcoords.byteLength)
+                this.texcoords.view.gpuBuffer!)
         }
         if (this.indices) {
             c.render.setIndexBuffer(this.indices.view.gpuBuffer!,
-                this.indices.vertexType as GPUIndexFormat,
-                this.indices.byteOffset,
-                this.indices.byteLength)
+                this.indices.vertexType as GPUIndexFormat)
             c.render.drawIndexed(this.indices.count)
         } else {
             c.render.draw(this.positions.count)

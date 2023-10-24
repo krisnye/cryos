@@ -20,7 +20,7 @@ export class GPUModel {
     public readonly textures: GPUTextureHelper[]
     public readonly materials: GPUMaterial[]
     public shader!: string
-    public pipeline!: GPURenderPipelineAndMeta
+    public defaultPipeline!: GPURenderPipelineAndMeta
 
     constructor(
         props: Props
@@ -39,18 +39,15 @@ export class GPUModel {
             vertexInput: GPU_MODEL_VERTEX_FORMAT.layout,
             shader: this.shader
         } satisfies GPURenderPipelineProperties
-        this.pipeline = await c.createRenderPipeline(descriptor)
-        console.log(`INIT`, this.pipeline)
+        this.defaultPipeline = await c.createRenderPipeline(descriptor)
 
-        this.buildRenderPipeline(c, this.pipeline)
+        this.buildRenderPipeline(c, this.defaultPipeline)
     }
 
     private buildRenderPipeline(
         c: GPUContext,
         pipeline: GPURenderPipelineAndMeta
     ) {
-        // c.canvasContext.getCurrentTexture().format
-        // c.depthTexture.format
         for (let scene of this.scenes) {
             scene.buildRenderPipeline(c, pipeline)
         }

@@ -40,7 +40,7 @@ fn fragment_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let color = textureSample(colorTexture, colorSampler, in.texcoord);
     // return color;
 
-    return vec4<f32>(in.texcoord.x, in.texcoord.y, 0, 1) + color;
+    return vec4<f32>(in.worldPosition.x, in.worldPosition.y, 0, 1) + color;
     // let dx = dpdx(in.worldPosition);
     // let dy = dpdy(in.worldPosition);
     // let n = normalize(cross(dx, dy));

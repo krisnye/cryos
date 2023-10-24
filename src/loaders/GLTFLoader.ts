@@ -59,28 +59,34 @@ export async function loadGLTFModel(c: GPUContext, props: Props): Promise<GPUMod
         throw Error("Invalid glB: The second chunk of the glB file is not a binary chunk!")
     }
 
+    if (json.buffers.length > 1) {
+        throw new Error(`We cannot yet handle more than 1 buffer`)
+    }
+
     console.log(json)
     // Make a GLTFBuffer that is a view of the entire binary chunk's data,
     // we'll use this to create buffer views within the chunk for memory referenced
     // by objects in the glTF scene
     let binaryChunk = new Uint8Array(buffer, 28 + header[3], binaryHeader[0])
     // Create GLTFBufferView objects for all the buffer views in the glTF file
-    let bufferViews = json.bufferViews.map(view => new GPUBufferView(binaryChunk, view))
+    let bufferViews = json.bufferViews.map(view => {
+        // const buffer = json.buffers[view.buffer]
+        const data = binaryChunk.subarray(view.byteOffset, view.byteOffset + view.byteLength)
+        return new GPUBufferView({ data, byteStride: view.byteStride })
+    })
 
     console.log(`glTF file has ${json.meshes.length} meshes`)
-    const accessors = json.accessors.map(accessor => {
+    const accessors = json.accessors.map((accessor, index) => {
         const view = bufferViews[accessor.bufferView]
         const gltfType = GLTFType[accessor.type]
         const elementSize = gltfTypeSize(accessor.componentType, gltfType)
         const count = accessor.count
-        const byteOffset = accessor.byteOffset ?? 0
         const byteStride = Math.max(elementSize, view.byteStride)
-        const byteLength = count * byteStride
         const vertexType = gltfVertexType(accessor.componentType, gltfType)
         const result = {
-            view, count, byteOffset, byteStride, byteLength, vertexType
+            view, count, byteStride, vertexType
         } satisfies GPUAccessor
-        console.log({ accessor, view, result })
+        console.log({ index, result })
         return result;
     })
 
@@ -111,11 +117,10 @@ export async function loadGLTFModel(c: GPUContext, props: Props): Promise<GPUMod
             const sampler = samplers[t.sampler]
             // load image
             const imageBufferView = bufferViews[image.bufferView]
-            const imageBlob = new Blob([imageBufferView.view], { type: image.mimeType })
+            const imageBlob = new Blob([imageBufferView.data], { type: image.mimeType })
             const imageBitmap = await createImageBitmap(imageBlob, { colorSpaceConversion: "none" })
             const texture = new GPUTextureHelper(c, imageBitmap, sampler)
             textures.push(texture)
-            console.log({ image, sampler, imageBufferView, imageBlob, imageBitmap, texture })
         }
     }
 
@@ -140,6 +145,9 @@ export async function loadGLTFModel(c: GPUContext, props: Props): Promise<GPUMod
             const indices = primitive.indices ? accessors[primitive.indices] : undefined
             function getAccessor(name: keyof GLTFAttributes) {
                 const index = primitive.attributes[name]
+                if (name === "TEXCOORD_0") {
+                    console.log(`11111111`, { index, accessor: accessors[index!] })
+                }
                 return index !== undefined ? accessors[index] : undefined
             }
             const positions = getAccessor("POSITION")
