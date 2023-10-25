@@ -1,25 +1,21 @@
 
+interface Props {
+    data: Uint8Array
+    byteStride?: number
+}
+
 export class GPUBufferView {
-    public readonly length: number;
+
     public readonly byteStride: number;
-    public readonly view: Uint8Array;
+    public readonly data: Uint8Array;
     public needsUpload = false;
     public gpuBuffer?: GPUBuffer;
     public usage: GPUBufferUsageFlags;
 
-    constructor(buffer: Uint8Array, view) {
-        this.length = view["byteLength"];
-        this.byteStride = 0;
-        if (view["byteStride"] !== undefined) {
-            this.byteStride = view["byteStride"];
-        }
-        // Create the buffer view. Note that subarray creates a new typed
-        // view over the same array buffer, we do not make a copy here.
-        let viewOffset = 0;
-        if (view["byteOffset"] !== undefined) {
-            viewOffset = view["byteOffset"];
-        }
-        this.view = buffer.subarray(viewOffset, viewOffset + this.length);
+    constructor(props: Props) {
+        const { data, byteStride = 0 } = props
+        this.data = data
+        this.byteStride = byteStride
         this.needsUpload = false;
         this.usage = 0;
     }
@@ -30,12 +26,13 @@ export class GPUBufferView {
 
     public upload(device: GPUDevice) {
         // Note: must align to 4 byte size when mapped at creation is true
-        let buf = device.createBuffer({
-            size: Math.ceil(this.view.byteLength / 4) * 4,
+        const buf = device.createBuffer({
+            size: Math.ceil(this.data.byteLength / 4) * 4,
             usage: this.usage,
-            mappedAtCreation: true
+            mappedAtCreation: true,
         });
-        new Uint8Array(buf.getMappedRange()).set(this.view);
+        const arrayBuffer = buf.getMappedRange()
+        new Uint8Array(arrayBuffer).set(this.data);
         buf.unmap();
         this.gpuBuffer = buf;
         this.needsUpload = false;

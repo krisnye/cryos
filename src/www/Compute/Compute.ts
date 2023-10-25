@@ -91,7 +91,7 @@ export function ComputeCanvas(gridWidth: number) {
                         computePipeline.encodePass(gpuVolume, c.command);
 
                         //  render
-                        uniforms.commandCopyToBuffer({ viewProjection: viewProjMatrix, width: size.x })
+                        uniforms.commandCopyToGPU({ viewProjection: viewProjMatrix, width: size.x })
                         c.beginRenderPass()
                         {
                             c.render.setPipeline(renderPipeline)

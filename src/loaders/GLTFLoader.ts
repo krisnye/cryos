@@ -1,5 +1,5 @@
 import { GPUContext } from "../core/GPUContext.js"
-import { gltfRenderModeToGPUPrimitiveTopology, gltfTypeSize, gltfVertexType } from "./GLBFunctions.js"
+import { GLTFSamplerFilterToGPUFilterMode, GLTFSamplerWrapToGPUAddressMode, gltfRenderModeToGPUPrimitiveTopology, gltfTypeSize, gltfVertexType } from "./GLTFFunctions.js"
 import { GLBJSON, GLTFAttributes, GLTFRenderMode, GLTFType } from "./GLTFTypes.js"
 import { GPUAccessor } from "../render/GPUAccessor.js"
 import { GPUBufferView } from "../render/GPUBufferView.js"
@@ -10,8 +10,17 @@ import { Matrix4 } from "../math/Matrix4.js"
 import { GPUNode } from "../render/GPUNode.js"
 import { Quaternion } from "../math/Quaternion.js"
 import { Vector3 } from "../math/Vector3.js"
+import { GPUTextureHelper } from "../core/GPUTextureHelper.js"
+import { GPUMaterial } from "../render/GPUMaterial.js"
 
-export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUModel> {
+interface Props {
+    url: string
+    shader: string
+}
+
+export async function loadGLTFModel(c: GPUContext, props: Props): Promise<GPUModel> {
+    const { url, shader } = props
+
     const response = await fetch(url)
     if (!response.ok) {
         throw new Error(response.statusText)
@@ -49,27 +58,83 @@ export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUMode
     if (binaryHeader[1] != 0x004E4942) {
         throw Error("Invalid glB: The second chunk of the glB file is not a binary chunk!")
     }
+
+    if (json.buffers.length > 1) {
+        throw new Error(`We cannot yet handle more than 1 buffer`)
+    }
+
+    console.log(json)
     // Make a GLTFBuffer that is a view of the entire binary chunk's data,
     // we'll use this to create buffer views within the chunk for memory referenced
     // by objects in the glTF scene
     let binaryChunk = new Uint8Array(buffer, 28 + header[3], binaryHeader[0])
     // Create GLTFBufferView objects for all the buffer views in the glTF file
-    let bufferViews = json.bufferViews.map(view => new GPUBufferView(binaryChunk, view))
+    let bufferViews = json.bufferViews.map(view => {
+        // const buffer = json.buffers[view.buffer]
+        const data = binaryChunk.subarray(view.byteOffset, view.byteOffset + view.byteLength)
+        return new GPUBufferView({ data, byteStride: view.byteStride })
+    })
 
-    console.log(`glTF file has ${json.meshes.length} meshes`)
-    const accessors = json.accessors.map(accessor => {
+    const accessors = json.accessors.map((accessor, index) => {
         const view = bufferViews[accessor.bufferView]
         const gltfType = GLTFType[accessor.type]
         const elementSize = gltfTypeSize(accessor.componentType, gltfType)
         const count = accessor.count
-        const byteOffset = accessor.byteOffset ?? 0
         const byteStride = Math.max(elementSize, view.byteStride)
-        const byteLength = count * byteStride
         const vertexType = gltfVertexType(accessor.componentType, gltfType)
-        return {
-            view, count, byteOffset, byteStride, byteLength, vertexType
+        const result = {
+            view, count, byteStride, vertexType
         } satisfies GPUAccessor
+        return result;
     })
+
+    // Samplers
+    const samplers = json.samplers?.map(s => {
+        let d: GPUSamplerDescriptor = {}
+        if (s.wrapS) {
+            d.addressModeU = GLTFSamplerWrapToGPUAddressMode(s.wrapS)
+        }
+        if (s.wrapT) {
+            d.addressModeV = GLTFSamplerWrapToGPUAddressMode(s.wrapT)
+        }
+        if (s.magFilter) {
+            d.magFilter = GLTFSamplerFilterToGPUFilterMode(s.magFilter)
+        }
+        if (s.minFilter) {
+            d.minFilter = GLTFSamplerFilterToGPUFilterMode(s.minFilter)
+        }
+        return c.device.createSampler(d)
+    }) ?? []
+
+    //  load the textures
+    let textures: GPUTextureHelper[] = [];
+    if (json.textures) {
+        for (let i = 0; i < json.textures.length; i++) {
+            let t = json.textures[i]
+            const image = json.images![t.source]
+            const sampler = samplers[t.sampler]
+            // load image
+            const imageBufferView = bufferViews[image.bufferView]
+            const imageBlob = new Blob([imageBufferView.data], { type: image.mimeType })
+            const imageBitmap = await createImageBitmap(imageBlob, { colorSpaceConversion: "none" })
+            const texture = new GPUTextureHelper(c, imageBitmap, sampler)
+            textures.push(texture)
+        }
+    }
+
+    //  load the materials
+    let materials = json.materials?.map(m => {
+        let { name } = m
+        const { metallicFactor, roughnessFactor } = m.pbrMetallicRoughness
+        let baseColorTexture = textures[m.pbrMetallicRoughness.baseColorTexture?.index ?? -1]
+        let metallicRoughness = {
+            metallicFactor,
+            roughnessFactor,
+            baseColorTexture
+        }
+        return new GPUMaterial(c, { name, metallicRoughness })
+
+    }) ?? []
 
     // Load the meshes
     const meshes = json.meshes.map(mesh => {
@@ -84,8 +149,12 @@ export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUMode
             if (!positions) {
                 throw new Error(`POSITION attribute required`)
             }
+            const normals = getAccessor("NORMAL")
+            const texcoords = getAccessor("TEXCOORD_0")
 
-            return new GPUPrimitive(positions, topology, indices)
+            const material = materials[primitive.material]
+
+            return new GPUPrimitive({ positions, topology, indices, material, normals, texcoords })
         })
         return new GPUMesh(mesh.name, meshPrimitives)
     })
@@ -122,5 +191,7 @@ export async function loadGPUMeshes(c: GPUContext, url: string): Promise<GPUMode
         }
     }
 
-    return new GPUModel(meshes, scenes)
+    const model = new GPUModel({ meshes, scenes, textures, materials })
+    await model.initialize(c, shader)
+    return model
 }
