@@ -1,6 +1,6 @@
 import { Matrix4 } from "../math/Matrix4.js"
 import { Vector3 } from "../math/Vector3.js"
-import { CAMERA_BINDGROUP_ENTRY_LAYOUT, CAMERA_BINDINGS } from "../render/GPUModelConstants.js"
+import { CAMERA_BINDGROUP_ENTRY_LAYOUT, CAMERA_BINDINGS, CAMERA_DEFAULT_VALUES } from "../render/GPUModelConstants.js"
 import { GPUTextureHelper } from "./GPUTextureHelper.js"
 import { GPUUniformEntryHelper } from "./GPUUniformEntryHelper.js"
 import { compileGPUShaderModule, loadImageBitmap, requestGPUDevice } from "./functions.js"
@@ -36,7 +36,7 @@ export class GPUContext {
         this.camera = this.createUniformHelper(
             CAMERA_BINDGROUP_ENTRY_LAYOUT,
             CAMERA_BINDINGS,
-            { viewProjection: Matrix4.identity, position: Vector3.zero }
+            CAMERA_DEFAULT_VALUES
         )
     }
 
@@ -128,7 +128,7 @@ export class GPUContext {
     public createUniformHelper<Bindings extends UniformBindings>(
         layout: GPUBindGroupLayoutEntry,
         bindings: Bindings,
-        values?: UniformValues<Bindings>
+        values: UniformValues<Bindings>
     ): GPUUniformEntryHelper<Bindings> {
         return new GPUUniformEntryHelper<Bindings>(this, layout, bindings, values)
     }

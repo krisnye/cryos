@@ -15,7 +15,7 @@ const positionColorVertexLayout = createVertexBufferLayoutNamed({
 export function Instancing() {
     return SampleCanvas({
         create: async (c: GPUContext) => {
-            c.camera.values = { viewProjection: Matrix4.scaling(0.5), position: Vector3.zero }
+            c.camera.patch({ viewProjectionMatrix: Matrix4.scaling(0.5) })
             const pipeline = await c.createRenderPipeline({
                 layout: [[c.camera.layout]],
                 vertexInput: positionColorVertexLayout, shader

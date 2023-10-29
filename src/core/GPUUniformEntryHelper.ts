@@ -12,7 +12,7 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
     public readonly entry: Readonly<GPUBindGroupEntry>
     private _data?: number[]
     private dirty = true
-    private _values?: UniformValues<Bindings>
+    private _values!: UniformValues<Bindings>
 
     constructor(
         private readonly context: GPUContext,
@@ -21,7 +21,7 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
             visibility: GPUShaderStageFlags,
         },
         private readonly bindings: Bindings,
-        values?: UniformValues<Bindings>
+        values: UniformValues<Bindings>
     ) {
         this.layout = { ...layout, buffer: { type: "uniform" } }
         let size = Object.values(bindings).map(getWGSLSize).reduce((a, b) => a + b, 0)
@@ -31,9 +31,7 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         })
         this.entry = { binding: layout.binding, resource: { buffer: this.buffer } }
-        if (values) {
-            this.values = values
-        }
+        this.values = this._values = values
     }
 
     public destroy() {
@@ -56,6 +54,10 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
         return data
     }
 
+    public patch(values: Partial<UniformValues<Bindings>>) {
+        this.values = { ...this._values, ...values };
+    }
+
     /**
      * Sets the values for this uniform binding.
      * You will still have to call commandCopyToBuffer before rendering
@@ -70,9 +72,6 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
     }
 
     public get values(): UniformValues<Bindings> {
-        if (this._values == null) {
-            throw new Error("values not defined")
-        }
         return this._values
     }
 

@@ -63,5 +63,5 @@ export type UniformValues<Bindings extends Record<string, UniformType>> = {
 /**
  * We only support f32 or vector/matrix of f32 as uniform inputs.
  */
-export type UniformType = WGSLVectorType | "f32"
+export type UniformType = Exclude<WGSLVectorType, "mat3x3" | "vec3"> | "f32"
 export type UniformBindings = Record<string, UniformType>

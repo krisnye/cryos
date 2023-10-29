@@ -44,7 +44,7 @@ export class GPUNode {
         }
 
         if (this.mesh) {
-            this.transformHelper = c.createUniformHelper(TRANSFORM_BINDGROUP_ENTRY_LAYOUT, TRANSFORM_BINDINGS, { model: this.modelTransform })
+            this.transformHelper = c.createUniformHelper(TRANSFORM_BINDGROUP_ENTRY_LAYOUT, TRANSFORM_BINDINGS, { modelMatrix: this.modelTransform })
             this.bindGroup = c.device.createBindGroup({
                 layout: pipeline.getBindGroupLayout(0),
                 entries: [c.camera.entry, this.transformHelper.entry]

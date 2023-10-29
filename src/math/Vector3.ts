@@ -1,4 +1,5 @@
 import { Matrix4 } from "./Matrix4.js"
+import { Vector4 } from "./Vector4.js"
 import { equivalent, hypot3 } from "./functions.js"
 
 export class Vector3 {
@@ -161,6 +162,10 @@ export class Vector3 {
 
     toString() {
         return `(${this.x},${this.y},${this.z})`
+    }
+
+    toVector4(w = 1.0) {
+        return new Vector4(this.x, this.y, this.z, w);
     }
 
 }

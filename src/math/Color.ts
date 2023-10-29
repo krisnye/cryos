@@ -3,10 +3,10 @@ import { Vector4 } from "./Vector4.js"
 
 export class Color implements Iterable<number> {
 
+    readonly alpha: number
     readonly red: number
     readonly green: number
     readonly blue: number
-    readonly alpha: number
 
     constructor(red: number, green: number, blue: number, alpha: number = 1.0) {
         this.red = red
