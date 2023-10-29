@@ -32,7 +32,7 @@ export class Quaternion {
         return new Quaternion(this.x * invLength, this.y * invLength, this.z * invLength, this.w * invLength)
     }
 
-    inverse() {
+    conjugate() {
         return new Quaternion(-this.x, -this.y, -this.z, this.w)
     }
 
@@ -78,7 +78,7 @@ export class Quaternion {
     }
 
     rotateVector(v: Vector3) {
-        return this.multiply(new Quaternion(v.x, v.y, v.z, 0)).multiply(this.inverse()).axis()
+        return this.multiply(new Quaternion(v.x, v.y, v.z, 0)).multiply(this.conjugate()).axis()
     }
 
     static readonly identity = new Quaternion(0, 0, 0, 1)
