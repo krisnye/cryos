@@ -1,4 +1,4 @@
-import { CustomElementProperties, HTMLCanvasProperties, createCustomElement, html, useConnected } from "lithos"
+import { CustomElementProperties, createCustomElement, html, useConnected } from "lithos"
 import { GPUContext } from "../core/GPUContext.js"
 import { GPUComponent } from "../render/GPUComponent.js"
 

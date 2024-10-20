@@ -30,7 +30,7 @@ var<uniform> camera: Camera;
 fn vertex_main(vert: VertexInput) -> VertexOutput {
     var out: VertexOutput;
     out.color = vert.color;
-    out.position = camera.viewProjectionMatrix * vert.position + vec4(-0.45f + 0.1f * f32(vert.instance), 0, 0, 0);
+    out.position = camera.viewProjectionMatrix * vert.position + vec4(-0.45f + 0.2f * f32(vert.instance), 0, 0, 0);
     return out;
 };
 

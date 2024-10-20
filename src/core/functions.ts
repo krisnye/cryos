@@ -10,7 +10,7 @@ export const vertexFormatToSize = {
     float32: 4, float32x2: 8, float32x3: 12, float32x4: 16,
     uint32: 4, uint32x2: 8, uint32x3: 12, uint32x4: 16,
     sint32: 4, sint32x2: 8, sint32x3: 12, sint32x4: 16,
-} as const satisfies Record<GPUVertexFormat, number>
+} as const satisfies { [key in GPUVertexFormat]?: number }
 
 export const vertexFormatToCount = {
     uint8x2: 2, uint8x4: 4,
@@ -22,7 +22,7 @@ export const vertexFormatToCount = {
     float32: 1, float32x2: 2, float32x3: 3, float32x4: 4,
     uint32: 1, uint32x2: 2, uint32x3: 3, uint32x4: 4,
     sint32: 1, sint32x2: 2, sint32x3: 3, sint32x4: 4,
-} as const satisfies Record<GPUVertexFormat, number>
+} as const satisfies { [key in GPUVertexFormat]?: number }
 
 const vertexFormatToWGSLType = {
     uint8x2: "u32", uint8x4: "u32",
@@ -34,7 +34,7 @@ const vertexFormatToWGSLType = {
     float32: "f32", float32x2: "f32", float32x3: "f32", float32x4: "f32",
     uint32: "u32", uint32x2: "u32", uint32x3: "u32", uint32x4: "u32",
     sint32: "i32", sint32x2: "i32", sint32x3: "i32", sint32x4: "i32",
-} as const satisfies Record<GPUVertexFormat, WGSLScalarType>
+} as const satisfies { [key in GPUVertexFormat]?: WGSLScalarType }
 
 export const sizeof = {
     "bool": 1,

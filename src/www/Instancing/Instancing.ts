@@ -3,9 +3,8 @@ import { GPUContext } from "../../core/GPUContext.js"
 import { Vector4 } from "../../math/Vector4.js"
 import { Color } from "../../math/Color.js"
 import { Matrix4 } from "../../math/Matrix4.js"
-import shader from "./Instancing.wgsl"
 import { SampleCanvas } from "../SampleCanvas.js"
-import { Vector3 } from "../../math/Vector3.js"
+import shader from "./Instancing.wgsl"
 
 const positionColorVertexLayout = createVertexBufferLayoutNamed({
     position: "float32x4",
@@ -18,7 +17,8 @@ export function Instancing() {
             c.camera.patch({ viewProjectionMatrix: Matrix4.scaling(0.5) })
             const pipeline = await c.createRenderPipeline({
                 layout: [[c.camera.layout]],
-                vertexInput: positionColorVertexLayout, shader
+                vertexInput: positionColorVertexLayout,
+                shader,
             })
             const vertexBuffer = c.createStaticVertexBuffer(
                 positionColorVertexLayout,
