@@ -1,11 +1,11 @@
-import { createVertexBufferLayoutNamed } from "../../core/functions.js"
-import { GPUContext } from "../../core/GPUContext.js"
-import { Vector4 } from "../../math/Vector4.js"
-import { Color } from "../../math/Color.js"
-import { Matrix4 } from "../../math/Matrix4.js"
+import { createVertexBufferLayoutNamed } from "../../internal/core/functions.js"
+import { GPUContext } from "../../internal/core/GPUContext.js"
+import { Vector4 } from "../../internal/math/Vector4.js"
+import { Color } from "../../internal/math/Color.js"
+import { Matrix4 } from "../../internal/math/Matrix4.js"
 import { SampleCanvas } from "../SampleCanvas.js"
 import shader from "./Instancing.wgsl"
-import { Vector3 } from "../../math/Vector3.js"
+import { Vector3 } from "../../internal/math/Vector3.js"
 
 const positionColorVertexLayout = createVertexBufferLayoutNamed({
     position: "float32x4",

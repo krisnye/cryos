@@ -5,12 +5,12 @@
  * coordinates.
  */
 
-import { Matrix4 } from "../math/Matrix4.js";
-import { Quaternion } from "../math/Quaternion.js";
-import { Vector2 } from "../math/Vector2.js";
-import { Vector3 } from "../math/Vector3.js";
-import { Vector4 } from "../math/Vector4.js";
-import { clamp } from "../math/functions.js";
+import { Matrix4 } from "../internal/math/Matrix4.js";
+import { Quaternion } from "../internal/math/Quaternion.js";
+import { Vector2 } from "../internal/math/Vector2.js";
+import { Vector3 } from "../internal/math/Vector3.js";
+import { Vector4 } from "../internal/math/Vector4.js";
+import { clamp } from "../internal/math/functions.js";
 
 export class ArcballCamera {
     zoomSpeed: number

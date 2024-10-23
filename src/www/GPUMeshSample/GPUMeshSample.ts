@@ -1,8 +1,8 @@
-import { GPUContext } from "../../core/GPUContext.js"
+import { GPUContext } from "../../internal/core/GPUContext.js"
 import { useArcBallCamera } from "../../hooks/useArcBallCamera.js"
-import { loadGLTFModel } from "../../loaders/GLTFLoader.js"
-import { Matrix4 } from "../../math/Matrix4.js"
-import { Vector3 } from "../../math/Vector3.js"
+import { loadGLTFModel } from "../../internal/loaders/GLTFLoader.js"
+import { Matrix4 } from "../../internal/math/Matrix4.js"
+import { Vector3 } from "../../internal/math/Vector3.js"
 import { SampleCanvas } from "../SampleCanvas.js"
 import shader from "./GPUMeshSample.wgsl"
 

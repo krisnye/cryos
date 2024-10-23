@@ -1,6 +1,6 @@
 import { CustomElementProperties, createCustomElement, html, useConnected } from "lithos"
-import { GPUContext } from "../core/GPUContext.js"
-import { GPUComponent } from "../render/GPUComponent.js"
+import { GPUContext } from "../internal/core/GPUContext.js"
+import { GPUComponent } from "../internal/render/GPUComponent.js"
 
 interface SampleProperties extends CustomElementProperties {
     width?: number

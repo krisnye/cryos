@@ -1,7 +1,7 @@
-import { createVertexBufferLayoutNamed } from "../../core/functions.js"
-import { GPUContext } from "../../core/GPUContext.js"
-import { Vector4 } from "../../math/Vector4.js"
-import { Color } from "../../math/Color.js"
+import { createVertexBufferLayoutNamed } from "../../internal/core/functions.js"
+import { GPUContext } from "../../internal/core/GPUContext.js"
+import { Vector4 } from "../../internal/math/Vector4.js"
+import { Color } from "../../internal/math/Color.js"
 import { SampleCanvas } from "../SampleCanvas.js"
 import shader from "./FirstTriangle.wgsl"
 

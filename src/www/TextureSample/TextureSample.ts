@@ -1,9 +1,9 @@
-import { createVertexBufferLayoutNamed } from "../../core/functions.js"
-import { GPUContext } from "../../core/GPUContext.js"
+import { createVertexBufferLayoutNamed } from "../../internal/core/functions.js"
+import { GPUContext } from "../../internal/core/GPUContext.js"
 import { SampleCanvas } from "../SampleCanvas.js"
 import shader from "./TextureSample.wgsl"
 import textureUrl from "./f.png";
-import { GPUTextureHelper } from "../../core/GPUTextureHelper.js";
+import { GPUTextureHelper } from "../../internal/core/GPUTextureHelper.js";
 
 const positionTextureVertexLayout = createVertexBufferLayoutNamed({
     position: "float32x4",
