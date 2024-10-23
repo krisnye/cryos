@@ -1,5 +1,4 @@
 import { GPUContext } from "../core/GPUContext.js"
-import { sizeof, vertexFormatToCount, vertexFormatToSize } from "../core/functions.js"
 import { GPURenderPipelineAndMeta } from "../core/types.js"
 import { GPUAccessor } from "./GPUAccessor.js"
 import { GPUMaterial } from "./GPUMaterial.js"

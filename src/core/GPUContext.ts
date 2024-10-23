@@ -1,6 +1,6 @@
 import { Matrix4 } from "../math/Matrix4.js"
 import { Vector3 } from "../math/Vector3.js"
-import { CAMERA_BINDGROUP_ENTRY_LAYOUT, CAMERA_BINDINGS, CAMERA_DEFAULT_VALUES } from "../render/GPUModelConstants.js"
+import { CAMERA_BINDGROUP_ENTRY_LAYOUT, CAMERA_BINDINGS } from "../render/GPUModelConstants.js"
 import { GPUTextureHelper } from "./GPUTextureHelper.js"
 import { GPUUniformEntryHelper } from "./GPUUniformEntryHelper.js"
 import { compileGPUShaderModule, loadImageBitmap, requestGPUDevice } from "./functions.js"
@@ -21,6 +21,7 @@ export class GPUContext {
     public readonly depthTexture: GPUTexture
     private _commandEncoder?: GPUCommandEncoder
     private _renderPassEncoder?: GPURenderPassEncoder
+    //  should not be defined here, should be in a higher order type
     public readonly camera: GPUUniformEntryHelper<typeof CAMERA_BINDINGS>
 
     private constructor({ canvas, canvasContext, device, depthTexture }: {
@@ -36,12 +37,11 @@ export class GPUContext {
         this.camera = this.createUniformHelper(
             CAMERA_BINDGROUP_ENTRY_LAYOUT,
             CAMERA_BINDINGS,
-            CAMERA_DEFAULT_VALUES
+            { viewProjection: Matrix4.identity, position: Vector3.zero }
         )
     }
 
     public destroy() {
-        // this.canvasContext.unconfigure()
         this.device.destroy()
     }
 

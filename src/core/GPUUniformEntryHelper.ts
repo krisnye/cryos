@@ -12,7 +12,7 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
     public readonly entry: Readonly<GPUBindGroupEntry>
     private _data?: number[]
     private dirty = true
-    private _values!: UniformValues<Bindings>
+    private _values: UniformValues<Bindings>
 
     constructor(
         private readonly context: GPUContext,
@@ -38,11 +38,10 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
         this.buffer.destroy()
     }
 
-    // TODO: HERE, set values, only flush to buffer when actually changed.
     private toData(values: UniformValues<Bindings>): number[] {
         let data: number[] = []
         // read in order of bindings
-        for (let name of Object.keys(this.bindings)) {
+        for (let name in this.bindings) {
             let value = values[name]
             if (value[Symbol.iterator]) {
                 data.push(...value as Iterable<number>)
@@ -52,10 +51,6 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
             }
         }
         return data
-    }
-
-    public patch(values: Partial<UniformValues<Bindings>>) {
-        this.values = { ...this._values, ...values };
     }
 
     /**
@@ -73,6 +68,10 @@ export class GPUUniformEntryHelper<Bindings extends UniformBindings> {
 
     public get values(): UniformValues<Bindings> {
         return this._values
+    }
+
+    public patch(values: Partial<UniformValues<Bindings>>) {
+        this.values = { ...this._values, ...values };
     }
 
     commandCopyToGPU(values?: UniformValues<Bindings>) {

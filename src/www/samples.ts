@@ -20,8 +20,8 @@ function addSample(name: string, sample: () => Factory<HTMLElement>) {
 
 const samples = {
     "5 GPU Mesh": GPUMeshSample,
-    "4 Compute": Compute,
     "3 Instancing": Instancing,
+    "4 Compute": Compute,
     "2 Textures": TextureSample,
     "1 First Triangle": FirstTriangle,
 }

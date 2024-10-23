@@ -18,7 +18,7 @@ struct VertexOutput {
 // New: define a struct that contains the data we want to pass
 // through the uniform buffer
 struct Camera {
-    viewProjectionMatrix: mat4x4<f32>,
+    viewProjection: mat4x4<f32>,
 };
 
 // New: create a uniform variable of our struct type
@@ -30,7 +30,7 @@ var<uniform> camera: Camera;
 fn vertex_main(vert: VertexInput) -> VertexOutput {
     var out: VertexOutput;
     out.color = vert.color;
-    out.position = camera.viewProjectionMatrix * vert.position + vec4(-0.45f + 0.2f * f32(vert.instance), 0, 0, 0);
+    out.position = camera.viewProjection * vert.position + vec4(-0.45f + 0.1f * f32(vert.instance), 0, 0, 0);
     return out;
 };
 

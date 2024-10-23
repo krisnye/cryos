@@ -18,10 +18,10 @@ export function GPUMeshSample() {
                 new Vector3(0, 1, 0),
                 (view, eye) => {
                     let projection = Matrix4.perspective(Math.PI * 0.3, c.canvas.width / c.canvas.height, 1, 100)
-                    c.camera.patch({
-                        viewProjectionMatrix: projection.multiply(view),
-                        cameraPosition: eye.toVector4(1),
-                    })
+                    c.camera.values = {
+                        viewProjection: projection.multiply(view),
+                        position: eye,
+                    }
                     requestFrame()
                 }
             )

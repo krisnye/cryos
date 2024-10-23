@@ -42,12 +42,12 @@ export function ComputeCanvas(gridWidth: number) {
             const uniforms = c.createUniformHelper(
                 { binding: 0, visibility: GPUShaderStage.VERTEX },
                 {
-                    viewProjectionMatrix: "mat4x4",
+                    viewProjection: "mat4x4",
                     width: "f32"
                 },
                 {
-                    viewProjectionMatrix: Matrix4.identity,
-                    width: gridWidth
+                    viewProjection: Matrix4.identity,
+                    width: 1024
                 }
             )
 
@@ -95,7 +95,7 @@ export function ComputeCanvas(gridWidth: number) {
                         computePipeline.encodePass(gpuVolume, c.command);
 
                         //  render
-                        uniforms.commandCopyToGPU({ viewProjectionMatrix: viewProjMatrix, width: size.x })
+                        uniforms.commandCopyToGPU({ viewProjection: viewProjMatrix, width: size.x })
                         c.beginRenderPass()
                         {
                             c.render.setPipeline(renderPipeline)

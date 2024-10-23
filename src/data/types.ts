@@ -1,12 +1,9 @@
-import type { Struct } from "./Struct.js"
 import type { typeDescriptors } from "./constants.js";
 
-export type ValueType = Primitive | Struct
-export type TypedArray = Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Float32Array | Float64Array;
-export type TypedArrayConstructor = new (length: number | ArrayBuffer) => TypedArray
+type TypedArray = Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Float32Array | Float64Array;
+type TypedArrayConstructor = new (length: number | ArrayBuffer) => TypedArray
 
-
-export interface Primitive {
+interface Primitive {
     min: number
     max: number
     bits: number
@@ -14,8 +11,7 @@ export interface Primitive {
     gpuType?: string
 }
 
-
-export interface Types {
+interface Types {
     u8: number
     u16: number
     u32: number

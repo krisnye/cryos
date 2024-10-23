@@ -54,6 +54,7 @@ export function TextureSample() {
                 },
                 destroy() {
                     vertexBuffer.destroy()
+                    texture.destroy();
                 }
             }
         }

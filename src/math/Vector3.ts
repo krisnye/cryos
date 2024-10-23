@@ -160,12 +160,12 @@ export class Vector3 {
         return new Float32Array(this.toArray())
     }
 
-    toString() {
-        return `(${this.x},${this.y},${this.z})`
-    }
-
     toVector4(w = 1.0) {
         return new Vector4(this.x, this.y, this.z, w);
+    }
+
+    toString() {
+        return `(${this.x},${this.y},${this.z})`
     }
 
 }

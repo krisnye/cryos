@@ -63,7 +63,6 @@ export async function loadGLTFModel(c: GPUContext, props: Props): Promise<GPUMod
         throw new Error(`We cannot yet handle more than 1 buffer`)
     }
 
-    console.log(json)
     // Make a GLTFBuffer that is a view of the entire binary chunk's data,
     // we'll use this to create buffer views within the chunk for memory referenced
     // by objects in the glTF scene
