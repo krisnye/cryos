@@ -41,7 +41,7 @@ export function Instancing() {
                     c.render.setPipeline(pipeline)
                     c.render.setBindGroup(0, bindGroup)
                     c.render.setVertexBuffer(0, vertexBuffer)
-                    c.render.draw(3, 10, 0, 0)
+                    c.render.draw(3, 10)
                     c.endRenderPass()
                     c.endCommands()
                 },
