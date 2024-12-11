@@ -1,7 +1,7 @@
 
-import { ComputeShaderDescriptor, GraphicShaderDescriptor, ShaderResourceValues } from "./shader-types.js";
+import { ComputeShaderDescriptor, GraphicShaderDescriptor, ShaderResourceValues, ShaderVertexBuffer } from "./shader-types.js";
 import { EmptyToNever, Simplify } from "./meta-types.js";
-import { StorageBuffer, VertexBuffer } from "./resource-types.js";
+import { StorageBuffer, VertexAttributes } from "./resource-types.js";
 import { TupleType } from "./data-types.js";
 
 export type ComputeShader<C extends ComputeShaderDescriptor> = {
@@ -17,13 +17,11 @@ export type GraphicShader<G extends GraphicShaderDescriptor> = {
   descriptor: G,
   draw: (
       resources: EmptyToNever<ShaderResourceValues<G>>,
-      vertexBuffer: VertexBuffer<G["vertex"]["attributes"]>,
+      vertexBuffer: ShaderVertexBuffer<G>,
       vertexCount: number,
       instanceCount?: number
   ) => DrawCommand<G>,
-  createVertexBuffer(
-        data: number[]
-  ): VertexBuffer<G["vertex"]["attributes"]>;
+  createVertexBuffer: G["attributes"] extends VertexAttributes ? (data: number[]) => ShaderVertexBuffer<G> : undefined;
 };
 
 export interface Context<GS extends Record<string, GraphicShaderDescriptor> = {}, CS extends Record<string, ComputeShaderDescriptor> = {}> {
@@ -48,8 +46,8 @@ export interface ComputeCommand<C extends ComputeShaderDescriptor> {
 export interface DrawCommand<G extends GraphicShaderDescriptor> {
     shaderName: string;
     resources: ShaderResourceValues<G>;
-    vertexBuffer: VertexBuffer<G["vertex"]["attributes"]>;
-    vertexCount: number;
+    vertexBuffer?: ShaderVertexBuffer<G>;
+    vertexCount?: number;
     instanceCount?: number;
 }
 

@@ -9,9 +9,9 @@
     "watch": "run-p watch:*",
     "watch:build": "tsc -w --preserveWatchOutput",
     "watch:build-vite": "vite build --watch",
-    "watch:test": "vitest watch src",
+    "watch:test": "vitest watch",
     "watch:web": "vite --port 8080",
-    "test": "vitest run src",
+    "test": "vitest run",
     "clean": "rm -rf lib",
     "deploy": "npm run clean && npm run build && npm publish --access public"
   },
@@ -19,7 +19,11 @@
     "./*": "./lib/*.js"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@vitest/browser": "^2.1.8",
+    "@vitest/runner": "^2.1.8",
     "@webgpu/types": "^0.1.35",
+    "happy-dom": "^15.11.7",
     "lit": "^2.8.0",
     "nodemon": "^3.0.1",
     "npm-run-all": "^4.1.5",
@@ -27,7 +31,8 @@
     "typescript": "^5.2.2",
     "vite": "^4.3.9",
     "vite-plugin-string": "^1.2.1",
-    "vitest": "^0.34.1"
+    "vitest": "^2.1.8",
+    "webdriverio": "^9.4.1"
   },
   "author": "krisnye@gmail.com",
   "license": "MIT",

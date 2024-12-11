@@ -10,17 +10,13 @@ test("context type tests", () => {
     async function firstShader() {
         const c = await base.withGraphicShaders({
             my_shader: {
-                vertex: {
-                    attributes: {
-                        position: "vec3",
-                        color: "vec4"
-                    },
-                    uniforms: {
-                        time: "f32",
-                        ambientColor: "vec3",
-                    }
+                attributes: {
+                    position: "vec3",
+                    color: "vec4"
                 },
-                fragment: {
+                uniforms: {
+                    time: "f32",
+                    ambientColor: "vec3",
                 },
                 source: ""
             }
@@ -43,8 +39,7 @@ test("context type tests", () => {
     async function firstTriangle(b: Context) {
         const c = await b.withGraphicShaders({
             my_shader: {
-                vertex: { attributes: { position: "vec3", color: "vec4" } },
-                fragment: { },
+                attributes: { position: "vec3", color: "vec4" },
                 source: ""
             }
         });

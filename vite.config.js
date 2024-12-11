@@ -1,4 +1,3 @@
-
 import { defineConfig } from 'vite';
 import { resolve } from 'path'
 import { terser } from 'rollup-plugin-terser';
@@ -8,6 +7,27 @@ export default defineConfig({
     plugins: [
         vitePluginString({ compress: false })
     ],
+    test: {
+        browser: {
+            enabled: true,
+            name: 'chromium',
+            provider: 'playwright',
+            headless: true,
+            options: {
+                args: ['--enable-unsafe-webgpu']
+            }
+        },
+        environmentOptions: {
+            browser: {
+                enabled: true,
+                name: 'chrome',
+                provider: 'webdriverio',
+                headless: true,
+            },
+        },
+        include: ['src/**/*.test.ts'],
+        exclude: ['lib/**/*'],
+    },
     build: {
         minify: true,
         lib: {

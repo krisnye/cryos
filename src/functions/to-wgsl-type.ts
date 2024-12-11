@@ -1,4 +1,5 @@
-import { ResourceType } from "./resource-types.js";
+import { ResourceType } from "../types/resource-types.js";
+
 
 export function toWGSLType(type: ResourceType): string {
     // Handle array types (tuples)
@@ -24,7 +25,7 @@ export function toWGSLType(type: ResourceType): string {
             return "vec3<f32>";
         case "vec4":
             return "vec4<f32>";
-            
+
         // Matrix types need <f32>
         case "mat2x2":
             return "mat2x2<f32>";
@@ -44,7 +45,7 @@ export function toWGSLType(type: ResourceType): string {
             return "mat4x2<f32>";
         case "mat4x3":
             return "mat4x3<f32>";
-            
+
         default:
             return type;
     }

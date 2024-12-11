@@ -1,4 +1,4 @@
-import { createVertexBuffer } from "./vertex-buffer.js";
+import { createGraphicsShader, InternalGraphicsShader } from "./create-graphics-shader.js";
 import { ComputeCommand, ComputeShader, ComputeShaderDescriptor, Context, DrawCommand, GraphicShader, GraphicShaderDescriptor, isComputeCommand, isDrawCommand } from "./types/index.js";
 
 export async function createContext(canvas: HTMLCanvasElement): Promise<Context> {
@@ -22,30 +22,22 @@ export async function createContext(canvas: HTMLCanvasElement): Promise<Context>
         format: "depth24plus-stencil8",
         usage: GPUTextureUsage.RENDER_ATTACHMENT
     });
+    const targetFormat = "bgra8unorm";
     // Setup render outputs
     canvasContext.configure({
         device,
-        format: "bgra8unorm",
+        format: targetFormat,
         usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
-    const shaders: { [K: string]: GraphicShader<GraphicShaderDescriptor> | ComputeShader<ComputeShaderDescriptor> } = {};
+    const shaders: { [K: string]: InternalGraphicsShader<GraphicShaderDescriptor> | ComputeShader<ComputeShaderDescriptor> } = {};
 
     const withGraphicShaders = <S extends Record<string, GraphicShaderDescriptor>>(newShaders: S) => {
         Object.assign(
             shaders,
             Object.fromEntries(
                 Object.entries(newShaders).map(([shaderName, descriptor]) => {
-                    const shader = {
-                        descriptor,
-                        draw: (resources, vertexBuffer, vertexCount, instanceCount) => {
-                            return { shaderName, resources, vertexBuffer, vertexCount, instanceCount };
-                        },
-                        createVertexBuffer: (data) => {
-                            return createVertexBuffer(device, descriptor.vertex.attributes, data);
-                        }
-                    } satisfies GraphicShader<GraphicShaderDescriptor>;
-                    return [ shaderName, shader ];
+                    return [shaderName, createGraphicsShader({ device, targetFormat, shaderName, descriptor })];
                 })
             )
         );
