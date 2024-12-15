@@ -2,8 +2,11 @@ import { DataType, FromDataType } from "../types/data-types.js";
 import { sizeOf } from "./size-of.js";
 import { createTypedBufferWriter } from "./create-typed-buffer-writer.js";
 
-export type UniformHelper<U> = U & {
+export type UniformHelper<U> = {
+    values: { -readonly [K in keyof U]: U[K] };
     maybeWriteToGPU(): void;
+    buffer: GPUBuffer;
+    size: number;
 }
 
 type UniformValues<T extends Record<string, DataType>> = { [K in keyof T]: FromDataType<T[K]> };
@@ -30,7 +33,6 @@ export function createUniformHelper<T extends Record<string, DataType>>(device: 
 
     const bufferWriter = createTypedBufferWriter(size);
     let isDirty = false;
-    const values = { ...initialValues };
 
     const result = {
         maybeWriteToGPU: () => {
@@ -38,15 +40,19 @@ export function createUniformHelper<T extends Record<string, DataType>>(device: 
                 device.queue.writeBuffer(buffer, 0, bufferWriter.byteArray);
                 isDirty = false;
             }
-        }
+        },
+        values: {} as UniformValues<T>,
+        buffer,
+        size
     } as UniformHelper<UniformValues<T>>;
 
+    const currentValues = { ...initialValues };
     // Add getters/setters for each root field
     for (const [prop, type] of Object.entries(types)) {
-        Object.defineProperty(result, prop, {
-            get: () => values[prop],
+        Object.defineProperty(result.values, prop, {
+            get: () => currentValues[prop],
             set: (value: any) => {
-                (values as any)[prop] = value;
+                (currentValues as any)[prop] = value;
                 const offset = fieldOffsets.get(prop)!;
                 bufferWriter.write(type, value, offset);
                 isDirty = true;
@@ -55,7 +61,7 @@ export function createUniformHelper<T extends Record<string, DataType>>(device: 
         });
     }
 
-    Object.assign(result, values);
+    Object.assign(result.values, currentValues);
 
     return result;
 }

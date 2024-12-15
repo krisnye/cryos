@@ -29,3 +29,7 @@
 - Initialize through defined interfaces
 - Maintain single source of truth
 - Track state changes explicitly
+
+# Constraints
+
+- DO NOT use any code from /src/internal as it's all legacy.

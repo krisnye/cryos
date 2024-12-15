@@ -1,6 +1,5 @@
 import { expect, test, describe, vi } from "vitest";
 import { createUniformHelper } from "./create-uniform-helper.js";
-import { sizeOf } from "./size-of.js";
 
 describe("createUniformHelper", () => {
     // Mock GPUDevice and related types
@@ -30,9 +29,9 @@ describe("createUniformHelper", () => {
         const helper = createUniformHelper(device, types, initialValues);
 
         // Verify initial values
-        expect(helper.time).toBe(1.5);
-        expect(helper.count).toBe(-42);
-        expect(helper.flags).toBe(7);
+        expect(helper.values.time).toBe(1.5);
+        expect(helper.values.count).toBe(-42);
+        expect(helper.values.flags).toBe(7);
 
         // Verify buffer was created with correct size (3 * 4 bytes)
         expect(device.createBuffer).toHaveBeenCalledWith({
@@ -56,12 +55,12 @@ describe("createUniformHelper", () => {
         const helper = createUniformHelper(device, types, initialValues);
 
         // Verify initial values
-        expect(helper.position).toEqual([1, 2, 3]);
-        expect(helper.color).toEqual([1, 0, 0, 1]);
+        expect(helper.values.position).toEqual([1, 2, 3]);
+        expect(helper.values.color).toEqual([1, 0, 0, 1]);
 
         // Update values
-        helper.position = [4, 5, 6];
-        expect(helper.position).toEqual([4, 5, 6]);
+        helper.values.position = [4, 5, 6];
+        expect(helper.values.position).toEqual([4, 5, 6]);
     });
 
     test("should handle struct types", () => {
@@ -85,14 +84,14 @@ describe("createUniformHelper", () => {
         const helper = createUniformHelper(device, types, initialValues);
 
         // Verify initial values
-        expect(helper.light).toEqual(initialValues.light);
+        expect(helper.values.light).toEqual(initialValues.light);
 
         // Update nested value
-        helper.light = {
-            ...helper.light,
+        helper.values.light = {
+            ...helper.values.light,
             intensity: 0.8
         };
-        expect(helper.light.intensity).toBe(0.8);
+        expect(helper.values.light.intensity).toBe(0.8);
     });
 
     test("should write to GPU only when dirty", () => {
@@ -118,7 +117,7 @@ describe("createUniformHelper", () => {
         expect(device.queue.writeBuffer).toHaveBeenCalledTimes(1);
 
         // Make a change
-        helper.scale = 2.0;
+        helper.values.scale = 2.0;
         helper.maybeWriteToGPU();
         expect(device.queue.writeBuffer).toHaveBeenCalledTimes(2);
     });
@@ -162,10 +161,10 @@ describe("createUniformHelper", () => {
         const helper = createUniformHelper(device, types, initialValues);
 
         // Verify the structure was created correctly
-        expect(helper.scene.camera.position).toEqual([1, 2, 3]);
-        expect(helper.scene.camera.fov).toBe(45.0);
-        expect(helper.scene.lighting.ambient).toEqual([0.1, 0.2, 0.3]);
-        expect(helper.scene.lighting.intensity).toBe(0.5);
+        expect(helper.values.scene.camera.position).toEqual([1, 2, 3]);
+        expect(helper.values.scene.camera.fov).toBe(45.0);
+        expect(helper.values.scene.lighting.ambient).toEqual([0.1, 0.2, 0.3]);
+        expect(helper.values.scene.lighting.intensity).toBe(0.5);
 
         // Verify buffer was created with correct size (16 * 4 bytes)
         expect(device.createBuffer).toHaveBeenCalledWith({
