@@ -6,11 +6,11 @@
   "type": "module",
   "scripts": {
     "build": "tsc && vite build",
-    "watch": "run-p watch:*",
-    "watch:build": "tsc -w --preserveWatchOutput",
-    "watch:build-vite": "vite build --watch",
-    "watch:test": "vitest watch",
-    "watch:web": "vite --port 8080",
+    "dev": "run-p dev:*",
+    "dev:build": "tsc -w --preserveWatchOutput",
+    "dev:build-vite": "vite build --watch",
+    "dev:test": "vitest watch",
+    "dev:web": "vite --port 8080",
     "test": "vitest run",
     "clean": "rm -rf lib",
     "deploy": "npm run clean && npm run build && npm publish --access public",
@@ -39,6 +39,5 @@
   "author": "krisnye@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "gl-matrix": "^3.4.3"
   }
 }

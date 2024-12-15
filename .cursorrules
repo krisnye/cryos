@@ -1,5 +1,6 @@
 # Paradigm
 
+- Emphasize separation of concerns
 - Pure functional programming
 - Data oriented design
 - Prefer Immutable data, but mutation allowed for high performance
@@ -7,6 +8,13 @@
 - No classes
 - Interfaces implemented by literal objects
 - No inheritance
+
+# Linting
+
+- Use modern Typescript.
+- End statements with semicolons.
+- Use `const` and `let` instead of `var`.
+- Use `??` instead of `||` for nullish coalescing.
 
 # Performance
 

@@ -13,10 +13,6 @@ describe("createUniformHelper", () => {
         }
     } as unknown as GPUDevice);
 
-    const createMockCommandEncoder = () => ({
-        finish: vi.fn()
-    } as unknown as GPUCommandEncoder);
-
     test("should handle basic scalar types", () => {
         const device = createMockDevice();
         const types = {
@@ -112,19 +108,18 @@ describe("createUniformHelper", () => {
         } as const;
 
         const helper = createUniformHelper(device, types, initialValues);
-        const encoder = createMockCommandEncoder();
 
         // Initial state should trigger a write
-        helper.maybeWriteToGPU(encoder);
+        helper.maybeWriteToGPU();
         expect(device.queue.writeBuffer).toHaveBeenCalledTimes(1);
 
         // No changes, should not write
-        helper.maybeWriteToGPU(encoder);
+        helper.maybeWriteToGPU();
         expect(device.queue.writeBuffer).toHaveBeenCalledTimes(1);
 
         // Make a change
         helper.scale = 2.0;
-        helper.maybeWriteToGPU(encoder);
+        helper.maybeWriteToGPU();
         expect(device.queue.writeBuffer).toHaveBeenCalledTimes(2);
     });
 
@@ -180,7 +175,7 @@ describe("createUniformHelper", () => {
 
         // Clear previous captured data
         capturedData = null;
-        helper.maybeWriteToGPU(createMockCommandEncoder());
+        helper.maybeWriteToGPU();
 
         // Initial write to GPU should happen automatically
         expect(device.queue.writeBuffer).toHaveBeenCalledTimes(1);
