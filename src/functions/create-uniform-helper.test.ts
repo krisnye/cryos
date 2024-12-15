@@ -1,5 +1,6 @@
 import { expect, test, describe, vi } from "vitest";
 import { createUniformHelper } from "./create-uniform-helper.js";
+import { sizeOf } from "./size-of.js";
 
 describe("createUniformHelper", () => {
     // Mock GPUDevice and related types
@@ -127,4 +128,84 @@ describe("createUniformHelper", () => {
         expect(device.queue.writeBuffer).toHaveBeenCalledTimes(2);
     });
 
+    test("should handle nested structs and verify buffer contents", () => {
+        const device = createMockDevice();
+        const types = {
+            scene: {
+                camera: {
+                    position: "vec3" as const,
+                    fov: "f32" as const
+                },
+                lighting: {
+                    ambient: "vec3" as const,
+                    intensity: "f32" as const
+                }
+            }
+        };
+
+        // Create a mock buffer to capture written data
+        let capturedData: ArrayBuffer | null = null;
+        const mockWriteBuffer = vi.fn().mockImplementation((buffer, offset, data) => {
+            capturedData = data;
+        });
+
+        device.queue.writeBuffer = mockWriteBuffer;
+        
+        const initialValues = {
+            scene: {
+                camera: {
+                    position: [1, 2, 3],
+                    fov: 45.0
+                },
+                lighting: {
+                    ambient: [0.1, 0.2, 0.3],
+                    intensity: 0.5
+                }
+            }
+        } as const;
+
+        const helper = createUniformHelper(device, types, initialValues);
+
+        // Verify the structure was created correctly
+        expect(helper.scene.camera.position).toEqual([1, 2, 3]);
+        expect(helper.scene.camera.fov).toBe(45.0);
+        expect(helper.scene.lighting.ambient).toEqual([0.1, 0.2, 0.3]);
+        expect(helper.scene.lighting.intensity).toBe(0.5);
+
+        // Verify buffer was created with correct size (16 * 4 bytes)
+        expect(device.createBuffer).toHaveBeenCalledWith({
+            size: 64, // 16 floats * 4 bytes
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+
+        // Clear previous captured data
+        capturedData = null;
+        helper.maybeWriteToGPU(createMockCommandEncoder());
+
+        // Initial write to GPU should happen automatically
+        expect(device.queue.writeBuffer).toHaveBeenCalledTimes(1);
+        
+        // Verify buffer contents
+        const expectedData = new Float32Array([
+            // camera struct (32 bytes)
+            // position (vec3 + padding)
+            1, 2, 3, 0,  
+            // fov (f32 + padding to 16-byte boundary)
+            45.0, 0, 0, 0,
+            
+            // lighting struct (32 bytes)
+            // ambient (vec3 + padding)
+            0.1, 0.2, 0.3, 0,
+            // intensity (f32 + padding to 16-byte boundary)
+            0.5, 0, 0, 0
+        ]);
+
+        // Convert captured data to Float32Array for comparison
+        const actualData = new Float32Array(capturedData!);
+
+        // Compare the arrays
+        expect(Array.from(actualData)).toEqual(Array.from(expectedData));
+    });
+
 });
+

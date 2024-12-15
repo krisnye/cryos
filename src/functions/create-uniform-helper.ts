@@ -1,5 +1,7 @@
 import { DataType, FromDataType } from "../types/data-types.js";
 import { sizeOf } from "./size-of.js";
+import { getBaseAlignment } from "./get-base-alignment.js";
+import { align } from "./align.js";
 
 export type UniformHelper<U> = U & {
     maybeWriteToGPU(commandEncoder: GPUCommandEncoder): void;
@@ -18,8 +20,8 @@ export function createUniformHelper<T extends Record<string, DataType>>(device: 
         if (offset % f32Size !== 0) {
             throw new Error(`Field ${name} has invalid alignment. Offset ${offset} is not divisible by ${f32Size} bytes`);
         }
-        // Convert byte offsets to array indices
-        fieldOffsets.set(name, offset / f32Size);
+        // Keep byte offsets as they are, don't convert to array indices
+        fieldOffsets.set(name, offset);
     }
 
     const buffer = device.createBuffer({
@@ -39,27 +41,55 @@ export function createUniformHelper<T extends Record<string, DataType>>(device: 
         if (typeof type === 'object' && !Array.isArray(type)) {
             // Handle struct types by following the type definition order
             let totalWritten = 0;
+            const structAlignment = getBaseAlignment(type);
+            
+            // Align the struct itself
+            const alignedOffset = Math.ceil(arrayOffset / structAlignment) * structAlignment;
+            const initialPadding = alignedOffset - arrayOffset;
+            totalWritten += initialPadding;
+
             for (const [fieldName, fieldType] of Object.entries(type)) {
                 const fieldValue = value[fieldName];
-                totalWritten += writeValueToBuffer(fieldType as DataType, fieldValue, arrayOffset + totalWritten);
+                const fieldAlignment = getBaseAlignment(fieldType as DataType);
+                
+                // Align each field according to its base alignment
+                totalWritten = align(totalWritten, fieldAlignment);
+                
+                const written = writeValueToBuffer(
+                    fieldType as DataType, 
+                    fieldValue, 
+                    alignedOffset + totalWritten
+                );
+                totalWritten += written;
             }
-            return totalWritten;
+
+            // Pad struct to its alignment requirement
+            return align(totalWritten, structAlignment);
         } else if (Array.isArray(value)) {
-            // For vectors/matrices, write array values
+            // For vectors/matrices, write array values with proper alignment
+            const vecAlignment = getBaseAlignment(type);
+            const paddedOffset = Math.ceil(arrayOffset / vecAlignment) * vecAlignment;
+            
+            // Write the actual values
             for (let i = 0; i < value.length; i++) {
-                f32Array[arrayOffset + i] = value[i];
+                f32Array[paddedOffset / 4 + i] = value[i];
             }
-            return value.length;
+            
+            // For vec3, we need to pad to vec4 alignment
+            return type === "vec3" ? 16 : value.length * 4;
         } else {
             // Handle scalar types
+            const scalarAlignment = getBaseAlignment(type);
+            const paddedOffset = Math.ceil(arrayOffset / scalarAlignment) * scalarAlignment;
+            
             if (type === "f32") {
-                f32Array[arrayOffset] = value;
+                f32Array[paddedOffset / 4] = value;
             } else if (type === "u32") {
-                u32Array[arrayOffset] = value;
+                u32Array[paddedOffset / 4] = value;
             } else if (type === "i32") {
-                i32Array[arrayOffset] = value;
+                i32Array[paddedOffset / 4] = value;
             }
-            return 1;
+            return 4; // Size of scalar types
         }
     }
 
@@ -86,7 +116,6 @@ export function createUniformHelper<T extends Record<string, DataType>>(device: 
         });
     }
 
-    // Write initial values to buffer which also marks dirty.
     Object.assign(result, values);
 
     return result;

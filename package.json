@@ -13,7 +13,8 @@
     "watch:web": "vite --port 8080",
     "test": "vitest run",
     "clean": "rm -rf lib",
-    "deploy": "npm run clean && npm run build && npm publish --access public"
+    "deploy": "npm run clean && npm run build && npm publish --access public",
+    "test:debug": "node --inspect-brk ./node_modules/vitest/vitest.mjs run --no-browser"
   },
   "exports": {
     "./*": "./lib/*.js"
@@ -27,6 +28,7 @@
     "lit": "^2.8.0",
     "nodemon": "^3.0.1",
     "npm-run-all": "^4.1.5",
+    "playwright": "^1.49.1",
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "^5.2.2",
     "vite": "^4.3.9",

@@ -36,7 +36,7 @@ describe("toGPUVertexBufferLayout", () => {
 
         const layout = toGPUVertexBufferLayout(attributes);
 
-        expect(layout.arrayStride).toBe(12); // 3 * 4 bytes
+        expect(layout.arrayStride).toBe(16); // vec3 is 16-byte aligned
         expect(layout.attributes).toHaveLength(1);
         expect(layout.attributes[0]).toEqual({
             format: "float32x3",
@@ -55,7 +55,7 @@ describe("toGPUVertexBufferLayout", () => {
 
         const layout = toGPUVertexBufferLayout(attributes);
 
-        expect(layout.arrayStride).toBe(36); // (3 + 4 + 2) * 4 bytes
+        expect(layout.arrayStride).toBe(40); // vec3(16) + vec4(16) + vec2(8)
         expect(layout.attributes).toHaveLength(3);
 
         // Position attribute
@@ -68,14 +68,14 @@ describe("toGPUVertexBufferLayout", () => {
         // Color attribute
         expect(layout.attributes[1]).toEqual({
             format: "float32x4",
-            offset: 12, // After position
+            offset: 16, // After aligned vec3
             shaderLocation: 1
         });
 
         // TexCoord attribute
         expect(layout.attributes[2]).toEqual({
             format: "float32x2",
-            offset: 28, // After position and color
+            offset: 32, // After vec4
             shaderLocation: 2
         });
     });

@@ -20,17 +20,25 @@ export function sizeOf(type: DataType, fieldOffsetMap?: Map<string, number>): nu
     // Handle struct types (objects)
     if (typeof type === 'object') {
         let totalSize = 0;
+        const structAlignment = getBaseAlignment(type);
+
         for (const name of Object.keys(type)) {
             const field = type[name] as DataType;
-            const baseAlignment = getBaseAlignment(field);
-            totalSize = align(totalSize, baseAlignment);
-            totalSize += sizeOf(field);
+            const fieldAlignment = getBaseAlignment(field);
+            
+            // Align field to its required alignment
+            totalSize = align(totalSize, fieldAlignment);
+            
             if (fieldOffsetMap) {
                 fieldOffsetMap.set(name, totalSize);
             }
+            
+            // Add field size
+            totalSize += sizeOf(field);
         }
-        // Round up total size to struct's alignment
-        return align(totalSize, getBaseAlignment(type));
+
+        // Round up total size to struct's alignment (which is its largest member alignment)
+        return align(totalSize, structAlignment);
     }
 
     // Handle primitive types
@@ -43,7 +51,7 @@ export function sizeOf(type: DataType, fieldOffsetMap?: Map<string, number>): nu
         case "vec2":
             return 8;
         case "vec3":
-            return 12;
+            return 16;
         case "vec4":
         case "mat2x2":
             return 16;
