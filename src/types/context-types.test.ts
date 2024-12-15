@@ -29,9 +29,14 @@ test("context type tests", () => {
         ]);
 
         const drawCommand = c.shaders.my_shader.draw({
-            time: 0,
-            ambientColor: [0.1, 0.1, 0.1],
-        }, vertexBuffer, 1);
+            uniforms: {
+                time: 0,
+                ambientColor: [0.1, 0.1, 0.1],
+            },
+            resources: {},
+            vertexBuffer,
+            vertexCount: 1,
+        });
 
         c.executeCommands([drawCommand]);
     }
@@ -48,7 +53,12 @@ test("context type tests", () => {
             -1, -1, 0,   1, 0, 1, 0,
             0, 1, 0,     1, 0, 0, 1,
         ]);
-        const drawCommand = c.shaders.my_shader.draw({}, vertexBuffer, 3);
+        const drawCommand = c.shaders.my_shader.draw({
+            uniforms: {},
+            resources: {},
+            vertexBuffer,
+            vertexCount: 3,
+        });
 
         return {
             render() {

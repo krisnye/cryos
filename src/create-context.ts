@@ -1,5 +1,60 @@
-import { createGraphicsShader, InternalGraphicsShader } from "./create-graphics-shader.js";
-import { ComputeCommand, ComputeShader, ComputeShaderDescriptor, Context, DrawCommand, GraphicShader, GraphicShaderDescriptor, isComputeCommand, isDrawCommand } from "./types/index.js";
+import { createVertexBuffer } from "./create-vertex-buffer.js";
+import { createDrawCommand } from "./create-draw-command.js";
+import { toGPUVertexBufferLayout } from "./functions/index.js";
+import { toBindGroupLayoutDescriptor } from "./functions/to-bind-group-layout-descriptor.js";
+import { toShaderHeaderInputs } from "./functions/to-shader-header-inputs.js";
+import { ComputeCommand, ComputeShader, ComputeShaderDescriptor, Context, DrawCommand, GraphicShader, GraphicShaderDescriptor, isComputeCommand, isDrawCommand, ShaderVertexBuffer } from "./types/index.js";
+
+export interface InternalDrawCommand<G extends GraphicShaderDescriptor> extends DrawCommand<G> {
+    encodeCommands: (encoder: GPUCommandEncoder) => void;
+    encodeDrawCommands: (pass: GPURenderPassEncoder) => void;
+}
+
+export function createGraphicShader<T extends GraphicShaderDescriptor>(
+    { device, targetFormat, shaderName, descriptor }: {
+        device: GPUDevice,
+        targetFormat: GPUTextureFormat,
+        shaderName: string,
+        descriptor: T
+    }
+): GraphicShader<T> {
+    const code = toShaderHeaderInputs(descriptor) + descriptor.source;
+    const vertexBufferLayout = descriptor.attributes ? toGPUVertexBufferLayout(descriptor.attributes) : undefined;
+    const module = device.createShaderModule({ code });
+    const bindGroupLayout = device.createBindGroupLayout(toBindGroupLayoutDescriptor(descriptor));
+    const layout = device.createPipelineLayout({
+        bindGroupLayouts: [bindGroupLayout]
+    });
+    const renderPipeline = device.createRenderPipeline({
+        layout,
+        vertex: {
+            module,
+            entryPoint: "vertex_main",
+            buffers: vertexBufferLayout ? [vertexBufferLayout] : [],
+        },
+        fragment: {
+            module,
+            entryPoint: "fragment_main",
+            targets: [
+                {
+                    format: targetFormat,
+                },
+            ],
+        },
+        primitive: {
+            topology: "triangle-list",
+        },
+    });
+
+    const shader = {
+        descriptor,
+        draw: (props) => createDrawCommand(shaderName, renderPipeline, props),
+        createVertexBuffer: (descriptor.attributes ? (data) => {
+            return createVertexBuffer(device, descriptor.attributes!, data) as ShaderVertexBuffer<T>;
+        } : undefined) as any,
+    } satisfies GraphicShader<T>;
+    return shader;
+}
 
 export async function createContext(canvas: HTMLCanvasElement): Promise<Context> {
     const adapter = await navigator.gpu.requestAdapter();
@@ -30,14 +85,14 @@ export async function createContext(canvas: HTMLCanvasElement): Promise<Context>
         usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
-    const shaders: { [K: string]: InternalGraphicsShader<GraphicShaderDescriptor> | ComputeShader<ComputeShaderDescriptor> } = {};
+    const shaders: { [K: string]: GraphicShader<GraphicShaderDescriptor> | ComputeShader<ComputeShaderDescriptor> } = {};
 
     const withGraphicShaders = <S extends Record<string, GraphicShaderDescriptor>>(newShaders: S) => {
         Object.assign(
             shaders,
             Object.fromEntries(
                 Object.entries(newShaders).map(([shaderName, descriptor]) => {
-                    return [shaderName, createGraphicsShader({ device, targetFormat, shaderName, descriptor })];
+                    return [shaderName, createGraphicShader({ device, targetFormat, shaderName, descriptor })];
                 })
             )
         );
@@ -50,7 +105,7 @@ export async function createContext(canvas: HTMLCanvasElement): Promise<Context>
      */
     const executeCommands = async (commands: (ComputeCommand<ComputeShaderDescriptor> | DrawCommand<GraphicShaderDescriptor>)[]): Promise<void> => {
         const encoder = device.createCommandEncoder();
-        
+
         // Start render pass
         const renderPass = encoder.beginRenderPass({
             colorAttachments: [{

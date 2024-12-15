@@ -13,6 +13,7 @@ export default defineConfig({
             name: 'chromium',
             provider: 'playwright',
             headless: true,
+            screenshot: false,
             options: {
                 args: ['--enable-unsafe-webgpu']
             }

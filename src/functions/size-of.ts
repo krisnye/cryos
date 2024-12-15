@@ -8,7 +8,7 @@ import { getBaseAlignment } from "./get-base-alignment.js";
  * @see https://www.w3.org/TR/WGSL/#alignment-and-size
  */
 
-export function sizeOf(type: DataType): number {
+export function sizeOf(type: DataType, fieldOffsetMap?: Map<string, number>): number {
     // Handle array types (tuples)
     if (Array.isArray(type)) {
         const [elementType, count] = type;
@@ -20,10 +20,14 @@ export function sizeOf(type: DataType): number {
     // Handle struct types (objects)
     if (typeof type === 'object') {
         let totalSize = 0;
-        for (const field of Object.values(type) as DataType[]) {
+        for (const name of Object.keys(type)) {
+            const field = type[name] as DataType;
             const baseAlignment = getBaseAlignment(field);
             totalSize = align(totalSize, baseAlignment);
             totalSize += sizeOf(field);
+            if (fieldOffsetMap) {
+                fieldOffsetMap.set(name, totalSize);
+            }
         }
         // Round up total size to struct's alignment
         return align(totalSize, getBaseAlignment(type));

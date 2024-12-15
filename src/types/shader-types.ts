@@ -89,11 +89,13 @@ export type ShaderVertexBuffer<T> = T extends GraphicShaderDescriptor ?
   T["attributes"] extends VertexAttributes ? VertexBuffer<T["attributes"]> : never
   : never;
 
+export type ShaderUniformValues<T> =
+  { [K in keyof ShaderUniformTypes<T>]: FromDataType<ShaderUniformTypes<T>[K]> };
+
 /**
  * Returns the required ResourceTypes for a given ShaderDescriptor.
  */
 export type ShaderResourceValues<T> = Simplify<
-  & { [K in keyof ShaderUniformTypes<T>]: FromDataType<ShaderUniformTypes<T>[K]> }
   & { [K in keyof ShaderTextureTypes<T>]: GPUTexture }
   & { [K in keyof ShaderSamplerTypes<T>]: GPUSampler }
   & { [K in keyof ShaderStorageTypes<T>]: StorageBuffer<ShaderStorageTypes<T>[K]> }
@@ -118,6 +120,8 @@ export type ShaderResourceValues<T> = Simplify<
   type CheckSamplerTypes = IsTrue<IsEquivalent<SampleShaderSamplerTypes, { sampler1: "sampler", sampler2: "sampler_comparison" }>>;
   type SampleShaderStorageTypes = ShaderStorageTypes<typeof sampleGraphicsShaderDescriptor>;
   type CheckStorageTypes = IsTrue<IsEquivalent<SampleShaderStorageTypes, { storage1: "vec4", storage2: readonly ["vec4", 200] }>>;
+  type SampleShaderUniformValues = ShaderUniformValues<typeof sampleGraphicsShaderDescriptor>;
+  type CheckUniformValues = IsTrue<IsEquivalent<SampleShaderUniformValues, { time: number, light: Vec4, gravity: Vec3 }>>;
   type SampleShaderResourceValues = ShaderResourceValues<typeof sampleGraphicsShaderDescriptor>;
-  type CheckResourceValues = IsTrue<IsEquivalent<SampleShaderResourceValues, { time: number, light: Vec4, gravity: Vec3, texture1: GPUTexture, texture2: GPUTexture, sampler1: GPUSampler, sampler2: GPUSampler, storage1: {}, storage2: {} }>>;
+  type CheckResourceValues = IsTrue<IsEquivalent<SampleShaderResourceValues, { texture1: GPUTexture, texture2: GPUTexture, sampler1: GPUSampler, sampler2: GPUSampler, storage1: {}, storage2: {} }>>;
 }

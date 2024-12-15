@@ -27,18 +27,18 @@ export type I32 = number
 export type U32 = number
 export type F32 = number
 export type F16 = number
-export type Mat2x2 = [F32, F32, F32, F32]
-export type Mat2x3 = [F32, F32, F32, F32, F32, F32]
-export type Mat2x4 = [F32, F32, F32, F32, F32, F32, F32, F32]
-export type Mat3x2 = [F32, F32, F32, F32, F32, F32]
-export type Mat3x3 = [F32, F32, F32, F32, F32, F32, F32, F32, F32]
-export type Mat3x4 = [F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32]
-export type Mat4x2 = [F32, F32, F32, F32, F32, F32, F32, F32]
-export type Mat4x3 = [F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32]
-export type Mat4x4 = [F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32]
-export type Vec2 = [F32, F32]
-export type Vec3 = [F32, F32, F32]
-export type Vec4 = [F32, F32, F32, F32]
+export type Mat2x2 = readonly [F32, F32, F32, F32]
+export type Mat2x3 = readonly [F32, F32, F32, F32, F32, F32]
+export type Mat2x4 = readonly [F32, F32, F32, F32, F32, F32, F32, F32]
+export type Mat3x2 = readonly [F32, F32, F32, F32, F32, F32]
+export type Mat3x3 = readonly [F32, F32, F32, F32, F32, F32, F32, F32, F32]
+export type Mat3x4 = readonly [F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32]
+export type Mat4x2 = readonly [F32, F32, F32, F32, F32, F32, F32, F32]
+export type Mat4x3 = readonly [F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32]
+export type Mat4x4 = readonly [F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32]
+export type Vec2 = readonly [F32, F32]
+export type Vec3 = readonly [F32, F32, F32]
+export type Vec4 = readonly [F32, F32, F32, F32]
 
 ////////////////////////////////////////////////////////////////////////////////
 // Conversion from Declarative Data Types to Typescript Types

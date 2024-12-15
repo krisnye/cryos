@@ -1,0 +1,23 @@
+# Paradigm
+
+- Pure functional programming
+- Data oriented design
+- Prefer Immutable data, but mutation allowed for high performance
+- TypeScript
+- No classes
+- Interfaces implemented by literal objects
+- No inheritance
+
+# Performance
+
+- Do expensive work at initialization time
+- Minimize allocations in hot paths
+- Avoid string operations in hot paths
+- Use numeric indices over string keys where possible
+
+# Data Flow
+
+- Prefer explicit data flow over implicit
+- Initialize through defined interfaces
+- Maintain single source of truth
+- Track state changes explicitly
