@@ -1,12 +1,10 @@
-import { UniformValues } from "../internal/core/types.js";
 import { GraphicShaderDescriptor, ShaderResourceValues, ShaderUniformValues } from "../types/shader-types.js";
 import { createUniformHelper } from "./create-uniform-helper.js";
 import { toBindGroupLayoutDescriptor } from "./to-bind-group-layout-descriptor.js";
-
+import { Mutable } from "../types/meta-types.js";
 interface BindGroupHelper<G extends GraphicShaderDescriptor> {
-    uniforms: ShaderUniformValues<G>;
+    uniforms: Mutable<ShaderUniformValues<G>>;
     resources: ShaderResourceValues<G>;
-
     maybeWriteToGPU(): void;
     getBindGroup(): GPUBindGroup;
 }
@@ -28,27 +26,23 @@ export function createBindGroupHelper<G extends GraphicShaderDescriptor>(
 
     // Track the current bind group and resource state
     let currentBindGroup: GPUBindGroup | undefined;
-    let lastResourceState = JSON.stringify(resources);
+    let currentResources = resources;
+    let isBindGroupDirty = true;
 
     const result: BindGroupHelper<G> = {
-        uniforms,
+        // Use uniform helper's values directly if it exists
+        uniforms: (uniformHelper?.values ?? {}) as Mutable<ShaderUniformValues<G>>,
         resources,
 
         maybeWriteToGPU: () => {
-            // Update uniforms if needed
             uniformHelper?.maybeWriteToGPU();
         },
 
         getBindGroup: () => {
-            const currentResourceState = JSON.stringify(resources);
-            
             // If resources haven't changed and we have a bind group, reuse it
-            if (currentBindGroup && currentResourceState === lastResourceState) {
+            if (!isBindGroupDirty && currentBindGroup) {
                 return currentBindGroup;
             }
-
-            // Resources changed, need to create new bind group
-            lastResourceState = currentResourceState;
 
             const entries: GPUBindGroupEntry[] = [];
             let bindingIndex = 0;
@@ -117,22 +111,24 @@ export function createBindGroupHelper<G extends GraphicShaderDescriptor>(
                 entries
             });
 
+            isBindGroupDirty = false;
+            currentResources = resources;
+
             return currentBindGroup;
         }
     };
 
-    // Set up getters/setters for uniforms to proxy through to the uniform helper
-    if (uniformHelper && descriptor.uniforms) {
-        for (const [prop, _type] of Object.entries(descriptor.uniforms)) {
-            Object.defineProperty(result.uniforms, prop, {
-                get: () => uniformHelper[prop],
-                set: (value: any) => {
-                    uniformHelper[prop] = value;
-                },
-                enumerable: true
-            });
-        }
-    }
+    // Set up getter/setter for resources to track changes
+    Object.defineProperty(result, 'resources', {
+        get: () => currentResources,
+        set: (newResources: ShaderResourceValues<G>) => {
+            if (newResources !== currentResources) {
+                isBindGroupDirty = true;
+                currentResources = newResources;
+            }
+        },
+        enumerable: true
+    });
 
     return result;
 }

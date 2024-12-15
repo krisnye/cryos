@@ -1,9 +1,10 @@
 import { DataType, FromDataType } from "../types/data-types.js";
 import { sizeOf } from "./size-of.js";
 import { createTypedBufferWriter } from "./create-typed-buffer-writer.js";
+import { Mutable } from "../types/meta-types.js";
 
 export type UniformHelper<U> = {
-    values: { -readonly [K in keyof U]: U[K] };
+    values: Mutable<U>;
     maybeWriteToGPU(): void;
     buffer: GPUBuffer;
     size: number;
