@@ -45,6 +45,12 @@ export function toWGSLType(type: ResourceType): string {
             return "mat4x2<f32>";
         case "mat4x3":
             return "mat4x3<f32>";
+        case "texture_2d":
+            return "texture_2d<f32>";
+        case "texture_3d":
+            return "texture_3d<f32>";
+        case "texture_cube":
+            return "texture_cube<f32>";
 
         default:
             return type;

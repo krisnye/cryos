@@ -1,41 +1,68 @@
-import { createVertexBufferLayoutNamed } from "../../internal/core/functions.js"
-import { GPUContext } from "../../internal/core/GPUContext.js"
-import { Vector4 } from "../../internal/math/Vector4.js"
-import { Color } from "../../internal/math/Color.js"
-import { SampleCanvas } from "../SampleCanvas.js"
-import shader from "./FirstTriangle.wgsl"
+import { NewSampleCanvas } from "../NewSampleCanvas.js"
+import { Context } from "../../types/context-types.js"
+import { GraphicShaderDescriptor } from "../../types/shader-types.js"
 
-const positionColorVertexLayout = createVertexBufferLayoutNamed({
-    position: "float32x4",
-    color: "float32x4"
-})
+const triangleShader = {
+    attributes: {
+        position: "vec3", // this is padded to a vec4
+        color: "vec4"
+    },
+    source: `
+alias float4 = vec4<f32>;
+struct VertexOutput {
+    @builtin(position) position: float4,
+    @location(0) color: float4,
+};
+
+@vertex
+fn vertex_main(vert: VertexInput) -> VertexOutput {
+    var out: VertexOutput;
+    out.color = vert.color;
+    out.position = float4(vert.position, 1.0);
+    return out;
+};
+
+@fragment
+fn fragment_main(in: VertexOutput) -> @location(0) float4 {
+    return float4(in.color);
+}
+`
+} as const satisfies GraphicShaderDescriptor;
 
 export function FirstTriangle() {
-    return SampleCanvas({
-        create: async (c: GPUContext) => {
-            const vertexBuffer = c.createStaticVertexBuffer(
-                positionColorVertexLayout,
+    return NewSampleCanvas({
+        create: async (_c: Context) => {
+            // add our custom shader to the context.
+            const c = await _c.withGraphicShaders({
+                triangleShader
+            });
+
+            // create a vertex buffer for our triangle.
+            const vertexBuffer = c.shaders.triangleShader.createVertexBuffer(
                 [
-                    ...new Vector4(1, -1, 0, 1), ...Color.red,
-                    ...new Vector4(-1, -1, 0, 1), ...Color.green,
-                    ...new Vector4(0, 1, 0, 1), ...Color.blue
+                    // position (vec3 + 1 padding float)    color (vec4)
+                    1, -1, 0, 0,                            1, 0, 0, 1,    // vertex 1
+                    -1, -1, 0, 0,                           0, 1, 0, 1,    // vertex 2
+                    0, 1, 0, 0,                             0, 0, 1, 1,    // vertex 3
                 ]
-            )
-            const pipeline = await c.createRenderPipeline({ vertexInput: positionColorVertexLayout, shader })
+            );
+
+            // create a draw command for our triangle.
+            const draw = c.shaders.triangleShader.draw({
+                vertexBuffer,
+                vertexCount: 3,
+            });
+
+            // return a render function and a destroy function.
             return {
-                render(c: GPUContext) {
-                    c.beginCommands()
-                    c.beginRenderPass()
-                    c.render.setPipeline(pipeline)
-                    c.render.setVertexBuffer(0, vertexBuffer)
-                    c.render.draw(3, 1, 0, 0)
-                    c.endRenderPass()
-                    c.endCommands()
+                render() {
+                    c.executeCommands([draw]);
                 },
                 destroy() {
-                    vertexBuffer.destroy()
+                    vertexBuffer.destroy();
+                    draw.destroy();
                 }
-            }
+            };
         }
-    })
+    });
 }

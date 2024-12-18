@@ -2,7 +2,7 @@ import { CustomElementProperties, createCustomElement, html, useConnected } from
 import { Context } from "../types/context-types.js"
 import { createContext } from "../create-context.js"
 
-export interface GPUComponent {
+export interface Component {
     update?(): boolean | void
     render()
     destroy()
@@ -11,13 +11,13 @@ export interface GPUComponent {
 interface SampleProperties extends CustomElementProperties {
     width?: number
     height?: number
-    create(this: HTMLCanvasElement, c: Context, requestFrame: () => void): Promise<GPUComponent>
+    create(this: HTMLCanvasElement, c: Context, requestFrame: () => void): Promise<Component>
 }
 
 export const NewSampleCanvas = createCustomElement(function (props: SampleProperties) {
     const { width = 320, height = 240, create, ...rest } = props
     useConnected(() => {
-        let component: GPUComponent
+        let component: Component
         (async () => {
             let c = await createContext(this)
             let frame: () => void
@@ -45,7 +45,7 @@ export const NewSampleCanvas = createCustomElement(function (props: SampleProper
 
     return html.Canvas({
         width, height,
-        style: { border: "solid 1px red", background: "beige" },
+        style: { border: "solid 4px red", background: "beige" },
         ...rest
     })
 }, { extends: "canvas" })

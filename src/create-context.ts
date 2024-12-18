@@ -4,6 +4,7 @@ import { toBindGroupLayoutDescriptor } from "./functions/to-bind-group-layout-de
 import { toShaderHeaderInputs } from "./functions/to-shader-header-inputs.js";
 import { ComputeCommand, ComputeShader, ComputeShaderDescriptor, Context, DrawCommand, GraphicShader, GraphicShaderDescriptor, isComputeCommand, isDrawCommand, ShaderResourceValues, ShaderUniformValues, ShaderVertexBuffer } from "./types/index.js";
 import { BindGroupHelper, createBindGroupHelper } from "./functions/create-bind-group-helper.js";
+import { loadImageBitmap } from "./internal/core/functions.js";
 
 interface InternalDrawCommand<G extends GraphicShaderDescriptor> extends DrawCommand<G> {
     bindGroupHelper: BindGroupHelper<G>;
@@ -169,8 +170,29 @@ export async function createContext(canvas: HTMLCanvasElement): Promise<Context>
         createStorageBuffer: () => {
             throw new Error("Not implemented");
         },
-        createTexture: () => {
-            throw new Error("Not implemented");
+        loadTexture: async (source) => {
+            if (typeof source !== "string") {
+                throw new Error("Not implemented");
+            }
+            const bitmap = await loadImageBitmap(source);
+            const texture = device.createTexture({
+                size: {
+                    width: bitmap.width,
+                    height: bitmap.height,
+                    depthOrArrayLayers: 1
+                },
+                format: targetFormat,
+                usage: GPUTextureUsage.TEXTURE_BINDING |
+                    GPUTextureUsage.COPY_DST | 
+                    GPUTextureUsage.RENDER_ATTACHMENT,
+            });
+            device.queue.copyExternalImageToTexture(
+                { source: bitmap, flipY: true },
+                { texture },
+                { width: bitmap.width, height: bitmap.height }
+            );
+
+            return texture;
         },
         withGraphicShaders,
         withComputeShaders: () => {
