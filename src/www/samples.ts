@@ -3,7 +3,7 @@ import { FirstTriangle } from "./FirstTriangle/FirstTriangle.js"
 import { Compute } from "./Compute/Compute.js"
 import { Instancing } from "./Instancing/Instancing.js"
 import { GPUMeshSample } from "./GPUMeshSample/GPUMeshSample.js"
-import { NewTextureSample } from "./NewTextureSample/NewTextureSample.js"
+import { TextureSample } from "./TextureSample/TextureSample.js"
 const { H2, P, Section } = html
 
 function addSample(name: string, sample: () => Factory<HTMLElement>) {
@@ -19,7 +19,7 @@ function addSample(name: string, sample: () => Factory<HTMLElement>) {
 
 const samples = {
     "1 New Triangle": FirstTriangle,
-    "2 New Textures": NewTextureSample,
+    "2 New Textures": TextureSample,
     "3 Instancing": Instancing,
     "4 Compute": Compute,
     "5 GPU Mesh": GPUMeshSample,

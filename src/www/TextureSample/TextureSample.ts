@@ -36,7 +36,7 @@ fn fragment_main(in: VertexOutput) -> @location(0) vec4<f32> {
 `
 } as const satisfies GraphicShaderDescriptor;
 
-export function NewTextureSample() {
+export function TextureSample() {
     return NewSampleCanvas({
         create: async (_c: Context) => {
             const c = await _c.withGraphicShaders({
