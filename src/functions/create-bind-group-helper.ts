@@ -2,22 +2,24 @@ import { GraphicShaderDescriptor, ShaderResourceValues, ShaderUniformValues } fr
 import { createUniformHelper } from "./create-uniform-helper.js";
 import { toBindGroupLayoutDescriptor } from "./to-bind-group-layout-descriptor.js";
 import { Mutable } from "../types/meta-types.js";
-interface BindGroupHelper<G extends GraphicShaderDescriptor> {
+
+export interface BindGroupHelper<G extends GraphicShaderDescriptor> {
     uniforms: Mutable<ShaderUniformValues<G>>;
-    resources: ShaderResourceValues<G>;
+    resources: Mutable<ShaderResourceValues<G>>;
     maybeWriteToGPU(): void;
     getBindGroup(): GPUBindGroup;
+    destroy(): void;
 }
 
 export function createBindGroupHelper<G extends GraphicShaderDescriptor>(
     device: GPUDevice,
     descriptor: G,
-    uniforms: ShaderUniformValues<G>,
-    resources: ShaderResourceValues<G>
+    initialUniforms: ShaderUniformValues<G>,
+    initialResources: ShaderResourceValues<G>
 ): BindGroupHelper<G> {
     // Create the uniform helper if we have uniforms
     const uniformHelper = descriptor.uniforms 
-        ? createUniformHelper(device, descriptor.uniforms, uniforms)
+        ? createUniformHelper(device, descriptor.uniforms, initialUniforms)
         : undefined;
 
     // Get the bind group layout descriptor
@@ -26,13 +28,13 @@ export function createBindGroupHelper<G extends GraphicShaderDescriptor>(
 
     // Track the current bind group and resource state
     let currentBindGroup: GPUBindGroup | undefined;
-    let currentResources = resources;
+    let currentResources = initialResources;
     let isBindGroupDirty = true;
 
     const result: BindGroupHelper<G> = {
         // Use uniform helper's values directly if it exists
         uniforms: (uniformHelper?.values ?? {}) as Mutable<ShaderUniformValues<G>>,
-        resources,
+        resources: undefined as any,
 
         maybeWriteToGPU: () => {
             uniformHelper?.maybeWriteToGPU();
@@ -62,7 +64,7 @@ export function createBindGroupHelper<G extends GraphicShaderDescriptor>(
             // Add textures
             if (descriptor.textures) {
                 for (const [name, _type] of Object.entries(descriptor.textures)) {
-                    const texture = resources[name] as GPUTexture;
+                    const texture = initialResources[name] as GPUTexture;
                     if (!texture) {
                         throw new Error(`Missing texture resource: ${name}`);
                     }
@@ -76,7 +78,7 @@ export function createBindGroupHelper<G extends GraphicShaderDescriptor>(
             // Add samplers
             if (descriptor.samplers) {
                 for (const [name, _type] of Object.entries(descriptor.samplers)) {
-                    const sampler = resources[name] as GPUSampler;
+                    const sampler = initialResources[name] as GPUSampler;
                     if (!sampler) {
                         throw new Error(`Missing sampler resource: ${name}`);
                     }
@@ -90,7 +92,7 @@ export function createBindGroupHelper<G extends GraphicShaderDescriptor>(
             // Add storage buffers
             if (descriptor.storage) {
                 for (const [name, _type] of Object.entries(descriptor.storage)) {
-                    const buffer = resources[name] as GPUBuffer;
+                    const buffer = initialResources[name] as GPUBuffer;
                     if (!buffer) {
                         throw new Error(`Missing storage buffer resource: ${name}`);
                     }
@@ -112,9 +114,13 @@ export function createBindGroupHelper<G extends GraphicShaderDescriptor>(
             });
 
             isBindGroupDirty = false;
-            currentResources = resources;
+            currentResources = initialResources;
 
             return currentBindGroup;
+        },
+
+        destroy: () => {
+            uniformHelper?.destroy();
         }
     };
 

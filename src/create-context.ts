@@ -1,13 +1,13 @@
 import { createVertexBuffer } from "./create-vertex-buffer.js";
-import { createDrawCommand } from "./create-draw-command.js";
 import { toGPUVertexBufferLayout } from "./functions/index.js";
 import { toBindGroupLayoutDescriptor } from "./functions/to-bind-group-layout-descriptor.js";
 import { toShaderHeaderInputs } from "./functions/to-shader-header-inputs.js";
-import { ComputeCommand, ComputeShader, ComputeShaderDescriptor, Context, DrawCommand, GraphicShader, GraphicShaderDescriptor, isComputeCommand, isDrawCommand, ShaderVertexBuffer } from "./types/index.js";
+import { ComputeCommand, ComputeShader, ComputeShaderDescriptor, Context, DrawCommand, GraphicShader, GraphicShaderDescriptor, isComputeCommand, isDrawCommand, ShaderResourceValues, ShaderUniformValues, ShaderVertexBuffer } from "./types/index.js";
+import { BindGroupHelper, createBindGroupHelper } from "./functions/create-bind-group-helper.js";
 
-export interface InternalDrawCommand<G extends GraphicShaderDescriptor> extends DrawCommand<G> {
-    encodeCommands: (encoder: GPUCommandEncoder) => void;
-    encodeDrawCommands: (pass: GPURenderPassEncoder) => void;
+interface InternalDrawCommand<G extends GraphicShaderDescriptor> extends DrawCommand<G> {
+    bindGroupHelper: BindGroupHelper<G>;
+    renderPipeline: GPURenderPipeline;
 }
 
 export function createGraphicShader<T extends GraphicShaderDescriptor>(
@@ -44,11 +44,31 @@ export function createGraphicShader<T extends GraphicShaderDescriptor>(
         primitive: {
             topology: "triangle-list",
         },
+        depthStencil: {
+            format: "depth24plus-stencil8",
+            depthWriteEnabled: true,
+            depthCompare: "less"
+        }
     });
 
     const shader = {
         descriptor,
-        draw: (props) => createDrawCommand(shaderName, renderPipeline, props),
+        draw: (props) => {
+            const bindGroupHelper = createBindGroupHelper(device, descriptor, props.uniforms as any, props.resources as any);
+            return {
+                shaderName: shaderName,
+                bindGroupHelper,
+                uniforms: bindGroupHelper.uniforms,
+                resources: bindGroupHelper.resources,
+                renderPipeline,
+                vertexBuffer: props.vertexBuffer,
+                vertexCount: props.vertexCount,
+                instanceCount: props.instanceCount,
+                destroy: () => {
+                    bindGroupHelper.destroy();
+                }
+            } satisfies InternalDrawCommand<T>;
+        },
         createVertexBuffer: (descriptor.attributes ? (data) => {
             return createVertexBuffer(device, descriptor.attributes!, data) as ShaderVertexBuffer<T>;
         } : undefined) as any,
@@ -62,12 +82,10 @@ export async function createContext(canvas: HTMLCanvasElement): Promise<Context>
         throw new Error(`Could not get a webgpu adapter`);
     }
     const device = await adapter.requestDevice();
-
     const canvasContext = canvas.getContext("webgpu");
     if (!canvasContext) {
         throw new Error(`Could not get a webgpu context`);
     }
-
     const depthTexture = device.createTexture({
         size: {
             width: canvas.width,
@@ -84,9 +102,7 @@ export async function createContext(canvas: HTMLCanvasElement): Promise<Context>
         format: targetFormat,
         usage: GPUTextureUsage.RENDER_ATTACHMENT,
     });
-
     const shaders: { [K: string]: GraphicShader<GraphicShaderDescriptor> | ComputeShader<ComputeShaderDescriptor> } = {};
-
     const withGraphicShaders = <S extends Record<string, GraphicShaderDescriptor>>(newShaders: S) => {
         Object.assign(
             shaders,
@@ -130,19 +146,18 @@ export async function createContext(canvas: HTMLCanvasElement): Promise<Context>
                 const shader = shaders[command.shaderName] as ComputeShader<ComputeShaderDescriptor>;
                 throw new Error("Not implemented");
             } else if (isDrawCommand(command)) {
-                const shader = shaders[command.shaderName] as GraphicShader<GraphicShaderDescriptor>;
-                const { descriptor } = shader;
-                const { vertexBuffer, vertexCount, instanceCount, resources } = command;
-
-                // renderPass.setPipeline(pipeline);
-                // renderPass.setBindGroup(0, bindGroup);
-                // renderPass.setVertexBuffer(0, vertexBuffer as any);
-                // renderPass.draw(vertexCount, instanceCount || 1);
+                const { bindGroupHelper, renderPipeline, vertexBuffer, vertexCount, instanceCount } = command as InternalDrawCommand<any>;
+                bindGroupHelper.maybeWriteToGPU();
+                renderPass.setPipeline(renderPipeline);
+                renderPass.setBindGroup(0, bindGroupHelper.getBindGroup());
+                renderPass.setVertexBuffer(0, vertexBuffer ?? null);
+                renderPass.draw(vertexCount, instanceCount ?? 1);
             }
         }
 
         renderPass.end();
         device.queue.submit([encoder.finish()]);
+        return await device.queue.onSubmittedWorkDone();
     };
 
     const context: Context = {

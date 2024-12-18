@@ -1,7 +1,7 @@
 
 import { ComputeShaderDescriptor, GraphicShaderDescriptor, ShaderResourceValues, ShaderUniformValues, ShaderVertexBuffer } from "./shader-types.js";
-import { EmptyToNever, Simplify } from "./meta-types.js";
-import { StorageBuffer, VertexAttributes } from "./resource-types.js";
+import { EmptyToNever, Mutable, Simplify } from "./meta-types.js";
+import { Resource, StorageBuffer, VertexAttributes } from "./resource-types.js";
 import { TupleType } from "./data-types.js";
 
 export type ComputeShader<C extends ComputeShaderDescriptor> = {
@@ -17,9 +17,9 @@ export type GraphicShader<G extends GraphicShaderDescriptor> = {
     descriptor: G,
     draw: (
         props: {
-            uniforms: EmptyToNever<ShaderUniformValues<G>>,
-            resources: EmptyToNever<ShaderResourceValues<G>>,
-            vertexBuffer: ShaderVertexBuffer<G>,
+            uniforms?: EmptyToNever<ShaderUniformValues<G>>,
+            resources?: EmptyToNever<ShaderResourceValues<G>>,
+            vertexBuffer?: ShaderVertexBuffer<G>,
             vertexCount: number,
             instanceCount?: number
         }
@@ -46,9 +46,16 @@ export interface ComputeCommand<C extends ComputeShaderDescriptor> {
     dispatchCount: [number, number, number];
 }
 
-export interface DrawCommand<G extends GraphicShaderDescriptor> {
-    shaderName: string;
-    resources: ShaderResourceValues<G>;
+export interface DrawCommand<G extends GraphicShaderDescriptor> extends Resource {
+    readonly shaderName: string;
+    /**
+     * Individual uniforms can be written to.
+     */
+    readonly uniforms: Mutable<ShaderUniformValues<G>>;
+    /**
+     * Individual resources can be written to.
+     */
+    readonly resources: Mutable<ShaderResourceValues<G>>;
     vertexBuffer?: ShaderVertexBuffer<G>;
     vertexCount: number;
     instanceCount?: number;

@@ -8,6 +8,7 @@ export type UniformHelper<U> = {
     maybeWriteToGPU(): void;
     buffer: GPUBuffer;
     size: number;
+    destroy(): void;
 }
 
 type UniformValues<T extends Record<string, DataType>> = { [K in keyof T]: FromDataType<T[K]> };
@@ -44,7 +45,10 @@ export function createUniformHelper<T extends Record<string, DataType>>(device: 
         },
         values: {} as UniformValues<T>,
         buffer,
-        size
+        size,
+        destroy: () => {
+            buffer.destroy();
+        }
     } as UniformHelper<UniformValues<T>>;
 
     const currentValues = { ...initialValues };

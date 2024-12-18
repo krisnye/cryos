@@ -143,7 +143,7 @@ describe("createBindGroupHelper", () => {
         const device = createMockDevice();
         const descriptor: GraphicShaderDescriptor = {
             textures: {
-                diffuse: "texture_2d"
+                diffuse: "texture_cube"
             },
             source: `
                 fn fragment_main() -> @location(0) vec4<f32> {

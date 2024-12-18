@@ -1,5 +1,5 @@
-
 import { Factory, html } from "lithos/index"
+import { ZeroTriangle } from "./ZeroTriangle/ZeroTriangle.js"
 import { FirstTriangle } from "./FirstTriangle/FirstTriangle.js"
 import { Compute } from "./Compute/Compute.js"
 import { Instancing } from "./Instancing/Instancing.js"
@@ -19,11 +19,12 @@ function addSample(name: string, sample: () => Factory<HTMLElement>) {
 }
 
 const samples = {
-    "5 GPU Mesh": GPUMeshSample,
+    "0 Zero Triangle": ZeroTriangle,
+    "1 First Triangle": FirstTriangle,
+    "2 Textures": TextureSample,
     "3 Instancing": Instancing,
     "4 Compute": Compute,
-    "2 Textures": TextureSample,
-    "1 First Triangle": FirstTriangle,
+    "5 GPU Mesh": GPUMeshSample,
 }
 
 Object.entries(samples).forEach(entry => addSample(...entry))
