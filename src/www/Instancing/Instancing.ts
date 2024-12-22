@@ -1,54 +1,83 @@
-import { createVertexBufferLayoutNamed } from "../../internal/core/functions.js"
-import { GPUContext } from "../../internal/core/GPUContext.js"
-import { Vector4 } from "../../internal/math/Vector4.js"
-import { Color } from "../../internal/math/Color.js"
-import { Matrix4 } from "../../internal/math/Matrix4.js"
-import { SampleCanvas } from "../SampleCanvas.js"
-import shader from "./Instancing.wgsl"
-import { Vector3 } from "../../internal/math/Vector3.js"
+import { NewSampleCanvas } from "../NewSampleCanvas.js"
+import { Context } from "../../types/context-types.js"
+import { GraphicShaderDescriptor } from "../../types/shader-types.js"
 
-const positionColorVertexLayout = createVertexBufferLayoutNamed({
-    position: "float32x4",
-    color: "float32x4"
-})
+const triangleShader = {
+    attributes: {
+        position: "vec4",
+        color: "vec4"
+    },
+    uniforms: {
+        viewProjection: "mat4x4",
+    },
+    source: `
+alias float4 = vec4<f32>;
+struct VertexOutput {
+    @builtin(position) position: float4,
+    @location(0) color: float4,
+};
+
+@vertex
+fn vertex_main(
+    vert: VertexInput,
+    @builtin(instance_index) instance: u32
+) -> VertexOutput {
+    var out: VertexOutput;
+    out.color = vert.color;
+    out.position = uniforms.viewProjection * vert.position + vec4(-0.45f + 0.1f * f32(instance), 0, 0, 0);
+    return out;
+};
+
+@fragment
+fn fragment_main(in: VertexOutput) -> @location(0) float4 {
+    return float4(in.color);
+}
+`
+} as const satisfies GraphicShaderDescriptor;
 
 export function Instancing() {
-    return SampleCanvas({
-        create: async (c: GPUContext) => {
-            c.camera.values = { viewProjection: Matrix4.scaling(0.5), position: Vector3.zero }
-            const pipeline = await c.createRenderPipeline({
-                layout: [[c.camera.layout]],
-                vertexInput: positionColorVertexLayout,
-                shader,
-            })
-            const vertexBuffer = c.createStaticVertexBuffer(
-                positionColorVertexLayout,
+    return NewSampleCanvas({
+        create: async (_c: Context) => {
+            // add our custom shader to the context.
+            const c = await _c.withGraphicShaders({
+                triangleShader
+            });
+
+            // create a vertex buffer for our triangle.
+            const vertexBuffer = c.shaders.triangleShader.createVertexBuffer(
                 [
-                    ...new Vector4(1, -1, 0, 1), ...Color.red,
-                    ...new Vector4(-1, -1, 0, 1), ...Color.green,
-                    ...new Vector4(0, 1, 0, 1), ...Color.blue
+                    // position (vec3 + 1 padding float)    color (vec4)
+                    1, -1, 0, 1,                            1, 0, 0, 1,    // vertex 1
+                    -1, -1, 0, 1,                           0, 1, 0, 1,    // vertex 2
+                    0, 1, 0, 1,                             0, 0, 1, 1,    // vertex 3
                 ]
-            )
-            const bindGroup = c.device.createBindGroup({
-                layout: pipeline.getBindGroupLayout(0),
-                entries: [c.camera.entry]
-            })
+            );
+
+            // create a draw command for our triangle.
+            const draw = c.shaders.triangleShader.draw({
+                vertexBuffer,
+                vertexCount: 3,
+                instanceCount: 10,
+                uniforms: {
+                    viewProjection: [
+                        0.5, 0, 0, 0,
+                        0, 0.5, 0, 0,
+                        0, 0, 0.5, 0,
+                        0, 0, 0, 1
+                    ],
+                },
+            });
+
+            // return a render function and a destroy function.
             return {
-                render(c: GPUContext) {
-                    c.beginCommands()
-                    c.camera.commandCopyToGPU()
-                    c.beginRenderPass()
-                    c.render.setPipeline(pipeline)
-                    c.render.setBindGroup(0, bindGroup)
-                    c.render.setVertexBuffer(0, vertexBuffer)
-                    c.render.draw(3, 10)
-                    c.endRenderPass()
-                    c.endCommands()
+                render() {
+                    c.executeCommands([draw]);
                 },
                 destroy() {
-                    vertexBuffer.destroy()
+                    vertexBuffer.destroy();
+                    draw.destroy();
                 }
-            }
+            };
         }
-    })
+    });
 }

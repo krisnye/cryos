@@ -1,4 +1,3 @@
-alias float4 = vec4<f32>;
 
 struct VertexInput {
     // The builtin position attribute is passed the transformed position
@@ -8,6 +7,8 @@ struct VertexInput {
     // Instancing index
     @builtin(instance_index) instance: u32,
 }
+
+alias float4 = vec4<f32>;
 struct VertexOutput {
     // The builtin position attribute is passed the transformed position
     @builtin(position) position: float4,

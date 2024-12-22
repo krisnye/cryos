@@ -24,7 +24,7 @@ export function toShaderHeaderInputs(shaderDescriptor: GraphicShaderDescriptor):
         const uniformEntries = Object.entries(uniforms)
             .map(([name, type]) => `    ${name}: ${toWGSLType(type as ResourceType)}`)
             .join(',\n');
-            
+
         parts.push(
             `struct Uniforms {\n${uniformEntries}\n}`,
             `@group(0) @binding(0) var<uniform> uniforms: Uniforms;`

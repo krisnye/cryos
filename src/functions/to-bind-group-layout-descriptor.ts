@@ -7,35 +7,37 @@ interface ShaderStageUsage {
 
 function parseShaderUsage(source: string, resourceNames: string[]): Record<string, ShaderStageUsage> {
   const usage: Record<string, ShaderStageUsage> = {};
-  
+
   // Initialize usage tracking for all resources
   resourceNames.forEach(name => {
     usage[name] = { vertex: false, fragment: false };
   });
 
-  // Updated regex patterns to handle return types
-  const vertexMatch = source.match(/fn\s+vertex_main\s*\([^)]*\)(?:\s*->\s*[^{]+)?\s*{([^}]*)}/);
-  const fragmentMatch = source.match(/fn\s+fragment_main\s*\([^)]*\)(?:\s*->\s*[^{]+)?\s*{([^}]*)}/);
+  // Updated regex patterns to handle decorators and complex parameter lists
+  const vertexMatch = source.match(/@vertex[^]*?fn\s+vertex_main\s*\([^{]*\)[^{]*{([^}]*)}/);
+  if (!vertexMatch) {
+    throw new Error("Vertex shader not found");
+  }
+  const fragmentMatch = source.match(/@fragment[^]*?fn\s+fragment_main\s*\([^{]*\)[^{]*{([^}]*)}/);
+  if (!fragmentMatch) {
+    throw new Error("Fragment shader not found");
+  }
 
   // Check usage in vertex shader
-  if (vertexMatch) {
-    const vertexCode = vertexMatch[1];
-    resourceNames.forEach(name => {
-      if (vertexCode.includes(name)) {
-        usage[name].vertex = true;
-      }
-    });
-  }
+  const vertexCode = vertexMatch[1];
+  resourceNames.forEach(name => {
+    if (vertexCode.includes(name)) {
+      usage[name].vertex = true;
+    }
+  });
 
   // Check usage in fragment shader
-  if (fragmentMatch) {
-    const fragmentCode = fragmentMatch[1];
-    resourceNames.forEach(name => {
-      if (fragmentCode.includes(name)) {
-        usage[name].fragment = true;
-      }
-    });
-  }
+  const fragmentCode = fragmentMatch[1];
+  resourceNames.forEach(name => {
+    if (fragmentCode.includes(name)) {
+      usage[name].fragment = true;
+    }
+  });
 
   return usage;
 }
@@ -89,7 +91,7 @@ export function toBindGroupLayoutDescriptor(descriptor: GraphicShaderDescriptor)
     ];
 
     if (unusedResources.length > 0) {
-        throw new Error(
+        console.warn(
             `Found unused resources in shader:\n${unusedResources
                 .map(({ type, name }) => `  - ${type}: ${name}`)
                 .join('\n')}`
