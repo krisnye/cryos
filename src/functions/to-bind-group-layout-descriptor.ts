@@ -14,30 +14,34 @@ function parseShaderUsage(source: string, resourceNames: string[]): Record<strin
   });
 
   // Updated regex patterns to handle decorators and complex parameter lists
-  const vertexMatch = source.match(/@vertex[^]*?fn\s+vertex_main\s*\([^{]*\)[^{]*{([^}]*)}/);
+  const vertexMatch = source.match(/fn\s+vertex_main\s*\([^{]*\)[^{]*{([^}]*)}/);
   if (!vertexMatch) {
-    throw new Error("Vertex shader not found");
+    console.warn("Vertex shader not found");
   }
-  const fragmentMatch = source.match(/@fragment[^]*?fn\s+fragment_main\s*\([^{]*\)[^{]*{([^}]*)}/);
+  const fragmentMatch = source.match(/fn\s+fragment_main\s*\([^{]*\)[^{]*{([^}]*)}/);
   if (!fragmentMatch) {
-    throw new Error("Fragment shader not found");
+    console.warn("Fragment shader not found");
   }
 
   // Check usage in vertex shader
-  const vertexCode = vertexMatch[1];
-  resourceNames.forEach(name => {
-    if (vertexCode.includes(name)) {
-      usage[name].vertex = true;
-    }
-  });
+  if (vertexMatch) {
+    const vertexCode = vertexMatch[1];
+    resourceNames.forEach(name => {
+      if (vertexCode.includes(name)) {
+        usage[name].vertex = true;
+      }
+    });
+  }
 
   // Check usage in fragment shader
-  const fragmentCode = fragmentMatch[1];
-  resourceNames.forEach(name => {
-    if (fragmentCode.includes(name)) {
-      usage[name].fragment = true;
-    }
-  });
+  if (fragmentMatch) {
+    const fragmentCode = fragmentMatch[1];
+    resourceNames.forEach(name => {
+      if (fragmentCode.includes(name)) {
+        usage[name].fragment = true;
+      }
+    });
+  }
 
   return usage;
 }

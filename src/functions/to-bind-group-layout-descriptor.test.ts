@@ -1,4 +1,4 @@
-import { expect, test, describe } from "vitest";
+import { expect, test, describe, vi } from "vitest";
 import { toBindGroupLayoutDescriptor } from "./to-bind-group-layout-descriptor.js";
 import { GraphicShaderDescriptor } from "../types/shader-types.js";
 
@@ -130,7 +130,9 @@ describe("createBindGroupLayoutDescriptor", () => {
         });
     });
 
-    test("should throw an error if uniforms are not found in either vertex or fragment main", () => {
+    test("should warn if uniforms are not found in either vertex or fragment main", () => {
+        const consoleSpy = vi.spyOn(console, 'warn');
+        
         const shader: GraphicShaderDescriptor = {
             attributes: {},
             uniforms: {
@@ -149,7 +151,19 @@ describe("createBindGroupLayoutDescriptor", () => {
             `
         };
 
-        expect(() => toBindGroupLayoutDescriptor(shader)).toThrow(); 
+        toBindGroupLayoutDescriptor(shader);
+        
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining('Found unused resources in shader:')
+        );
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining('uniforms: time')
+        );
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining('uniforms: modelMatrix')
+        );
+
+        consoleSpy.mockRestore();
     });
 
     test("should handle textures with proper visibility", () => {
