@@ -28,13 +28,15 @@ export type GraphicShader<G extends GraphicShaderDescriptor> = {
 };
 
 export interface Context<GS extends Record<string, GraphicShaderDescriptor> = {}, CS extends Record<string, ComputeShaderDescriptor> = {}> {
-    readonly canvas: HTMLCanvasElement;
-    readonly device: GPUDevice;
-    readonly canvasContext: GPUCanvasContext;
-    readonly depthTexture: GPUTexture;
+    readonly adapter: GPUAdapter
+    readonly device: GPUDevice
+    readonly element: HTMLCanvasElement
+    readonly configuration: GPUCanvasConfiguration
+    readonly context: GPUCanvasContext
+    readonly depthStencil?: GPUTexture
+
     readonly shaders: Simplify<{ [K in keyof GS]: GraphicShader<GS[K]> } & { [K in keyof CS]: ComputeShader<CS[K]> }>;
     createStorageBuffer<T extends TupleType>(props: { type: T, data: number[], dynamic?: boolean }): StorageBuffer<T>;
-    loadTexture(source: ImageBitmapSource | string): Promise<GPUTexture>;
     withGraphicShaders<S extends Record<string, GraphicShaderDescriptor>>(shaders: S): Promise<Context<Simplify<GS & S>, CS>>;
     withComputeShaders<S extends Record<string, ComputeShaderDescriptor>>(shaders: S): Promise<Context<GS, Simplify<CS & S>>>;
     executeCommands(commands: (ComputeCommand<CS[keyof CS]> | DrawCommand<GS[keyof GS]>)[]): Promise<void>;

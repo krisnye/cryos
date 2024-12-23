@@ -2,6 +2,7 @@ import textureUrl from "./f.png";
 import { GraphicShaderDescriptor } from "../../types/shader-types.js";
 import { NewSampleCanvas } from "../NewSampleCanvas.js";
 import { Context } from "../../types/context-types.js";
+import { loadTexture } from "../../functions/load-texture.js";
 
 const textureShader = {
     attributes: {
@@ -56,7 +57,7 @@ export function TextureSample() {
                 ]
             );
 
-            const ourTexture = await c.loadTexture(textureUrl);
+            const ourTexture = await loadTexture(c, textureUrl);
             const ourSampler = c.device.createSampler();
 
             const draw = c.shaders.textureShader.draw({
