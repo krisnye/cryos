@@ -3,7 +3,6 @@ import { createCustomElement, html, useState } from "lithos"
 import { createVertexBufferLayoutNamed } from "../../internal/core/functions.js"
 import { GPUContext } from "../../internal/core/GPUContext.js"
 import { Vector3 } from "../../internal/math/Vector3.js"
-import { Vector4 } from "../../internal/math/Vector4.js"
 import { Matrix4 } from "../../internal/math/Matrix4.js"
 import { Volume } from "../../internal/data/Volume.js"
 import { VolumePipeline } from "../../internal/compute/GPUVolumePipeline.js"
@@ -62,12 +61,12 @@ export function ComputeCanvas(gridWidth: number) {
 
             const vertices =
                 [
-                    ...new Vector4(0, 0, 0, 1),
-                    ...new Vector4(1, 0, 0, 1),
-                    ...new Vector4(0, 1, 0, 1),
-                    ...new Vector4(1, 1, 0, 1),
-                    ...new Vector4(0, 1, 0, 1),
-                    ...new Vector4(1, 0, 0, 1),
+                    0, 0, 0, 1,
+                    1, 0, 0, 1,
+                    0, 1, 0, 1,
+                    1, 1, 0, 1,
+                    0, 1, 0, 1,
+                    1, 0, 0, 1,
                 ]
             const vertexBuffer = c.createStaticVertexBuffer(positionVertexLayout, vertices)
 
@@ -132,7 +131,6 @@ export const Compute = createCustomElement(function () {
 
     return html.Div(
         {
-
             on: {
                 click() {
                     let newSize = width * 2
