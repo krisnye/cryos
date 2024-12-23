@@ -1,6 +1,6 @@
 import { NewSampleCanvas } from "../NewSampleCanvas.js"
 import { GraphicShaderDescriptor } from "../../types/shader-types.js"
-import { createGraphicShader } from "../../create-graphic-shader.js";
+import { getGraphicShader } from "../../create-graphic-shader.js";
 
 const triangleShaderDescriptor = {
     attributes: {
@@ -32,7 +32,7 @@ fn fragment_main(in: VertexOutput) -> @location(0) float4 {
 export function FirstTriangle() {
     return NewSampleCanvas({
         create: async (c) => {
-            const triangleShader = await createGraphicShader(c, triangleShaderDescriptor);
+            const triangleShader = getGraphicShader(c, triangleShaderDescriptor);
 
             // create a vertex buffer for our triangle.
             const vertexBuffer = triangleShader.createVertexBuffer(

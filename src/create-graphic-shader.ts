@@ -36,7 +36,7 @@ export type GraphicShader<G extends GraphicShaderDescriptor> = {
     createVertexBuffer: G["attributes"] extends VertexAttributes ? (data: number[]) => ShaderVertexBuffer<G> : undefined;
 };
 
-export function createGraphicShader<T extends GraphicShaderDescriptor>(
+function createGraphicShader<T extends GraphicShaderDescriptor>(
     context: CanvasContext,
     descriptor: T
 ): GraphicShader<T> {
@@ -59,7 +59,7 @@ export function createGraphicShader<T extends GraphicShaderDescriptor>(
             entryPoint: "fragment_main",
             targets: [
                 {
-                    format: context.configuration.format,
+                    format: context.canvas.configuration.format,
                 },
             ],
         },
@@ -99,5 +99,28 @@ export function createGraphicShader<T extends GraphicShaderDescriptor>(
             return createVertexBuffer(context.device, descriptor.attributes!, data) as ShaderVertexBuffer<T>;
         } : undefined) as any,
     } satisfies GraphicShader<T>;
+    return shader;
+}
+
+
+// Create a symbol for storing the shader cache
+const graphicShaderCacheSymbol = Symbol('graphicShaderCache');
+
+/**
+ * Get a graphic shader cached on the context, or create a new one if it doesn't exist.
+ */
+export function getGraphicShader<T extends GraphicShaderDescriptor>(
+    context: CanvasContext, 
+    descriptor: T
+): GraphicShader<T> {
+    // Get or initialize the cache using the symbol
+    const cache = (context as any)[graphicShaderCacheSymbol] ?? 
+        ((context as any)[graphicShaderCacheSymbol] = new Map());
+    
+    const cached = cache.get(descriptor);
+    if (cached) return cached;
+    
+    const shader = createGraphicShader(context, descriptor);
+    cache.set(descriptor, shader);
     return shader;
 }

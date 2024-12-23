@@ -2,7 +2,7 @@ import textureUrl from "./f.png";
 import { GraphicShaderDescriptor } from "../../types/shader-types.js";
 import { NewSampleCanvas } from "../NewSampleCanvas.js";
 import { loadTexture } from "../../functions/load-texture.js";
-import { createGraphicShader } from "../../create-graphic-shader.js";
+import { getGraphicShader } from "../../create-graphic-shader.js";
 
 const textureShaderDescriptor = {
     attributes: {
@@ -40,7 +40,7 @@ fn fragment_main(in: VertexOutput) -> @location(0) vec4<f32> {
 export function TextureSample() {
     return NewSampleCanvas({
         create: async (c) => {
-            const textureShader = await createGraphicShader(c, textureShaderDescriptor);
+            const textureShader = getGraphicShader(c, textureShaderDescriptor);
 
             const s = 0.9
             const vertexBuffer = textureShader.createVertexBuffer(

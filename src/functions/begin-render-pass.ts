@@ -3,7 +3,7 @@ import { CanvasContext } from "../types/canvas-context.js";
 export function beginRenderPass(context: CanvasContext, encoder: GPUCommandEncoder) {
     return encoder.beginRenderPass({
         colorAttachments: [{
-            view: context.context.getCurrentTexture().createView(),
+            view: context.canvas.context.getCurrentTexture().createView(),
             loadOp: "clear",
             storeOp: "store",
             clearValue: { r: 0, g: 0, b: 0, a: 1 }

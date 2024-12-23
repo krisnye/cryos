@@ -1,19 +1,17 @@
+import { CanvasContext } from "../types/canvas-context.js";
 import { loadImageBitmap } from "./load-image-bitmap.js";
 
 type ImageSource = ImageData | Blob | string;
 
 export async function loadTexture(
-    context: {
-        device: GPUDevice;
-        configuration: GPUCanvasConfiguration;
-    },
+    context: CanvasContext,
     source: ImageSource,
     options: {
         flipY?: boolean;
         format?: GPUTextureFormat;
     } = {}
 ): Promise<GPUTexture> {
-    const { flipY = true, format = context.configuration.format } = options;
+    const { flipY = true, format = context.canvas.configuration.format } = options;
     const bitmap = source instanceof ImageData ? source : await loadImageBitmap(source);
     const texture = context.device.createTexture({
         size: {

@@ -34,9 +34,10 @@ export async function createCanvasContext(
     return {
         adapter,
         device,
-        element: canvas,
-        context: canvasContext,
-        configuration,
+        canvas: {
+            context: canvasContext,
+            configuration
+        },
         depthStencil
     }
 }
