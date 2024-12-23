@@ -20,7 +20,7 @@ export async function createCanvasContext(
 
     const configuration: GPUCanvasConfiguration = {
         device,
-        format: "rgba8unorm",
+        format: navigator.gpu.getPreferredCanvasFormat(),
         usage: GPUTextureUsage.RENDER_ATTACHMENT
     };
     canvasContext.configure(configuration);

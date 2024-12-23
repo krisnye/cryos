@@ -1,8 +1,8 @@
 import { NewSampleCanvas } from "../NewSampleCanvas.js"
-import { Context } from "../../types/context-types.js"
 import { GraphicShaderDescriptor } from "../../types/shader-types.js"
+import { createGraphicShader } from "../../create-graphic-shader.js";
 
-const triangleShader = {
+const instancingShaderDescriptor = {
     attributes: {
         position: "vec4",
         color: "vec4"
@@ -37,14 +37,11 @@ fn fragment_main(in: VertexOutput) -> @location(0) float4 {
 
 export function Instancing() {
     return NewSampleCanvas({
-        create: async (_c: Context) => {
-            // add our custom shader to the context.
-            const c = await _c.withGraphicShaders({
-                triangleShader
-            });
+        create: async (c) => {
+            const instancingShader = await createGraphicShader(c, instancingShaderDescriptor);
 
             // create a vertex buffer for our triangle.
-            const vertexBuffer = c.shaders.triangleShader.createVertexBuffer(
+            const vertexBuffer = instancingShader.createVertexBuffer(
                 [
                     // position (vec3 + 1 padding float)    color (vec4)
                     1, -1, 0, 1,                            1, 0, 0, 1,    // vertex 1
@@ -54,7 +51,7 @@ export function Instancing() {
             );
 
             // create a draw command for our triangle.
-            const draw = c.shaders.triangleShader.draw({
+            const draw = instancingShader.draw({
                 vertexBuffer,
                 vertexCount: 3,
                 instanceCount: 10,
@@ -70,8 +67,8 @@ export function Instancing() {
 
             // return a render function and a destroy function.
             return {
-                render() {
-                    c.executeCommands([draw]);
+                render(renderPass: GPURenderPassEncoder) {
+                    draw.render(renderPass);
                 },
                 destroy() {
                     vertexBuffer.destroy();

@@ -1,17 +1,18 @@
 import { CustomElementProperties, createCustomElement, html, useConnected } from "lithos"
-import { Context } from "../types/context-types.js"
-import { createContext } from "../create-context.js"
+import { beginRenderPass } from "../functions/begin-render-pass.js"
+import { createCanvasContext } from "../functions/create-canvas-context.js"
+import { CanvasContext } from "../types/canvas-context.js"
 
 export interface Component {
     update?(): boolean | void
-    render()
+    render(renderPass: GPURenderPassEncoder)
     destroy()
 }
 
 interface SampleProperties extends CustomElementProperties {
     width?: number
     height?: number
-    create(this: HTMLCanvasElement, c: Context, requestFrame: () => void): Promise<Component>
+    create(this: HTMLCanvasElement, c: CanvasContext, requestFrame: () => void): Promise<Component>
 }
 
 export const NewSampleCanvas = createCustomElement(function (props: SampleProperties) {
@@ -19,19 +20,28 @@ export const NewSampleCanvas = createCustomElement(function (props: SampleProper
     useConnected(() => {
         let component: Component
         (async () => {
-            let c = await createContext(this)
+            let c = await createCanvasContext(this)
             let frame: () => void
             component = await create.call(this, c, () => {
                 if (frame) {
                     requestAnimationFrame(frame)
                 }
             })
-            frame = () => {
+            frame = async() => {
                 let animated = component.update?.()
-                component.render()
+
+                const encoder = c.device.createCommandEncoder();
+                const renderPass = beginRenderPass(c, encoder);
+        
+                component.render(renderPass);
+
+                renderPass.end();
+                c.device.queue.submit([encoder.finish()]);
+                await c.device.queue.onSubmittedWorkDone();
+
                 if (animated) {
                     requestAnimationFrame(frame)
-                }
+                } 
                 this.dispatchEvent(new CustomEvent("frame", { bubbles: true }))
             }
             frame()

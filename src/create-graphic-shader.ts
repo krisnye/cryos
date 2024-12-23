@@ -1,28 +1,53 @@
-import { InternalDrawCommand } from "./create-context.js";
 import { createVertexBuffer } from "./create-vertex-buffer.js";
 import { createBindGroupHelper } from "./functions/create-bind-group-helper.js";
 import { toBindGroupLayoutDescriptor } from "./functions/to-bind-group-layout-descriptor.js";
 import { toGPUVertexBufferLayout } from "./functions/to-gpu-vertex-buffer-layout.js";
 import { toShaderHeaderInputs } from "./functions/to-shader-header-inputs.js";
-import { GraphicShader } from "./types/context-types.js";
-import { GraphicShaderDescriptor, ShaderVertexBuffer } from "./types/shader-types.js";
+import { CanvasContext } from "./types/canvas-context.js";
+import { EmptyToNever, Mutable, Resource, VertexAttributes } from "./types/index.js";
+import { Renderable } from "./types/renderable.js";
+import { GraphicShaderDescriptor, ShaderResourceValues, ShaderUniformValues, ShaderVertexBuffer } from "./types/shader-types.js";
+
+export interface DrawCommand<G extends GraphicShaderDescriptor> extends Resource, Renderable {
+    /**
+     * Individual uniforms can be written to.
+     */
+    readonly uniforms: Mutable<ShaderUniformValues<G>>;
+    /**
+     * Individual resources can be written to.
+     */
+    readonly resources: Mutable<ShaderResourceValues<G>>;
+    vertexCount: number;
+    vertexBuffer?: ShaderVertexBuffer<G>;
+    instanceCount?: number;
+}
+
+export type GraphicShader<G extends GraphicShaderDescriptor> = {
+    descriptor: G,
+    draw: (
+        props: {
+            uniforms?: EmptyToNever<ShaderUniformValues<G>>,
+            resources?: EmptyToNever<ShaderResourceValues<G>>,
+            vertexBuffer?: ShaderVertexBuffer<G>,
+            vertexCount: number,
+            instanceCount?: number
+        }
+    ) => DrawCommand<G>,
+    createVertexBuffer: G["attributes"] extends VertexAttributes ? (data: number[]) => ShaderVertexBuffer<G> : undefined;
+};
 
 export function createGraphicShader<T extends GraphicShaderDescriptor>(
-    { device, targetFormat, shaderName, descriptor }: {
-        device: GPUDevice;
-        targetFormat: GPUTextureFormat;
-        shaderName: string;
-        descriptor: T;
-    }
+    context: CanvasContext,
+    descriptor: T
 ): GraphicShader<T> {
     const code = toShaderHeaderInputs(descriptor) + descriptor.source;
     const vertexBufferLayout = descriptor.attributes ? toGPUVertexBufferLayout(descriptor.attributes) : undefined;
-    const module = device.createShaderModule({ code });
-    const bindGroupLayout = device.createBindGroupLayout(toBindGroupLayoutDescriptor(descriptor));
-    const layout = device.createPipelineLayout({
+    const module = context.device.createShaderModule({ code });
+    const bindGroupLayout = context.device.createBindGroupLayout(toBindGroupLayoutDescriptor(descriptor));
+    const layout = context.device.createPipelineLayout({
         bindGroupLayouts: [bindGroupLayout]
     });
-    const renderPipeline = device.createRenderPipeline({
+    const renderPipeline = context.device.createRenderPipeline({
         layout,
         vertex: {
             module,
@@ -34,7 +59,7 @@ export function createGraphicShader<T extends GraphicShaderDescriptor>(
             entryPoint: "fragment_main",
             targets: [
                 {
-                    format: targetFormat,
+                    format: context.configuration.format,
                 },
             ],
         },
@@ -51,23 +76,27 @@ export function createGraphicShader<T extends GraphicShaderDescriptor>(
     const shader = {
         descriptor,
         draw: (props) => {
-            const bindGroupHelper = createBindGroupHelper(device, descriptor, props.uniforms as any, props.resources as any);
+            const bindGroupHelper = createBindGroupHelper(context.device, descriptor, props.uniforms as any, props.resources as any);
             return {
-                shaderName: shaderName,
-                bindGroupHelper,
                 uniforms: bindGroupHelper.uniforms,
                 resources: bindGroupHelper.resources,
-                renderPipeline,
                 vertexBuffer: props.vertexBuffer,
                 vertexCount: props.vertexCount,
                 instanceCount: props.instanceCount,
+                render: (renderPass) => {
+                    bindGroupHelper.maybeWriteToGPU();
+                    renderPass.setPipeline(renderPipeline);
+                    renderPass.setBindGroup(0, bindGroupHelper.getBindGroup());
+                    renderPass.setVertexBuffer(0, props.vertexBuffer ?? null);
+                    renderPass.draw(props.vertexCount, props.instanceCount ?? 1);
+                },
                 destroy: () => {
                     bindGroupHelper.destroy();
                 }
-            } satisfies InternalDrawCommand<T>;
+            } satisfies DrawCommand<T>;
         },
         createVertexBuffer: (descriptor.attributes ? (data) => {
-            return createVertexBuffer(device, descriptor.attributes!, data) as ShaderVertexBuffer<T>;
+            return createVertexBuffer(context.device, descriptor.attributes!, data) as ShaderVertexBuffer<T>;
         } : undefined) as any,
     } satisfies GraphicShader<T>;
     return shader;

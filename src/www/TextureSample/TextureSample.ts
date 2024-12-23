@@ -1,10 +1,10 @@
 import textureUrl from "./f.png";
 import { GraphicShaderDescriptor } from "../../types/shader-types.js";
 import { NewSampleCanvas } from "../NewSampleCanvas.js";
-import { Context } from "../../types/context-types.js";
 import { loadTexture } from "../../functions/load-texture.js";
+import { createGraphicShader } from "../../create-graphic-shader.js";
 
-const textureShader = {
+const textureShaderDescriptor = {
     attributes: {
         position: "vec4",
         texcoord: "vec2",
@@ -39,13 +39,11 @@ fn fragment_main(in: VertexOutput) -> @location(0) vec4<f32> {
 
 export function TextureSample() {
     return NewSampleCanvas({
-        create: async (_c: Context) => {
-            const c = await _c.withGraphicShaders({
-                textureShader,
-            });
+        create: async (c) => {
+            const textureShader = await createGraphicShader(c, textureShaderDescriptor);
 
             const s = 0.9
-            const vertexBuffer = c.shaders.textureShader.createVertexBuffer(
+            const vertexBuffer = textureShader.createVertexBuffer(
                 [
                     //  x, y, z, u, v
                     s, -s, 0, 1, 1, -1,
@@ -60,7 +58,7 @@ export function TextureSample() {
             const ourTexture = await loadTexture(c, textureUrl);
             const ourSampler = c.device.createSampler();
 
-            const draw = c.shaders.textureShader.draw({
+            const draw = textureShader.draw({
                 vertexBuffer,
                 vertexCount: 6,
                 resources: {
@@ -70,8 +68,8 @@ export function TextureSample() {
             });
 
             return {
-                render() {
-                    c.executeCommands([draw]);
+                render(renderPass: GPURenderPassEncoder) {
+                    draw.render(renderPass);
                 },
                 destroy() {
                     vertexBuffer.destroy();
