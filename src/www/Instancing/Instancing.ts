@@ -1,6 +1,7 @@
 import { NewSampleCanvas } from "../NewSampleCanvas.js"
 import { GraphicShaderDescriptor } from "../../types/shader-types.js"
 import { getGraphicShader } from "../../create-graphic-shader.js";
+import { createScalingMat4 } from "../../math/mat4-functions.js";
 
 const instancingShaderDescriptor = {
     attributes: {
@@ -56,12 +57,7 @@ export function Instancing() {
                 vertexCount: 3,
                 instanceCount: 10,
                 uniforms: {
-                    viewProjection: [
-                        0.5, 0, 0, 0,
-                        0, 0.5, 0, 0,
-                        0, 0, 0.5, 0,
-                        0, 0, 0, 1
-                    ],
+                    viewProjection: createScalingMat4(0.5),
                 },
             });
 

@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////////////////////////
 // Declarative Data Types
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,6 +26,7 @@ export type I32 = number
 export type U32 = number
 export type F32 = number
 export type F16 = number
+
 export type Mat2x2 = readonly [F32, F32, F32, F32]
 export type Mat2x3 = readonly [F32, F32, F32, F32, F32, F32]
 export type Mat2x4 = readonly [F32, F32, F32, F32, F32, F32, F32, F32]
@@ -35,6 +35,28 @@ export type Mat3x3 = readonly [F32, F32, F32, F32, F32, F32, F32, F32, F32]
 export type Mat3x4 = readonly [F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32]
 export type Mat4x2 = readonly [F32, F32, F32, F32, F32, F32, F32, F32]
 export type Mat4x3 = readonly [F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32]
+/**
+ * Matrices are stored in column-major order to match WebGPU/OpenGL convention.
+ * This means that when declaring a matrix literal, you should write it transposed
+ * from how it appears mathematically.
+ * 
+ * For example, a translation matrix moving by (tx,ty,tz) would be written as:
+ * ```typescript
+ * const translation: Mat4x4 = [
+ *     1, 0, 0, 0,  // first column
+ *     0, 1, 0, 0,  // second column
+ *     0, 0, 1, 0,  // third column
+ *     tx,ty,tz,1   // fourth column
+ * ]
+ * ```
+ * Even though mathematically it represents:
+ * ```
+ * | 1  0  0  tx |
+ * | 0  1  0  ty |
+ * | 0  0  1  tz |
+ * | 0  0  0  1  |
+ * ```
+ */
 export type Mat4x4 = readonly [F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32, F32]
 export type Vec2 = readonly [F32, F32]
 export type Vec3 = readonly [F32, F32, F32]
