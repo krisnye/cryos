@@ -13,7 +13,10 @@ export default defineConfig({
             name: 'chromium',
             provider: 'playwright',
             headless: true,
-            screenshot: false,
+            screenshot: {
+                enabled: false,
+                skipOn: () => true
+            },
             options: {
                 args: ['--enable-unsafe-webgpu']
             }
@@ -29,7 +32,10 @@ export default defineConfig({
         include: ['src/**/*.test.ts'],
         exclude: ['lib/**/*'],
         update: false,
-        screenshot: false,
+        screenshot: {
+            enabled: false,
+            skipOn: () => true
+        },
     },
     build: {
         minify: true,
