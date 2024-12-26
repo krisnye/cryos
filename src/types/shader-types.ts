@@ -1,5 +1,5 @@
 import { DataType, FromDataType, Vec4, Vec3 } from "./data-types.js";
-import { FlattenProperties, Simplify } from "./meta-types.js";
+import { Simplify } from "./meta-types.js";
 import { VertexType, SamplerType, StorageBuffer, TextureType, VertexAttributes, VertexBuffer } from "./resource-types.js";
 import { IsEquivalent, IsTrue } from "./test-types.js";
 
@@ -47,14 +47,9 @@ export type GraphicShaderDescriptor = {
 };
 
 export type ComputeShaderDescriptor = {
-  input: {
-    workgroup_size?: readonly [number, number, number];
-    uniforms?: Record<string, DataType>;
-    storage?: Record<string, DataType>;
-  };
-  output: {
-    storage?: Record<string, DataType>;
-  };
+  workgroup_size: readonly [number, number, number];
+  uniforms?: Record<string, DataType>;
+  storage?: Record<string, DataType>;
   source: string;
 };
 
@@ -69,8 +64,6 @@ export type ResourceTypes = {
 
 type ShaderUniformTypes<T> = T extends GraphicShaderDescriptor ?
   T["uniforms"]
- : T extends ComputeShaderDescriptor ?
-  FlattenProperties<Pick<T["input"], "uniforms">>
   : never;
 
 type ShaderTextureTypes<T> = T extends GraphicShaderDescriptor ?
@@ -101,6 +94,24 @@ export type ShaderResourceValues<T> = Simplify<
   & { [K in keyof ShaderStorageTypes<T>]: StorageBuffer<ShaderStorageTypes<T>[K]> }
 >;
 
+/**
+ * Type guard to check if a shader descriptor is for a graphics shader
+ */
+export const isGraphicShaderDescriptor = (
+  descriptor: ShaderDescriptor
+): descriptor is GraphicShaderDescriptor => {
+  return !('workgroup_size' in descriptor);
+};
+
+/**
+ * Type guard to check if a shader descriptor is for a compute shader
+ */
+export const isComputeShaderDescriptor = (
+  descriptor: ShaderDescriptor
+): descriptor is ComputeShaderDescriptor => {
+  return 'workgroup_size' in descriptor;
+};
+
 {
   //  type compile time unit tests
   const sampleGraphicsShaderDescriptor = {
@@ -124,4 +135,31 @@ export type ShaderResourceValues<T> = Simplify<
   type CheckUniformValues = IsTrue<IsEquivalent<SampleShaderUniformValues, { time: number, light: Vec4, gravity: Vec3 }>>;
   type SampleShaderResourceValues = ShaderResourceValues<typeof sampleGraphicsShaderDescriptor>;
   type CheckResourceValues = IsTrue<IsEquivalent<SampleShaderResourceValues, { texture1: GPUTexture, texture2: GPUTexture, sampler1: GPUSampler, sampler2: GPUSampler, storage1: {}, storage2: {} }>>;
+}
+
+{
+  const graphicsShader = {
+    attributes: { position: "vec3" },
+    source: "shader code"
+  } as const satisfies GraphicShaderDescriptor;
+
+  const computeShader = {
+    workgroup_size: [8, 8, 1] as const,
+    source: "compute shader code"
+  } as const satisfies ComputeShaderDescriptor;
+
+  // @ts-expect-error - Should error when trying to access compute-only property on graphics shader
+  const test1 = graphicsShader.workgroup_size;
+  
+  // @ts-expect-error - Should error when trying to access graphics-only property on compute shader
+  const test2 = computeShader.attributes;
+
+  // These should compile without errors
+  if (isGraphicShaderDescriptor(graphicsShader)) {
+    const _test = graphicsShader.attributes;
+  }
+
+  if (isComputeShaderDescriptor(computeShader)) {
+    const _test = computeShader.workgroup_size;
+  }
 }
