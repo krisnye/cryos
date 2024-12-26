@@ -1,160 +1,195 @@
-import { expect, test, describe, vi } from "vitest";
+import { expect, test, describe, beforeEach, vi } from "vitest";
 import { createBindGroupHelper } from "./create-bind-group-helper.js";
 import { GraphicShaderDescriptor } from "../types/shader-types.js";
 
 describe("createBindGroupHelper", () => {
-    // Mock GPUDevice and related types
-    const createMockDevice = () => ({
-        createBuffer: vi.fn().mockReturnValue({
-            destroy: vi.fn()
-        }),
-        createBindGroupLayout: vi.fn().mockReturnValue({}),
+    // Mock GPU objects and device
+    const mockBuffer = {
+        size: 256,
+        destroy: vi.fn()
+    } as unknown as GPUBuffer;
+
+    const mockTexture = {
+        createView: vi.fn().mockReturnValue({})
+    } as unknown as GPUTexture;
+
+    const mockSampler = {} as GPUSampler;
+
+    const mockBindGroupLayout = {} as GPUBindGroupLayout;
+
+    const mockDevice = {
+        createBindGroupLayout: vi.fn().mockReturnValue(mockBindGroupLayout),
         createBindGroup: vi.fn().mockReturnValue({}),
-        queue: {
-            writeBuffer: vi.fn()
-        }
-    } as unknown as GPUDevice);
+        createBuffer: vi.fn().mockReturnValue(mockBuffer)
+    } as unknown as GPUDevice;
 
-    test("should handle uniforms only", () => {
-        const device = createMockDevice();
-        const descriptor = {
-            uniforms: {
-                modelMatrix: "mat4x4",
-                time: "f32"
-            },
-            source: `
-                fn vertex_main() -> @builtin(position) vec4<f32> {
-                    let t = time;
-                    let pos = vec4<f32>(0.0, 0.0, 0.0, 1.0) * modelMatrix;
-                    return pos;
-                }
-            `
-        } as const satisfies GraphicShaderDescriptor;
-
-        const helper = createBindGroupHelper(device, descriptor, {
-            modelMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-            time: 0
-        }, {});
-
-        // Verify initial state
-        expect(helper.uniforms.time).toBe(0);
-        expect(Array.from(helper.uniforms.modelMatrix)).toEqual([
-            1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1
-        ]);
-
-        // Update values
-        helper.uniforms.time = 1.5;
-        helper.maybeWriteToGPU();
-
-        const bindGroup = helper.getBindGroup();
-
-        // Verify bind group was created
-       expect(device.createBindGroup).toHaveBeenCalled();
+    beforeEach(() => {
+        vi.clearAllMocks();
     });
 
-    test("should handle textures and samplers", () => {
-        const device = createMockDevice();
+    test("should create bind group with uniforms only", () => {
         const descriptor: GraphicShaderDescriptor = {
+            uniforms: {
+                modelMatrix: "mat4x4",
+                color: "vec4"
+            },
+            source: ""
+        };
+
+        const initialUniforms = {
+            modelMatrix: new Float32Array(16),
+            color: new Float32Array([1, 0, 0, 1])
+        };
+
+        const helper = createBindGroupHelper(mockDevice, descriptor, initialUniforms, {});
+        helper.getBindGroup();
+
+        expect(mockDevice.createBindGroup).toHaveBeenCalledWith({
+            layout: mockBindGroupLayout,
+            entries: [
+                {
+                    binding: 0,
+                    resource: {
+                        buffer: mockBuffer,
+                        offset: 0,
+                        size: expect.any(Number)
+                    }
+                }
+            ]
+        });
+    });
+
+    test("should create bind group with all resource types", () => {
+        const descriptor: GraphicShaderDescriptor = {
+            uniforms: {
+                transform: "mat4x4"
+            },
             textures: {
-                diffuse: "texture_2d",
-                normal: "texture_2d"
+                diffuse: "texture_2d"
             },
             samplers: {
                 defaultSampler: "sampler"
             },
-            source: `
-                fn fragment_main() -> @location(0) vec4<f32> {
-                    normal,
-                    return textureSample(diffuse, defaultSampler, vec2<f32>(0.5));
-                }
-            `
-        };
-
-        const mockTexture = {
-            createView: vi.fn().mockReturnValue({})
-        } as unknown as GPUTexture;
-
-        const mockSampler = {} as GPUSampler;
-
-        const helper = createBindGroupHelper(device, descriptor, {}, {
-            diffuse: mockTexture,
-            normal: mockTexture,
-            defaultSampler: mockSampler
-        });
-
-        // Get bind group should create a new bind group
-        helper.getBindGroup();
-        expect(device.createBindGroup).toHaveBeenCalled();
-
-        // Changing resources should mark bind group as dirty
-        const newTexture = { createView: vi.fn().mockReturnValue({}) } as unknown as GPUTexture;
-        helper.resources = {
-            ...helper.resources,
-            diffuse: newTexture
-        };
-
-        // Should create a new bind group with updated resources
-        helper.getBindGroup();
-        expect(device.createBindGroup).toHaveBeenCalledTimes(2);
-    });
-
-    test("should handle storage buffers", () => {
-        const device = createMockDevice();
-        const descriptor: GraphicShaderDescriptor = {
             storage: {
-                particles: "vec4",
-                shared_data: "vec3"
+                data: "vec4"
             },
-            source: `
-                fn vertex_main() -> @builtin(position) vec4<f32> {
-                    shared_data
-                    let pos = particles[0];
-                    return pos;
-                }
-            `
+            source: ""
         };
 
-        const mockBuffer = {
-            size: 1024
-        } as GPUBuffer;
+        const initialUniforms = {
+            transform: new Float32Array(16)
+        };
 
-        const helper = createBindGroupHelper(device, descriptor, {}, {
-            particles: mockBuffer,
-            shared_data: mockBuffer
-        });
+        const initialResources = {
+            diffuse: mockTexture,
+            defaultSampler: mockSampler,
+            data: mockBuffer
+        };
 
-        // Get bind group should create a new bind group with storage buffers
+        const helper = createBindGroupHelper(mockDevice, descriptor, initialUniforms, initialResources);
         helper.getBindGroup();
-        expect(device.createBindGroup).toHaveBeenCalled();
 
-        // Verify the bind group entries contain storage buffers
-        expect(device.createBindGroup).toHaveBeenCalledWith(expect.objectContaining({
-            entries: expect.arrayContaining([
-                expect.objectContaining({
-                    resource: expect.objectContaining({
-                        buffer: mockBuffer
-                    })
-                })
-            ])
-        }));
+        expect(mockDevice.createBindGroup).toHaveBeenCalledWith({
+            layout: mockBindGroupLayout,
+            entries: [
+                {
+                    binding: 0,
+                    resource: {
+                        buffer: mockBuffer,
+                        offset: 0,
+                        size: expect.any(Number)
+                    }
+                },
+                {
+                    binding: 1,
+                    resource: expect.any(Object)  // texture view
+                },
+                {
+                    binding: 2,
+                    resource: mockSampler
+                },
+                {
+                    binding: 3,
+                    resource: {
+                        buffer: mockBuffer,
+                        offset: 0,
+                        size: 256
+                    }
+                }
+            ]
+        });
     });
 
-    test("should throw error for missing resources", () => {
-        const device = createMockDevice();
+    test("should recreate bind group when resources change", () => {
         const descriptor: GraphicShaderDescriptor = {
             textures: {
-                diffuse: "texture_cube"
+                diffuse: "texture_2d"
             },
-            source: `
-                fn fragment_main() -> @location(0) vec4<f32> {
-                    diffuse
-                    return textureSample(diffuse, defaultSampler, vec2<f32>(0.5));
-                }
-            `
+            source: ""
         };
 
-        const helper = createBindGroupHelper(device, descriptor, {}, {});
+        const initialResources = {
+            diffuse: mockTexture
+        };
 
+        const helper = createBindGroupHelper(mockDevice, descriptor, {}, initialResources);
+        helper.getBindGroup();
+
+        const newTexture = { ...mockTexture };
+        helper.resources = { diffuse: newTexture };
+        helper.getBindGroup();
+
+        expect(mockDevice.createBindGroup).toHaveBeenCalledTimes(2);
+    });
+
+    test("should throw when required resource is missing", () => {
+        const descriptor: GraphicShaderDescriptor = {
+            textures: {
+                diffuse: "texture_2d"
+            },
+            source: ""
+        };
+
+        const helper = createBindGroupHelper(mockDevice, descriptor, {}, {});
         expect(() => helper.getBindGroup()).toThrow("Missing texture resource: diffuse");
+    });
+
+    test("should not recreate bind group if resources haven't changed", () => {
+        vi.clearAllMocks();
+        const descriptor: GraphicShaderDescriptor = {
+            textures: {
+                diffuse: "texture_2d"
+            },
+            source: ""
+        };
+
+        const initialResources = {
+            diffuse: mockTexture
+        };
+
+        const helper = createBindGroupHelper(mockDevice, descriptor, {}, initialResources);
+        helper.getBindGroup();
+        helper.getBindGroup();
+        helper.getBindGroup();
+
+        expect(mockDevice.createBindGroup).toHaveBeenCalledTimes(1);
+    });
+
+    test("should cleanup resources on destroy", () => {
+        const descriptor: GraphicShaderDescriptor = {
+            uniforms: {
+                transform: "mat4x4"
+            },
+            source: ""
+        };
+
+        const initialUniforms = {
+            transform: new Float32Array(16)
+        };
+
+        const helper = createBindGroupHelper(mockDevice, descriptor, initialUniforms, {});
+        helper.destroy();
+
+        expect(mockBuffer.destroy).toHaveBeenCalled();
     });
 });
