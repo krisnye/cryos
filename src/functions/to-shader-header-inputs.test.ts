@@ -2,6 +2,29 @@ import { expect, test, describe } from "vitest";
 import { toShaderHeaderInputs } from "./to-shader-header-inputs.js";
 import { ComputeShaderDescriptor, GraphicShaderDescriptor } from "../types/shader-types.js";
 
+interface CustomMatchers<R = unknown> {
+    toContainDeclaration: (declaration: string) => R;
+}
+
+declare module "vitest" {
+    interface Assertion extends CustomMatchers {}
+}
+
+expect.extend({
+    toContainDeclaration(received: string, declaration: string) {
+        const normalizeWhitespace = (str: string) => str.replace(/\s+/g, ' ').trim();
+        const contains = normalizeWhitespace(received).includes(normalizeWhitespace(declaration));
+
+        return {
+            pass: contains,
+            message: () => 
+                contains 
+                    ? `Expected shader not to contain "${declaration}"`
+                    : `Expected shader to contain "${declaration}"`
+        };
+    }
+});
+
 function normalizeWhitespace(str: string): string {
     return str
         .trim()
