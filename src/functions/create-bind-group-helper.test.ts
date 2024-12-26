@@ -1,6 +1,42 @@
 import { expect, test, describe, beforeEach, vi } from "vitest";
 import { createBindGroupHelper } from "./create-bind-group-helper.js";
-import { GraphicShaderDescriptor } from "../types/shader-types.js";
+import { GraphicShaderDescriptor, ComputeShaderDescriptor } from "../types/shader-types.js";
+import { IsEquivalent, IsTrue } from "../types/test-types.js";
+import { Vec4 } from "../types/data-types.js";
+import { StorageBuffer } from "../types/resource-types.js";
+
+// Type tests for createBindGroupHelper
+{
+    const computeShader = {
+        workgroup_size: [64, 1, 1] as const,
+        uniforms: {
+            params: "vec4",
+            time: "f32"
+        },
+        storage: {
+            inputData: "f32",
+            outputData: "vec4"
+        },
+        source: ""
+    } as const satisfies ComputeShaderDescriptor;
+
+    // Verify helper type inference
+    type Helper = ReturnType<typeof createBindGroupHelper<typeof computeShader>>;
+    
+    // Verify resources type
+    type Resources = Helper["resources"];
+    type CheckResources = IsTrue<IsEquivalent<Resources, {
+        inputData: StorageBuffer<"f32">;
+        outputData: StorageBuffer<"vec4">;
+    }>>;
+
+    // Verify uniforms type
+    type Uniforms = Helper["uniforms"];
+    type CheckUniforms = IsTrue<IsEquivalent<Uniforms, {
+        params: Vec4;
+        time: number;
+    }>>;
+}
 
 describe("createBindGroupHelper", () => {
     // Mock GPU objects and device
@@ -27,7 +63,7 @@ describe("createBindGroupHelper", () => {
         vi.clearAllMocks();
     });
 
-    test("should create bind group with uniforms only", () => {
+    test("should create bind group with uniforms only (graphics shader)", () => {
         const descriptor: GraphicShaderDescriptor = {
             uniforms: {
                 modelMatrix: "mat4x4",
@@ -59,7 +95,7 @@ describe("createBindGroupHelper", () => {
         });
     });
 
-    test("should create bind group with all resource types", () => {
+    test("should create bind group with all graphics shader resource types", () => {
         const descriptor: GraphicShaderDescriptor = {
             uniforms: {
                 transform: "mat4x4"
@@ -120,6 +156,70 @@ describe("createBindGroupHelper", () => {
         });
     });
 
+    test("should create bind group with compute shader uniforms and storage", () => {
+        const descriptor: ComputeShaderDescriptor = {
+            workgroup_size: [64, 1, 1],
+            uniforms: {
+                params: "vec4"
+            },
+            storage: {
+                inputData: "f32",
+                outputData: "f32"
+            },
+            source: `
+                fn compute_main() {
+                    // Read from input
+                    let value = inputData[0];
+                    
+                    // Write to output
+                    outputData[0] = value * 2.0;
+                }
+            `
+        };
+
+        const initialUniforms = {
+            params: new Float32Array([1, 2, 3, 4])
+        };
+
+        const initialResources = {
+            inputData: mockBuffer,
+            outputData: mockBuffer
+        };
+
+        const helper = createBindGroupHelper(mockDevice, descriptor, initialUniforms, initialResources);
+        helper.getBindGroup();
+
+        expect(mockDevice.createBindGroup).toHaveBeenCalledWith({
+            layout: mockBindGroupLayout,
+            entries: [
+                {
+                    binding: 0,
+                    resource: {
+                        buffer: mockBuffer,
+                        offset: 0,
+                        size: expect.any(Number)
+                    }
+                },
+                {
+                    binding: 1,
+                    resource: {
+                        buffer: mockBuffer,
+                        offset: 0,
+                        size: 256
+                    }
+                },
+                {
+                    binding: 2,
+                    resource: {
+                        buffer: mockBuffer,
+                        offset: 0,
+                        size: 256
+                    }
+                }
+            ]
+        });
+    });
+
     test("should recreate bind group when resources change", () => {
         const descriptor: GraphicShaderDescriptor = {
             textures: {
@@ -142,7 +242,7 @@ describe("createBindGroupHelper", () => {
         expect(mockDevice.createBindGroup).toHaveBeenCalledTimes(2);
     });
 
-    test("should throw when required resource is missing", () => {
+    test("should throw when required resource is missing (graphics shader)", () => {
         const descriptor: GraphicShaderDescriptor = {
             textures: {
                 diffuse: "texture_2d"
@@ -154,8 +254,20 @@ describe("createBindGroupHelper", () => {
         expect(() => helper.getBindGroup()).toThrow("Missing texture resource: diffuse");
     });
 
+    test("should throw when required resource is missing (compute shader)", () => {
+        const descriptor: ComputeShaderDescriptor = {
+            workgroup_size: [64, 1, 1],
+            storage: {
+                data: "f32"
+            },
+            source: ""
+        };
+
+        const helper = createBindGroupHelper(mockDevice, descriptor, {}, {});
+        expect(() => helper.getBindGroup()).toThrow("Missing storage buffer resource: data");
+    });
+
     test("should not recreate bind group if resources haven't changed", () => {
-        vi.clearAllMocks();
         const descriptor: GraphicShaderDescriptor = {
             textures: {
                 diffuse: "texture_2d"
