@@ -232,12 +232,14 @@ describe("createBindGroupLayoutDescriptor", () => {
                 binding: 0,
                 visibility: GPUShaderStage.VERTEX,
                 buffer: {
+                    hasDynamicOffset: false,
                     type: "storage"
                 }
             }, {
                 binding: 1,
                 visibility: GPUShaderStage.FRAGMENT,
                 buffer: {
+                    hasDynamicOffset: false,
                     type: "storage"
                 }
             }]

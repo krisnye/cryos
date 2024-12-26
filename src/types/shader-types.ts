@@ -36,6 +36,7 @@ export type GraphicShaderDescriptor = {
   /**
    * The storage buffers used by the either the vertex or fragment shader.
    * Each of these will have its own BindGroup.
+   * The DataType is the element type of the storage buffer array.
    */
   storage?: Record<string, DataType>;
   /**
@@ -49,6 +50,12 @@ export type GraphicShaderDescriptor = {
 export type ComputeShaderDescriptor = {
   workgroup_size: readonly [number, number, number];
   uniforms?: Record<string, DataType>;
+  /**
+   * The storage buffers used by the compute shader.
+   * Each of these will have its own BindGroup.
+   * The DataType is the element type of the storage buffer array.
+   * The read or write access is determined by the shader code.
+   */
   storage?: Record<string, DataType>;
   source: string;
 };

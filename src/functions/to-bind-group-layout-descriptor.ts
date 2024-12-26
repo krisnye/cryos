@@ -1,4 +1,9 @@
-import { GraphicShaderDescriptor } from "../types/shader-types.js";
+import { 
+  GraphicShaderDescriptor, 
+  ComputeShaderDescriptor,
+  isComputeShaderDescriptor,
+  isGraphicShaderDescriptor 
+} from "../types/shader-types.js";
 
 interface ShaderStageUsage {
   vertex: boolean;
@@ -71,85 +76,167 @@ const findUnusedResources = (
     : [];
 };
 
-export function toBindGroupLayoutDescriptor(descriptor: GraphicShaderDescriptor): GPUBindGroupLayoutDescriptor {
-    const entries: GPUBindGroupLayoutEntry[] = [];
-    let bindingIndex = 0;
+interface StorageAccess {
+  read: boolean;
+  write: boolean;
+}
 
-    // Get all resource names
-    const resourceNames = [
-        ...Object.keys(descriptor.uniforms ?? {}),
-        ...Object.keys(descriptor.textures ?? {}),
-        ...Object.keys(descriptor.samplers ?? {}),
-        ...Object.keys(descriptor.storage ?? {}),
+function parseComputeStorageAccess(source: string, resourceNames: string[]): Record<string, StorageAccess> {
+  const access: Record<string, StorageAccess> = {};
+
+  // Initialize access tracking for all resources
+  resourceNames.forEach(name => {
+    access[name] = { read: false, write: false };
+  });
+
+  const computeMatch = source.match(/fn\s+compute_main\s*\([^{]*\)[^{]*{([^}]*)}/);
+  if (!computeMatch) {
+    console.warn("Compute shader entry point not found");
+    return access;
+  }
+
+  const computeCode = computeMatch[1];
+  resourceNames.forEach(name => {
+    // Check for write access patterns
+    const writePatterns = [
+      `${name}[`,           // Array index write
+      `${name}.`,           // Struct member write
+      `store\\s*&${name}`,  // Direct storage write
     ];
-
-    // Parse shader usage
-    const usage = parseShaderUsage(descriptor.source, resourceNames);
-
-    // Check for unused resources
-    const unusedResources = [
-        ...findUnusedResources(usage, descriptor, 'uniforms'),
-        ...findUnusedResources(usage, descriptor, 'textures'),
-        ...findUnusedResources(usage, descriptor, 'samplers'),
-        ...findUnusedResources(usage, descriptor, 'storage'),
-    ];
-
-    if (unusedResources.length > 0) {
-        console.warn(
-            `Found unused resources in shader:\n${unusedResources
-                .map(({ type, name }) => `  - ${type}: ${name}`)
-                .join('\n')}`
-        );
+    
+    // If any write pattern is found, mark as write access
+    if (writePatterns.some(pattern => new RegExp(pattern).test(computeCode))) {
+      access[name].write = true;
     }
+    
+    // If the variable name appears at all, assume at least read access
+    if (computeCode.includes(name)) {
+      access[name].read = true;
+    }
+  });
+
+  return access;
+}
+
+export function toBindGroupLayoutDescriptor(
+  descriptor: GraphicShaderDescriptor | ComputeShaderDescriptor
+): GPUBindGroupLayoutDescriptor {
+  const entries: GPUBindGroupLayoutEntry[] = [];
+  let bindingIndex = 0;
+
+  if (isComputeShaderDescriptor(descriptor)) {
+    // Handle compute shader resources
+    const resourceNames = [
+      ...Object.keys(descriptor.uniforms ?? {}),
+      ...Object.keys(descriptor.storage ?? {}),
+    ];
+
+    const storageAccess = parseComputeStorageAccess(
+      descriptor.source, 
+      Object.keys(descriptor.storage ?? {})
+    );
 
     // Handle uniforms
     if (descriptor.uniforms && Object.keys(descriptor.uniforms).length > 0) {
-        const uniformNames = Object.keys(descriptor.uniforms);
-        const visibility = uniformNames.reduce((vis, name) => 
-            vis | getVisibilityForResource(usage[name]), 0);
-            
-        entries.push({
-            binding: bindingIndex++,
-            visibility,
-            buffer: { type: "uniform" }
-        });
-    }
-
-    // Handle textures
-    if (descriptor.textures) {
-        Object.keys(descriptor.textures).forEach((name) => {
-            const visibility = getVisibilityForResource(usage[name]);
-            entries.push({
-                binding: bindingIndex++,
-                visibility,
-                texture: { sampleType: "float", viewDimension: "2d" }
-            });
-        });
-    }
-
-    // Handle samplers
-    if (descriptor.samplers) {
-        Object.keys(descriptor.samplers).forEach((name) => {
-            const visibility = getVisibilityForResource(usage[name]);
-            entries.push({
-                binding: bindingIndex++,
-                visibility,
-                sampler: { type: "filtering" }
-            });
-        });
+      entries.push({
+        binding: bindingIndex++,
+        visibility: GPUShaderStage.COMPUTE,
+        buffer: { type: "uniform" }
+      });
     }
 
     // Handle storage buffers
     if (descriptor.storage) {
-        Object.keys(descriptor.storage).forEach((name) => {
-            const visibility = getVisibilityForResource(usage[name]);
-            entries.push({
-                binding: bindingIndex++,
-                visibility,
-                buffer: { type: "storage" }
-            });
+      Object.keys(descriptor.storage).forEach((name) => {
+        const access = storageAccess[name];
+        entries.push({
+          binding: bindingIndex++,
+          visibility: GPUShaderStage.COMPUTE,
+          buffer: {
+            type: access.write ? "storage" : "read-only-storage",
+            hasDynamicOffset: false,
+          }
         });
+      });
+    }
+  } else if (isGraphicShaderDescriptor(descriptor)) {
+    // Handle graphics shader resources
+    const resourceNames = [
+      ...Object.keys(descriptor.uniforms ?? {}),
+      ...Object.keys(descriptor.textures ?? {}),
+      ...Object.keys(descriptor.samplers ?? {}),
+      ...Object.keys(descriptor.storage ?? {}),
+    ];
+
+    const usage = parseShaderUsage(descriptor.source, resourceNames);
+
+    // Check for unused resources
+    const unusedResources = [
+      ...findUnusedResources(usage, descriptor, 'uniforms'),
+      ...findUnusedResources(usage, descriptor, 'textures'),
+      ...findUnusedResources(usage, descriptor, 'samplers'),
+      ...findUnusedResources(usage, descriptor, 'storage'),
+    ];
+
+    if (unusedResources.length > 0) {
+      console.warn(
+        `Found unused resources in shader:\n${unusedResources
+          .map(({ type, name }) => `  - ${type}: ${name}`)
+          .join('\n')}`
+      );
     }
 
-    return { entries };
+    // Handle uniforms
+    if (descriptor.uniforms && Object.keys(descriptor.uniforms).length > 0) {
+      const uniformNames = Object.keys(descriptor.uniforms);
+      const visibility = uniformNames.reduce(
+        (vis, name) => vis | getVisibilityForResource(usage[name]), 
+        0
+      );
+      
+      entries.push({
+        binding: bindingIndex++,
+        visibility,
+        buffer: { type: "uniform" }
+      });
+    }
+
+    // Handle textures
+    if (descriptor.textures) {
+      Object.keys(descriptor.textures).forEach((name) => {
+        entries.push({
+          binding: bindingIndex++,
+          visibility: getVisibilityForResource(usage[name]),
+          texture: { sampleType: "float", viewDimension: "2d" }
+        });
+      });
+    }
+
+    // Handle samplers
+    if (descriptor.samplers) {
+      Object.keys(descriptor.samplers).forEach((name) => {
+        entries.push({
+          binding: bindingIndex++,
+          visibility: getVisibilityForResource(usage[name]),
+          sampler: { type: "filtering" }
+        });
+      });
+    }
+
+    // Handle storage buffers
+    if (descriptor.storage) {
+      Object.keys(descriptor.storage).forEach((name) => {
+        entries.push({
+          binding: bindingIndex++,
+          visibility: getVisibilityForResource(usage[name]),
+          buffer: { 
+            type: "storage",
+            hasDynamicOffset: false,
+          }
+        });
+      });
+    }
+  }
+
+  return { entries };
 }
