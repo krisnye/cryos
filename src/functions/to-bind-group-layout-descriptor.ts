@@ -1,8 +1,8 @@
 import { 
   GraphicShaderDescriptor, 
-  ComputeShaderDescriptor,
   isComputeShaderDescriptor,
-  isGraphicShaderDescriptor 
+  isGraphicShaderDescriptor, 
+  ShaderDescriptor
 } from "../types/shader-types.js";
 
 interface ShaderStageUsage {
@@ -120,7 +120,7 @@ function parseComputeStorageAccess(source: string, resourceNames: string[]): Rec
 }
 
 export function toBindGroupLayoutDescriptor(
-  descriptor: GraphicShaderDescriptor | ComputeShaderDescriptor
+  descriptor: ShaderDescriptor
 ): GPUBindGroupLayoutDescriptor {
   const entries: GPUBindGroupLayoutEntry[] = [];
   let bindingIndex = 0;
