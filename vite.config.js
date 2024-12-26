@@ -29,6 +29,7 @@ export default defineConfig({
         include: ['src/**/*.test.ts'],
         exclude: ['lib/**/*'],
         update: false,
+        screenshot: false,
     },
     build: {
         minify: true,
