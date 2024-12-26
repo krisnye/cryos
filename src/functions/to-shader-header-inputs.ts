@@ -1,18 +1,15 @@
 import { ResourceType } from "../types/resource-types.js";
-import { GraphicShaderDescriptor } from "../types/shader-types.js";
+import { ShaderDescriptor, isComputeShaderDescriptor, isGraphicShaderDescriptor } from "../types/shader-types.js";
 import { toWGSLType } from "./to-wgsl-type.js";
+import { parseComputeStorageAccess } from "./parse-shader-access.js";
 
-/**
- * Converts a shader descriptor into a string of WGSL code with proper bindings.
- * @param shaderDescriptor The shader descriptor to convert.
- */
-export function toShaderHeaderInputs(shaderDescriptor: GraphicShaderDescriptor): string {
-    const { attributes, uniforms, textures, samplers, storage } = shaderDescriptor;
+export function toShaderHeaderInputs(descriptor: ShaderDescriptor): string {
+    const { uniforms, storage } = descriptor;
     const parts: string[] = [];
 
-    // Generate vertex input struct if there are attributes
-    if (attributes && Object.keys(attributes).length > 0) {
-        const attributeEntries = Object.entries(attributes)
+    // Generate vertex input struct if this is a graphics shader
+    if (isGraphicShaderDescriptor(descriptor) && descriptor.attributes && Object.keys(descriptor.attributes).length > 0) {
+        const attributeEntries = Object.entries(descriptor.attributes)
             .map(([name, type], index) => `    @location(${index}) ${name}: ${toWGSLType(type)}`)
             .join(',\n');
             
@@ -33,32 +30,51 @@ export function toShaderHeaderInputs(shaderDescriptor: GraphicShaderDescriptor):
 
     let bindingIndex = uniforms ? 1 : 0;
 
-    // Handle textures
-    if (textures && Object.keys(textures).length > 0) {
-        const textureBindings = Object.entries(textures)
-            .map(([name, type]) => 
-                `@group(0) @binding(${bindingIndex++}) var ${name}: ${toWGSLType(type as ResourceType)};`
-            );
-        parts.push(...textureBindings);
-    }
+    // Handle textures and samplers only for graphics shaders
+    if (isGraphicShaderDescriptor(descriptor)) {
+        const { textures, samplers } = descriptor;
 
-    // Handle samplers
-    if (samplers && Object.keys(samplers).length > 0) {
-        const samplerBindings = Object.entries(samplers)
-            .map(([name, type]) => 
-                `@group(0) @binding(${bindingIndex++}) var ${name}: ${toWGSLType(type as ResourceType)};`
-            );
-        parts.push(...samplerBindings);
+        // Handle textures
+        if (textures && Object.keys(textures).length > 0) {
+            const textureBindings = Object.entries(textures)
+                .map(([name, type]) => 
+                    `@group(0) @binding(${bindingIndex++}) var ${name}: ${toWGSLType(type as ResourceType)};`
+                );
+            parts.push(...textureBindings);
+        }
+
+        // Handle samplers
+        if (samplers && Object.keys(samplers).length > 0) {
+            const samplerBindings = Object.entries(samplers)
+                .map(([name, type]) => 
+                    `@group(0) @binding(${bindingIndex++}) var ${name}: ${toWGSLType(type as ResourceType)};`
+                );
+            parts.push(...samplerBindings);
+        }
     }
 
     // Handle storage buffers
     if (storage && Object.keys(storage).length > 0) {
-        const storageBindings = Object.entries(storage)
-            .map(([name, type]) => {
-                const typeStr = Array.isArray(type) ? toWGSLType(type[0]) : toWGSLType(type as ResourceType);
-                return `@group(0) @binding(${bindingIndex++}) var<storage, read_write> ${name}: array<${typeStr}>;`;
-            });
-        parts.push(...storageBindings);
+        if (isComputeShaderDescriptor(descriptor)) {
+            // For compute shaders, analyze read/write access
+            const storageAccess = parseComputeStorageAccess(descriptor.source, Object.keys(storage));
+            const storageBindings = Object.entries(storage)
+                .map(([name, type]) => {
+                    const typeStr = Array.isArray(type) ? toWGSLType(type[0]) : toWGSLType(type as ResourceType);
+                    const access = storageAccess[name];
+                    const accessMode = access.write ? "read_write" : "read";
+                    return `@group(0) @binding(${bindingIndex++}) var<storage, ${accessMode}> ${name}: array<${typeStr}>;`;
+                });
+            parts.push(...storageBindings);
+        } else {
+            // For graphics shaders, always use read_write
+            const storageBindings = Object.entries(storage)
+                .map(([name, type]) => {
+                    const typeStr = Array.isArray(type) ? toWGSLType(type[0]) : toWGSLType(type as ResourceType);
+                    return `@group(0) @binding(${bindingIndex++}) var<storage, read_write> ${name}: array<${typeStr}>;`;
+                });
+            parts.push(...storageBindings);
+        }
     }
 
     return parts.join('\n\n');

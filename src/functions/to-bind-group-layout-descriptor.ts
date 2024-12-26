@@ -4,6 +4,7 @@ import {
   isGraphicShaderDescriptor, 
   ShaderDescriptor
 } from "../types/shader-types.js";
+import { parseComputeStorageAccess } from "./parse-shader-access.js";
 
 interface ShaderStageUsage {
   vertex: boolean;
@@ -76,49 +77,6 @@ const findUnusedResources = (
     : [];
 };
 
-interface StorageAccess {
-  read: boolean;
-  write: boolean;
-}
-
-function parseComputeStorageAccess(source: string, resourceNames: string[]): Record<string, StorageAccess> {
-  const access: Record<string, StorageAccess> = {};
-
-  // Initialize access tracking for all resources
-  resourceNames.forEach(name => {
-    access[name] = { read: false, write: false };
-  });
-
-  const computeMatch = source.match(/fn\s+compute_main\s*\([^{]*\)[^{]*{([^}]*)}/);
-  if (!computeMatch) {
-    console.warn("Compute shader entry point not found");
-    return access;
-  }
-
-  const computeCode = computeMatch[1];
-  resourceNames.forEach(name => {
-    // Check for write access patterns
-    const writePatterns = [
-      `${name}\\[.*\\]\\s*=`,          // Array index write: buffer[0] = 
-      `${name}\\[.*\\]\\..*\\s*=`,     // Struct field write: buffer[0].x = 
-      `${name}\\..*\\s*=`,             // Direct struct write: buffer.x = 
-      `store\\s*&${name}`,             // Direct storage write
-    ];
-    
-    // If any write pattern is found, mark as write access
-    if (writePatterns.some(pattern => new RegExp(pattern).test(computeCode))) {
-      access[name].write = true;
-    }
-    
-    // If the variable name appears at all, assume at least read access
-    if (computeCode.includes(name)) {
-      access[name].read = true;
-    }
-  });
-
-  return access;
-}
-
 export function toBindGroupLayoutDescriptor(
   descriptor: ShaderDescriptor
 ): GPUBindGroupLayoutDescriptor {
@@ -148,6 +106,7 @@ export function toBindGroupLayoutDescriptor(
 
     // Handle storage buffers
     if (descriptor.storage) {
+      const storageAccess = parseComputeStorageAccess(descriptor.source, Object.keys(descriptor.storage));
       Object.keys(descriptor.storage).forEach((name) => {
         const access = storageAccess[name];
         entries.push({
@@ -226,6 +185,7 @@ export function toBindGroupLayoutDescriptor(
 
     // Handle storage buffers
     if (descriptor.storage) {
+      const storageAccess = parseComputeStorageAccess(descriptor.source, Object.keys(descriptor.storage));
       Object.keys(descriptor.storage).forEach((name) => {
         entries.push({
           binding: bindingIndex++,
