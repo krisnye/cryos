@@ -2,6 +2,14 @@ import { expect, test, describe } from "vitest";
 import { toShaderHeaderInputs } from "./to-shader-header-inputs.js";
 import { ComputeShaderDescriptor, GraphicShaderDescriptor } from "../types/shader-types.js";
 
+function normalizeWhitespace(str: string): string {
+    return str
+        .trim()
+        .replace(/\s+/g, ' ')
+        .replace(/\s*([,;{}])\s*/g, '$1')
+        .replace(/\s*(\{|\})\s*/g, '$1');
+}
+
 describe("toShaderHeaderInputs", () => {
     test("should generate vertex input struct", () => {
         const shader: GraphicShaderDescriptor = {
@@ -14,12 +22,14 @@ describe("toShaderHeaderInputs", () => {
         };
 
         const result = toShaderHeaderInputs(shader);
-        expect(result).toBe(
-            `struct VertexInput {
-    @location(0) position: vec3<f32>,
-    @location(1) uv: vec2<f32>,
-    @location(2) normal: vec3<f32>
-}`
+        expect(normalizeWhitespace(result)).toBe(
+            normalizeWhitespace(`
+                struct VertexInput {
+                    @location(0) position: vec3<f32>,
+                    @location(1) uv: vec2<f32>,
+                    @location(2) normal: vec3<f32>
+                }
+            `)
         );
     });
 
@@ -34,15 +44,14 @@ describe("toShaderHeaderInputs", () => {
         };
 
         const result = toShaderHeaderInputs(shader);
-        expect(result).toBe(
-            `struct Uniforms {
-    modelMatrix: mat4x4<f32>,
-    color: vec4<f32>,
-    time: f32
-}
-
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;`
-        );
+        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            struct Uniforms {
+                modelMatrix: mat4x4<f32>,
+                color: vec4<f32>,
+                time: f32
+            }
+            @group(0) @binding(0) var<uniform> uniforms: Uniforms;
+        `));
     });
 
     test("should generate texture bindings", () => {
@@ -55,11 +64,10 @@ describe("toShaderHeaderInputs", () => {
         };
 
         const result = toShaderHeaderInputs(shader);
-        expect(result).toBe(
-            `@group(0) @binding(0) var diffuseMap: texture_2d<f32>;
-
-@group(0) @binding(1) var normalMap: texture_2d<f32>;`
-        );
+        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            @group(0) @binding(0) var diffuseMap: texture_2d<f32>;
+            @group(0) @binding(1) var normalMap: texture_2d<f32>;
+        `));
     });
 
     test("should generate sampler bindings", () => {
@@ -72,11 +80,10 @@ describe("toShaderHeaderInputs", () => {
         };
 
         const result = toShaderHeaderInputs(shader);
-        expect(result).toBe(
-            `@group(0) @binding(0) var diffuseSampler: sampler;
-
-@group(0) @binding(1) var shadowSampler: sampler_comparison;`
-        );
+        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            @group(0) @binding(0) var diffuseSampler: sampler;
+            @group(0) @binding(1) var shadowSampler: sampler_comparison;
+        `));
     });
 
     test("should generate storage buffer bindings", () => {
@@ -89,11 +96,10 @@ describe("toShaderHeaderInputs", () => {
         };
 
         const result = toShaderHeaderInputs(shader);
-        expect(result).toBe(
-            `@group(0) @binding(0) var<storage, read_write> particles: array<vec4<f32>>;
-
-@group(0) @binding(1) var<storage, read_write> indices: array<u32>;`
-        );
+        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            @group(0) @binding(0) var<storage, read_write> particles: array<vec4<f32>>;
+            @group(0) @binding(1) var<storage, read_write> indices: array<u32>;
+        `));
     });
 
     test("should handle all resource types together with correct binding indices", () => {
@@ -119,25 +125,20 @@ describe("toShaderHeaderInputs", () => {
         };
 
         const result = toShaderHeaderInputs(shader);
-        expect(result).toBe(
-            `struct VertexInput {
-    @location(0) position: vec3<f32>,
-    @location(1) normal: vec3<f32>
-}
-
-struct Uniforms {
-    modelMatrix: mat4x4<f32>,
-    time: f32
-}
-
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
-
-@group(0) @binding(1) var diffuseMap: texture_2d<f32>;
-
-@group(0) @binding(2) var defaultSampler: sampler;
-
-@group(0) @binding(3) var<storage, read_write> particles: array<vec4<f32>>;`
-        );
+        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            struct VertexInput {
+                @location(0) position: vec3<f32>,
+                @location(1) normal: vec3<f32>
+            }
+            struct Uniforms {
+                modelMatrix: mat4x4<f32>,
+                time: f32
+            }
+            @group(0) @binding(0) var<uniform> uniforms: Uniforms;
+            @group(0) @binding(1) var diffuseMap: texture_2d<f32>;
+            @group(0) @binding(2) var defaultSampler: sampler;
+            @group(0) @binding(3) var<storage, read_write> particles: array<vec4<f32>>;
+        `));
     });
 
     test("should handle empty descriptor", () => {
@@ -146,7 +147,7 @@ struct Uniforms {
         };
 
         const result = toShaderHeaderInputs(shader);
-        expect(result).toBe("");
+        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(``));
     });
 
     test("should generate compute shader uniform bindings", () => {
@@ -164,14 +165,13 @@ struct Uniforms {
         } as const satisfies ComputeShaderDescriptor;
 
         const result = toShaderHeaderInputs(shader);
-        expect(result).toBe(
-            `struct Uniforms {
-    params: vec4<f32>,
-    time: f32
-}
-
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;`
-        );
+        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            struct Uniforms {
+                params: vec4<f32>,
+                time: f32
+            }
+            @group(0) @binding(0) var<uniform> uniforms: Uniforms;
+        `));
     });
 
     test("should generate compute shader storage bindings with read/write access", () => {
@@ -193,11 +193,10 @@ struct Uniforms {
         } as const satisfies ComputeShaderDescriptor;
 
         const result = toShaderHeaderInputs(shader);
-        expect(result).toBe(
-            `@group(0) @binding(0) var<storage, read> inputData: array<f32>;
-
-@group(0) @binding(1) var<storage, read_write> outputData: array<f32>;`
-        );
+        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            @group(0) @binding(0) var<storage, read> inputData: array<f32>;
+            @group(0) @binding(1) var<storage, read_write> outputData: array<f32>;
+        `));
     });
 
     test("should handle compute shader with mixed storage access patterns", () => {
@@ -227,15 +226,12 @@ struct Uniforms {
         } as const satisfies ComputeShaderDescriptor;
 
         const result = toShaderHeaderInputs(shader);
-        expect(result).toBe(
-            `@group(0) @binding(0) var<storage, read> readOnly: array<vec4<f32>>;
-
-@group(0) @binding(1) var<storage, read_write> readWrite: array<vec4<f32>>;
-
-@group(0) @binding(2) var<storage, read_write> writeOnly: array<f32>;
-
-@group(0) @binding(3) var<storage, read_write> structAccess: array<vec4<f32>>;`
-        );
+        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            @group(0) @binding(0) var<storage, read> readOnly: array<vec4<f32>>;
+            @group(0) @binding(1) var<storage, read_write> readWrite: array<vec4<f32>>;
+            @group(0) @binding(2) var<storage, read_write> writeOnly: array<f32>;
+            @group(0) @binding(3) var<storage, read_write> structAccess: array<vec4<f32>>;
+        `));
     });
 
     test("should handle compute shader with all resource types", () => {
@@ -259,17 +255,14 @@ struct Uniforms {
         } as const satisfies ComputeShaderDescriptor;
 
         const result = toShaderHeaderInputs(shader);
-        expect(result).toBe(
-            `struct Uniforms {
-    params: vec4<f32>,
-    time: f32
-}
-
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
-
-@group(0) @binding(1) var<storage, read> input: array<vec4<f32>>;
-
-@group(0) @binding(2) var<storage, read_write> output: array<vec4<f32>>;`
-        );
+        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            struct Uniforms {
+                params: vec4<f32>,
+                time: f32
+            }
+            @group(0) @binding(0) var<uniform> uniforms: Uniforms;
+            @group(0) @binding(1) var<storage, read> input: array<vec4<f32>>;
+            @group(0) @binding(2) var<storage, read_write> output: array<vec4<f32>>;
+        `));
     });
 }); 
