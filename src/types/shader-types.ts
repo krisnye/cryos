@@ -1,6 +1,6 @@
 import { DataType, FromDataType, Vec4, Vec3 } from "./data-types.js";
 import { Simplify } from "./meta-types.js";
-import { VertexType, SamplerType, StorageBuffer, TextureType, VertexAttributes, VertexBuffer } from "./resource-types.js";
+import { VertexType, SamplerType, StorageBuffer, TextureType, VertexAttributes, VertexBuffer, StorageType } from "./resource-types.js";
 import { IsEquivalent, IsTrue } from "./test-types.js";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ export type ShaderUniformValues<T> =
 export type ShaderResourceValues<T> = Simplify<
   & { [K in keyof ShaderTextureTypes<T>]: GPUTexture }
   & { [K in keyof ShaderSamplerTypes<T>]: GPUSampler }
-  & { [K in keyof ShaderStorageTypes<T>]: StorageBuffer<ShaderStorageTypes<T>[K]> }
+  & { [K in keyof ShaderStorageTypes<T>]: ShaderStorageTypes<T>[K] extends StorageType ? StorageBuffer<ShaderStorageTypes<T>[K]> : never }
 >;
 
 /**
@@ -126,7 +126,7 @@ export const isComputeShaderDescriptor = (
     uniforms: { time: "f32", light: "vec4", gravity: "vec3" },
     textures: { texture1: "texture_2d", texture2: "texture_2d" },
     samplers: { sampler1: "sampler", sampler2: "sampler_comparison" },
-    storage: { storage1: "vec4", storage2: ["vec4", 200] },
+    storage: { storage1: "vec4", storage2: "vec4" },
     source: "sample-shader",
   } as const satisfies GraphicShaderDescriptor;
   
@@ -137,7 +137,7 @@ export const isComputeShaderDescriptor = (
   type SampleShaderSamplerTypes = ShaderSamplerTypes<typeof sampleGraphicsShaderDescriptor>;
   type CheckSamplerTypes = IsTrue<IsEquivalent<SampleShaderSamplerTypes, { sampler1: "sampler", sampler2: "sampler_comparison" }>>;
   type SampleShaderStorageTypes = ShaderStorageTypes<typeof sampleGraphicsShaderDescriptor>;
-  type CheckStorageTypes = IsTrue<IsEquivalent<SampleShaderStorageTypes, { storage1: "vec4", storage2: readonly ["vec4", 200] }>>;
+  type CheckStorageTypes = IsTrue<IsEquivalent<SampleShaderStorageTypes, { storage1: "vec4", storage2: "vec4" }>>;
   type SampleShaderUniformValues = ShaderUniformValues<typeof sampleGraphicsShaderDescriptor>;
   type CheckUniformValues = IsTrue<IsEquivalent<SampleShaderUniformValues, { time: number, light: Vec4, gravity: Vec3 }>>;
   type SampleShaderResourceValues = ShaderResourceValues<typeof sampleGraphicsShaderDescriptor>;
