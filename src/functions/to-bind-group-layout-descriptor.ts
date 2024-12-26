@@ -99,9 +99,10 @@ function parseComputeStorageAccess(source: string, resourceNames: string[]): Rec
   resourceNames.forEach(name => {
     // Check for write access patterns
     const writePatterns = [
-      `${name}[`,           // Array index write
-      `${name}.`,           // Struct member write
-      `store\\s*&${name}`,  // Direct storage write
+      `${name}\\[.*\\]\\s*=`,          // Array index write: buffer[0] = 
+      `${name}\\[.*\\]\\..*\\s*=`,     // Struct field write: buffer[0].x = 
+      `${name}\\..*\\s*=`,             // Direct struct write: buffer.x = 
+      `store\\s*&${name}`,             // Direct storage write
     ];
     
     // If any write pattern is found, mark as write access

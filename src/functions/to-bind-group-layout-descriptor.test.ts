@@ -1,6 +1,6 @@
 import { expect, test, describe, vi } from "vitest";
 import { toBindGroupLayoutDescriptor } from "./to-bind-group-layout-descriptor.js";
-import { GraphicShaderDescriptor } from "../types/shader-types.js";
+import { GraphicShaderDescriptor, ComputeShaderDescriptor } from "../types/shader-types.js";
 
 describe("createBindGroupLayoutDescriptor", () => {
     test("should create layout for uniforms only", () => {
@@ -300,6 +300,220 @@ describe("createBindGroupLayoutDescriptor", () => {
                     type: "filtering"
                 }
             }]
+        });
+    });
+
+    test("should handle compute shader with read/write storage buffers", () => {
+        const shader: ComputeShaderDescriptor = {
+            workgroup_size: [64, 1, 1],
+            uniforms: {
+                params: "vec4"
+            },
+            storage: {
+                inputData: "f32",
+                outputData: "f32"
+            },
+            source: `
+                fn compute_main() {
+                    // Read from input
+                    let value = inputData[0];
+                    
+                    // Write to output
+                    outputData[0] = value * 2.0;
+                }
+            `
+        };
+
+        const layout = toBindGroupLayoutDescriptor(shader);
+        expect(layout).toEqual({
+            entries: [
+                {
+                    binding: 0,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "uniform"
+                    }
+                },
+                {
+                    binding: 1,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
+                },
+                {
+                    binding: 2,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "storage",
+                        hasDynamicOffset: false
+                    }
+                }
+            ]
+        });
+    });
+
+    test("should handle compute shader with only uniforms", () => {
+        const shader: ComputeShaderDescriptor = {
+            workgroup_size: [64, 1, 1],
+            uniforms: {
+                params: "vec4",
+                time: "f32"
+            },
+            source: `
+                fn compute_main() {
+                    let t = params.x * time;
+                }
+            `
+        };
+
+        const layout = toBindGroupLayoutDescriptor(shader);
+        expect(layout).toEqual({
+            entries: [
+                {
+                    binding: 0,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "uniform"
+                    }
+                }
+            ]
+        });
+    });
+
+    test("should handle compute shader with only read-only storage", () => {
+        const shader: ComputeShaderDescriptor = {
+            workgroup_size: [64, 1, 1],
+            storage: {
+                data1: "f32",
+                data2: "vec4"
+            },
+            source: `
+                fn compute_main() {
+                    let x = data1[0];
+                    let y = data2[0].xy;
+                }
+            `
+        };
+
+        const layout = toBindGroupLayoutDescriptor(shader);
+        expect(layout).toEqual({
+            entries: [
+                {
+                    binding: 0,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
+                },
+                {
+                    binding: 1,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
+                }
+            ]
+        });
+    });
+
+    test("should warn if compute shader entry point is not found", () => {
+        const consoleSpy = vi.spyOn(console, 'warn');
+        
+        const shader: ComputeShaderDescriptor = {
+            workgroup_size: [64, 1, 1],
+            storage: {
+                data: "f32"
+            },
+            source: `
+                fn wrong_main() {
+                    data[0] = 1.0;
+                }
+            `
+        };
+
+        const layout = toBindGroupLayoutDescriptor(shader);
+        
+        expect(consoleSpy).toHaveBeenCalledWith("Compute shader entry point not found");
+        expect(layout.entries).toEqual([
+            {
+                binding: 0,
+                visibility: GPUShaderStage.COMPUTE,
+                buffer: {
+                    type: "read-only-storage",
+                    hasDynamicOffset: false
+                }
+            }
+        ]);
+
+        consoleSpy.mockRestore();
+    });
+
+    test("should handle complex storage access patterns in compute shader", () => {
+        const shader: ComputeShaderDescriptor = {
+            workgroup_size: [64, 1, 1],
+            storage: {
+                readOnly: "f32",
+                writeStruct: "vec4",
+                readWrite: "f32",
+                storeTarget: "f32"
+            },
+            source: `
+                fn compute_main() {
+                    // Read only access
+                    let x = readOnly[0];
+                    
+                    // Write through struct field
+                    writeStruct[0].x = 1.0;
+                    
+                    // Both read and write
+                    readWrite[1] = readWrite[0] * 2.0;
+                    
+                    // Write through store operation
+                    store &storeTarget, 1.0;
+                }
+            `
+        };
+
+        const layout = toBindGroupLayoutDescriptor(shader);
+        expect(layout).toEqual({
+            entries: [
+                {
+                    binding: 0,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
+                },
+                {
+                    binding: 1,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "storage",
+                        hasDynamicOffset: false
+                    }
+                },
+                {
+                    binding: 2,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "storage",
+                        hasDynamicOffset: false
+                    }
+                },
+                {
+                    binding: 3,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: {
+                        type: "storage",
+                        hasDynamicOffset: false
+                    }
+                }
+            ]
         });
     });
 
