@@ -120,8 +120,8 @@ describe("toShaderHeaderInputs", () => {
 
         const result = toShaderHeaderInputs(shader);
         expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
-            @group(0) @binding(0) var<storage, read_write> particles: array<vec4<f32>>;
-            @group(0) @binding(1) var<storage, read_write> indices: array<u32>;
+            @group(0) @binding(0) var<storage, read> particles: array<vec4<f32>>;
+            @group(0) @binding(1) var<storage, read> indices: array<u32>;
         `));
     });
 
@@ -160,7 +160,7 @@ describe("toShaderHeaderInputs", () => {
             @group(0) @binding(0) var<uniform> uniforms: Uniforms;
             @group(0) @binding(1) var diffuseMap: texture_2d<f32>;
             @group(0) @binding(2) var defaultSampler: sampler;
-            @group(0) @binding(3) var<storage, read_write> particles: array<vec4<f32>>;
+            @group(0) @binding(3) var<storage, read> particles: array<vec4<f32>>;
         `));
     });
 

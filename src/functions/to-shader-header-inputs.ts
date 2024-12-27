@@ -67,11 +67,11 @@ export function toShaderHeaderInputs(descriptor: ShaderDescriptor): string {
                 });
             parts.push(...storageBindings);
         } else {
-            // For graphics shaders, always use read_write
+            // For graphics shaders, use read-only for storage buffers to match bind group layout
             const storageBindings = Object.entries(storage)
                 .map(([name, type]) => {
                     const typeStr = Array.isArray(type) ? toWGSLType(type[0]) : toWGSLType(type as ResourceType);
-                    return `@group(0) @binding(${bindingIndex++}) var<storage, read_write> ${name}: array<${typeStr}>;`;
+                    return `@group(0) @binding(${bindingIndex++}) var<storage, read> ${name}: array<${typeStr}>;`;
                 });
             parts.push(...storageBindings);
         }
