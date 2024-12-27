@@ -1,5 +1,4 @@
 import { DataType, FromDataType, Vec4, Vec3 } from "./data-types.js";
-import { Simplify } from "./meta-types.js";
 import { VertexType, SamplerType, TextureType, VertexAttributes, VertexBuffer, StorageType } from "./resource-types.js";
 import { IsEquivalent, IsTrue } from "./test-types.js";
 
@@ -14,6 +13,7 @@ import { IsEquivalent, IsTrue } from "./test-types.js";
  * referenced within we will make the variables available to the correct shader stages.
  */
 export type GraphicShaderDescriptor = {
+  type: "graphic";
   /**
    * The attributes of the vertex buffer if present.
    */
@@ -48,6 +48,7 @@ export type GraphicShaderDescriptor = {
 };
 
 export type ComputeShaderDescriptor = {
+  type: "compute";
   workgroupSize: readonly [number, number, number];
   uniforms?: Record<string, DataType>;
   /**
@@ -69,7 +70,7 @@ export type ResourceTypes = {
   storage?: Record<string, DataType>;
 }
 
-type ShaderUniformTypes<T> = T extends GraphicShaderDescriptor ?
+type ShaderUniformTypes<T> = T extends ShaderDescriptor ?
   T["uniforms"]
   : never;
 
@@ -81,7 +82,7 @@ type ShaderSamplerTypes<T> = T extends GraphicShaderDescriptor ?
   T["samplers"]
   : never;
 
-type ShaderStorageTypes<T> = T extends GraphicShaderDescriptor ?
+type ShaderStorageTypes<T> = T extends ShaderDescriptor ?
   T["storage"]
   : never;
 
@@ -95,11 +96,10 @@ export type ShaderUniformValues<T> =
 /**
  * Returns the required ResourceTypes for a given ShaderDescriptor.
  */
-export type ShaderResourceValues<T> = Simplify<
+export type ShaderResourceValues<T> = 
   & { [K in keyof ShaderTextureTypes<T>]: GPUTexture }
   & { [K in keyof ShaderSamplerTypes<T>]: GPUSampler }
-  & { [K in keyof ShaderStorageTypes<T>]: GPUBuffer }
->;
+  & { [K in keyof ShaderStorageTypes<T>]: GPUBuffer };
 
 /**
  * Type guard to check if a shader descriptor is for a graphics shader
@@ -107,7 +107,7 @@ export type ShaderResourceValues<T> = Simplify<
 export const isGraphicShaderDescriptor = (
   descriptor: ShaderDescriptor
 ): descriptor is GraphicShaderDescriptor => {
-  return !('workgroupSize' in descriptor);
+  return descriptor.type === "graphic";
 };
 
 /**
@@ -116,12 +116,13 @@ export const isGraphicShaderDescriptor = (
 export const isComputeShaderDescriptor = (
   descriptor: ShaderDescriptor
 ): descriptor is ComputeShaderDescriptor => {
-  return 'workgroupSize' in descriptor;
+  return descriptor.type === "compute";
 };
 
 {
   //  type compile time unit tests
   const sampleGraphicsShaderDescriptor = {
+    type: "graphic",
     attributes: { position: "vec3", color: "vec4", },
     uniforms: { time: "f32", light: "vec4", gravity: "vec3" },
     textures: { texture1: "texture_2d", texture2: "texture_2d" },
@@ -146,11 +147,13 @@ export const isComputeShaderDescriptor = (
 
 {
   const graphicsShader = {
+    type: "graphic",
     attributes: { position: "vec3" },
     source: "shader code"
   } as const satisfies GraphicShaderDescriptor;
 
   const computeShader = {
+    type: "compute",
     workgroupSize: [8, 8, 1] as const,
     source: "compute shader code"
   } as const satisfies ComputeShaderDescriptor;

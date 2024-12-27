@@ -4,6 +4,7 @@ import { getGraphicShader } from "../../create-graphic-shader.js";
 import { createScalingMat4 } from "../../math/mat4-functions.js";
 
 const instancingShaderDescriptor = {
+    type: "graphic",
     attributes: {
         position: "vec4",
         color: "vec4"

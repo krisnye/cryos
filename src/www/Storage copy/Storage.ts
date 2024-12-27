@@ -5,6 +5,7 @@ import { createScalingMat4 } from "../../math/mat4-functions.js";
 import { createStorageBuffer } from "../../functions/create-storage-buffer.js";
 
 const storageShaderDescriptor = {
+    type: "graphic",
     attributes: {
         position: "vec4",
         color: "vec4"

@@ -20,6 +20,7 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should create layout for uniforms only", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             attributes: {},
             uniforms: {
                 modelMatrix: "mat4x4",
@@ -52,6 +53,7 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle uniform visibility from vertex main", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             attributes: {},
             uniforms: {
                 time: "f32",
@@ -84,6 +86,7 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle shared uniform visibility between vertex and fragment", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             attributes: {},
             uniforms: {
                 time: "f32",
@@ -116,6 +119,7 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle uniform visibility from fragment main", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             attributes: {},
             uniforms: {
                 time: "f32",
@@ -149,6 +153,7 @@ describe("createBindGroupLayoutDescriptor", () => {
         const consoleSpy = vi.spyOn(console, 'warn');
         
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             attributes: {},
             uniforms: {
                 time: "f32",
@@ -183,6 +188,7 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle textures with proper visibility", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             attributes: {},
             textures: {
                 heightMap: "texture_2d",
@@ -223,6 +229,7 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle storage buffers in graphics shader", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             attributes: {},
             storage: {
                 positions: "vec3",
@@ -266,6 +273,7 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle shared sampler and texture visibility", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             textures: {
                 heightMap: "texture_2d",
                 shared_tex: "texture_2d"
@@ -322,7 +330,8 @@ describe("createBindGroupLayoutDescriptor", () => {
     });
 
     test("should handle compute shader with read/write storage buffers", () => {
-        const shader: ComputeShaderDescriptor = {
+        const shader: ComputeShaderDescriptor = {   
+            type: "compute",
             workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4"
@@ -374,6 +383,7 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle compute shader with only uniforms", () => {
         const shader: ComputeShaderDescriptor = {
+            type: "compute",
             workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4",
@@ -402,6 +412,7 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle compute shader with only read-only storage", () => {
         const shader: ComputeShaderDescriptor = {
+            type: "compute",
             workgroupSize: [64, 1, 1],
             storage: {
                 data1: "f32",
@@ -442,6 +453,7 @@ describe("createBindGroupLayoutDescriptor", () => {
         const consoleSpy = vi.spyOn(console, 'warn');
         
         const shader: ComputeShaderDescriptor = {
+            type: "compute",
             workgroupSize: [64, 1, 1],
             storage: {
                 data: "f32"
@@ -472,6 +484,7 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle complex storage access patterns in compute shader", () => {
         const shader: ComputeShaderDescriptor = {
+            type: "compute",
             workgroupSize: [64, 1, 1],
             storage: {
                 readOnly: "f32",

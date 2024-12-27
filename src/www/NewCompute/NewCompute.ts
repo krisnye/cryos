@@ -6,6 +6,7 @@ import { createScalingMat4 } from "../../math/mat4-functions.js";
 import { createStorageBuffer } from "../../functions/create-storage-buffer.js";
 
 const computeShaderDescriptor = {
+    type: "compute",
     uniforms: {
         angle: "f32"
     },
@@ -33,6 +34,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
 } as const satisfies ComputeShaderDescriptor;
 
 const storageShaderDescriptor = {
+    type: "graphic",
     attributes: {
         position: "vec4",
         color: "vec4"

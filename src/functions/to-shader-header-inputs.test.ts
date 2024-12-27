@@ -36,6 +36,7 @@ function normalizeWhitespace(str: string): string {
 describe("toShaderHeaderInputs", () => {
     test("should generate vertex input struct", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             attributes: {
                 position: "vec3",
                 uv: "vec2",
@@ -58,6 +59,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should generate uniform bindings", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             uniforms: {
                 modelMatrix: "mat4x4",
                 color: "vec4",
@@ -79,6 +81,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should generate texture bindings", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             textures: {
                 diffuseMap: "texture_2d",
                 normalMap: "texture_2d"
@@ -95,6 +98,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should generate sampler bindings", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             samplers: {
                 diffuseSampler: "sampler",
                 shadowSampler: "sampler_comparison"
@@ -111,6 +115,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should generate storage buffer bindings", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             storage: {
                 particles: "vec4",
                 indices: "u32"
@@ -127,6 +132,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should handle all resource types together with correct binding indices", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             attributes: {
                 position: "vec3",
                 normal: "vec3"
@@ -166,6 +172,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should handle empty descriptor", () => {
         const shader: GraphicShaderDescriptor = {
+            type: "graphic",
             source: ""
         };
 
@@ -175,6 +182,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should generate compute shader uniform bindings", () => {
         const shader = {
+            type: "compute",
             workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4",
@@ -201,6 +209,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should generate compute shader storage bindings with read/write access", () => {
         const shader = {
+            type: "compute",
             workgroupSize: [64, 1, 1],
             storage: {
                 inputData: "f32",
@@ -228,6 +237,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should handle compute shader with mixed storage access patterns", () => {
         const shader = {
+            type: "compute",
             workgroupSize: [64, 1, 1],
             storage: {
                 readOnly: "vec4",
@@ -265,6 +275,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should handle compute shader with all resource types", () => {
         const shader = {
+            type: "compute",
             workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4",
@@ -299,6 +310,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should use default workgroup size if not specified", () => {
         const shader = {
+            type: "compute",
             workgroupSize: [1, 1, 1] as const,
             storage: {
                 data: "f32"
@@ -320,6 +332,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should handle compute shader with custom workgroup size", () => {
         const shader = {
+            type: "compute",
             workgroupSize: [8, 8, 2],
             storage: {
                 data: "f32"

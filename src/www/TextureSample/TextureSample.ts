@@ -5,6 +5,7 @@ import { loadTexture } from "../../functions/load-texture.js";
 import { getGraphicShader } from "../../create-graphic-shader.js";
 
 const textureShaderDescriptor = {
+    type: "graphic",
     attributes: {
         position: "vec4",
         texcoord: "vec2",

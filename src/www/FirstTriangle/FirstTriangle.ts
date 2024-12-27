@@ -3,6 +3,7 @@ import { GraphicShaderDescriptor } from "../../types/shader-types.js"
 import { getGraphicShader } from "../../create-graphic-shader.js";
 
 const triangleShaderDescriptor = {
+    type: "graphic",
     attributes: {
         position: "vec3", // this is padded to a vec4
         color: "vec4"

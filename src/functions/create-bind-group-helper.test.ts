@@ -7,7 +7,8 @@ import { Vec4 } from "../types/data-types.js";
 // Type tests for createBindGroupHelper
 {
     const computeShader = {
-        workgroupSize: [64, 1, 1] as const,
+        type: "compute",
+        workgroupSize: [64, 1, 1],
         uniforms: {
             params: "vec4",
             time: "f32"
@@ -79,6 +80,7 @@ describe("createBindGroupHelper", () => {
 
     test("should create bind group with uniforms only (graphics shader)", () => {
         const descriptor: GraphicShaderDescriptor = {
+            type: "graphic",
             uniforms: {
                 modelMatrix: "mat4x4",
                 color: "vec4"
@@ -111,6 +113,7 @@ describe("createBindGroupHelper", () => {
 
     test("should create bind group with all graphics shader resource types", () => {
         const descriptor: GraphicShaderDescriptor = {
+            type: "graphic",
             uniforms: {
                 transform: "mat4x4"
             },
@@ -172,6 +175,7 @@ describe("createBindGroupHelper", () => {
 
     test("should create bind group with compute shader uniforms and storage", () => {
         const descriptor: ComputeShaderDescriptor = {
+            type: "compute",
             workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4"
@@ -236,6 +240,7 @@ describe("createBindGroupHelper", () => {
 
     test("should recreate bind group when resources change", () => {
         const descriptor: GraphicShaderDescriptor = {
+            type: "graphic",
             textures: {
                 diffuse: "texture_2d"
             },
@@ -258,6 +263,7 @@ describe("createBindGroupHelper", () => {
 
     test("should throw when required resource is missing (graphics shader)", () => {
         const descriptor: GraphicShaderDescriptor = {
+            type: "graphic",
             textures: {
                 diffuse: "texture_2d"
             },
@@ -270,6 +276,7 @@ describe("createBindGroupHelper", () => {
 
     test("should throw when required resource is missing (compute shader)", () => {
         const descriptor: ComputeShaderDescriptor = {
+            type: "compute",
             workgroupSize: [64, 1, 1],
             storage: {
                 data: "f32"
@@ -283,6 +290,7 @@ describe("createBindGroupHelper", () => {
 
     test("should not recreate bind group if resources haven't changed", () => {
         const descriptor: GraphicShaderDescriptor = {
+            type: "graphic",
             textures: {
                 diffuse: "texture_2d"
             },
@@ -303,6 +311,7 @@ describe("createBindGroupHelper", () => {
 
     test("should cleanup resources on destroy", () => {
         const descriptor: GraphicShaderDescriptor = {
+            type: "graphic",
             uniforms: {
                 transform: "mat4x4"
             },
