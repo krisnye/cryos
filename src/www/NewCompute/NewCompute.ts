@@ -76,7 +76,7 @@ export function NewCompute() {
             const computeShader = getComputeShader(c, computeShaderDescriptor);
             const storageShader = getGraphicShader(c, storageShaderDescriptor);
 
-            // Create compute (writable) buffer for positions
+            // Create compute buffer with initial data
             const computePositionsBuffer = createStorageBuffer(
                 c.device,
                 {
@@ -88,6 +88,8 @@ export function NewCompute() {
                     ]),
                     storage: true,
                     writable: true,
+                    copySrc: true,
+                    copyDst: true,
                     label: "compute positions"
                 }
             );
@@ -99,6 +101,7 @@ export function NewCompute() {
                     data: new Float32Array(16), // 4 vec4s
                     storage: true,
                     writable: false,
+                    copyDst: true,
                     label: "render positions"
                 }
             );
@@ -133,11 +136,14 @@ export function NewCompute() {
                 }
             });
 
+            let time = 0;
+
             return {
-                update() {
-                    // Execute compute and copy to render buffer
-                    const commandEncoder = c.device.createCommandEncoder();
-                    
+                update: async (commandEncoder: GPUCommandEncoder) => {                    
+                    // Update rotation angle
+                    time += 0.01;
+                    compute.uniforms.angle = Math.sin(time) * 0.02;
+
                     // Run compute pass
                     const computePass = commandEncoder.beginComputePass();
                     compute.compute(computePass);
@@ -150,7 +156,7 @@ export function NewCompute() {
                         64  // 16 floats * 4 bytes
                     );
 
-                    c.device.queue.submit([commandEncoder.finish()]);
+                    return true;
                 },
                 render(renderPass: GPURenderPassEncoder) {
                     draw.draw(renderPass);

@@ -1,237 +1,86 @@
-type StorageBufferType = "f32" | "i32" | "u32";
-type StorageBufferTypedArray<T extends StorageBufferType> = T extends "f32" ? Float32Array : T extends "i32" ? Int32Array : Uint32Array;
-type StorageBufferTypeFromTypedArray<T extends StorageBufferTypedArray<any>> = T extends Float32Array ? "f32" : T extends Int32Array ? "i32" : "u32";
-
-export interface StorageBuffer<T extends StorageBufferType> {
-    /**
-     * The underlying GPU buffer
-     */
-    readonly buffer: GPUBuffer;
-
-    /**
-     * Get the raw typed array for reading or writing.
-     * If markDirty is true, the buffer will be marked for update on next maybeWriteToGPU.
-     */
-    getData(markDirty?: boolean): StorageBufferTypedArray<T>;
-
-    /**
-     * Write CPU data to GPU if it has changed since last write
-     */
-    maybeWriteToGPU(): void;
-
-    /**
-     * Read current GPU data back to CPU.
-     * Only available for buffers created with GPUBufferUsage.MAP_READ
-     */
-    readFromGPU(): Promise<void>;
-
-    /**
-     * Resize the buffer to the new element count.
-     * Preserves existing data up to the new size.
-     * New elements are initialized to 0.
-     */
-    resize(elementCount: number): void;
-
-    /**
-     * Clean up resources
-     */
-    destroy(): void;
-}
-
-export interface StorageBufferOptions<T extends Float32Array | Int32Array | Uint32Array> {
+export interface StorageBufferOptions {
     /**
      * Initial data for the buffer
      */
-    data: T;
-
+    data: Float32Array | Uint32Array;
     /**
-     * Whether the buffer can be read from GPU back to CPU
-     */
-    readable?: boolean;
-
-    /**
-     * Whether the buffer can be written from CPU to GPU
-     */
-    writable?: boolean;
-
-    /**
-     * Whether the buffer can be used as a storage buffer in shaders
-     * Defaults to true
+     * Whether this buffer should be used as a storage buffer
      */
     storage?: boolean;
-
     /**
-     * Optional label for the buffer
+     * Whether this buffer should be writable by the shader
+     */
+    writable?: boolean;
+    /**
+     * Label for the buffer
      */
     label?: string;
+    /**
+     * Whether this buffer can be copied to other buffers
+     */
+    copySrc?: boolean;
+    /**
+     * Whether this buffer can receive copies from other buffers
+     */
+    copyDst?: boolean;
 }
 
-export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32Array>(
+export interface StorageBuffer {
+    buffer: GPUBuffer;
+    destroy(): void;
+}
+
+/**
+ * Creates a storage buffer with the given options.
+ * If storage is true, creates a storage buffer suitable for use in shaders.
+ * If storage is false, creates a staging buffer suitable for data transfer.
+ */
+export function createStorageBuffer(
     device: GPUDevice,
-    options: StorageBufferOptions<T>
-): StorageBuffer<StorageBufferTypeFromTypedArray<T>> {
+    options: StorageBufferOptions
+): StorageBuffer {
     const {
-        data: initialData,
-        readable = false,
-        writable = true,
+        data,
         storage = true,
+        writable = false,
+        copySrc = true,
+        copyDst = true,
         label
     } = options;
 
-    // Set up buffer usage flags
-    let usage = GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST;
-    if (readable) usage |= GPUBufferUsage.MAP_READ;
-    if (writable) usage |= GPUBufferUsage.MAP_WRITE;
-    if (storage) usage |= GPUBufferUsage.STORAGE;
+    let usage = 0;
+    
+    if (storage) {
+        usage |= GPUBufferUsage.STORAGE;
+    } else {
+        usage |= GPUBufferUsage.MAP_WRITE;
+    }
 
-    // Create the GPU buffer with 256-byte alignment
-    const size = Math.ceil(initialData.byteLength / 256) * 256;
-    let buffer = device.createBuffer({
-        size,
+    if (copySrc) {
+        usage |= GPUBufferUsage.COPY_SRC;
+    }
+    if (copyDst) {
+        usage |= GPUBufferUsage.COPY_DST;
+    }
+
+    const buffer = device.createBuffer({
+        size: data.byteLength,
         usage,
-        mappedAtCreation: true,
-        label
+        label,
     });
 
-    // Initialize buffer with data
-    let data = new (initialData.constructor as any)(initialData);
-    let arrayBuffer: ArrayBuffer | undefined = buffer.getMappedRange();
-    new (data.constructor as any)(arrayBuffer).set(initialData);
-    buffer.unmap();
-    arrayBuffer = undefined;
-
-    let isDirty = false;
-    let stagingBuffer: GPUBuffer | undefined;
+    if (!storage) {
+        // For staging buffers, write the data immediately
+        device.queue.writeBuffer(buffer, 0, data);
+    } else {
+        // For storage buffers, write initial data
+        device.queue.writeBuffer(buffer, 0, data);
+    }
 
     return {
         buffer,
-        
-        getData(markDirty = false) {
-            if (markDirty && !writable) {
-                throw new Error("Buffer is not writable");
-            }
-            isDirty ||= markDirty;
-            return data;
-        },
-
-        resize(elementCount: number) {
-            const newSize = Math.ceil(elementCount * data.BYTES_PER_ELEMENT / 256) * 256;
-            if (newSize === buffer.size) return;
-
-            // Create new buffer
-            const newBuffer = device.createBuffer({
-                size: newSize,
-                usage,
-                mappedAtCreation: false,
-                label
-            });
-
-            // Create new data array
-            const newData = new (data.constructor as any)(newSize / data.BYTES_PER_ELEMENT);
-            newData.set(data);
-            data = newData;
-
-            // Create or resize staging buffer if needed
-            if (!stagingBuffer || stagingBuffer.size < newSize) {
-                stagingBuffer?.destroy();
-                stagingBuffer = device.createBuffer({
-                    size: newSize,
-                    usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC,
-                    mappedAtCreation: true,
-                    label: `${label ?? "storage"}-staging`
-                });
-            }
-
-            // Write to staging buffer
-            const arrayBuffer = stagingBuffer.getMappedRange();
-            new (data.constructor as any)(arrayBuffer).set(data);
-            stagingBuffer.unmap();
-
-            // Copy from staging to new buffer
-            const encoder = device.createCommandEncoder();
-            encoder.copyBufferToBuffer(
-                stagingBuffer,
-                0,
-                newBuffer,
-                0,
-                Math.min(buffer.size, newSize)
-            );
-            device.queue.submit([encoder.finish()]);
-
-            // Clean up old buffer
-            buffer.destroy();
-            buffer = newBuffer;
-            isDirty = false;
-        },
-
-        maybeWriteToGPU() {
-            if (!isDirty || !writable) return;
-
-            // Create staging buffer if needed
-            if (!stagingBuffer || stagingBuffer.size < buffer.size) {
-                stagingBuffer?.destroy();
-                stagingBuffer = device.createBuffer({
-                    size: buffer.size,
-                    usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC,
-                    mappedAtCreation: true,
-                    label: `${label ?? "storage"}-staging`
-                });
-
-                // Write data to staging buffer
-                const arrayBuffer = stagingBuffer.getMappedRange();
-                new (data.constructor as any)(arrayBuffer).set(data);
-                stagingBuffer.unmap();
-            }
-
-            // Copy from staging buffer to storage buffer
-            const encoder = device.createCommandEncoder();
-            encoder.copyBufferToBuffer(
-                stagingBuffer,
-                0,
-                buffer,
-                0,
-                buffer.size
-            );
-            device.queue.submit([encoder.finish()]);
-            isDirty = false;
-        },
-
-        async readFromGPU() {
-            if (!readable) {
-                throw new Error("Buffer is not readable");
-            }
-
-            // Create staging buffer if needed
-            if (!stagingBuffer || stagingBuffer.size < buffer.size) {
-                stagingBuffer?.destroy();
-                stagingBuffer = device.createBuffer({
-                    size: buffer.size,
-                    usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
-                    label: `${label ?? "storage"}-staging`
-                });
-            }
-
-            // Copy from storage buffer to staging buffer
-            const encoder = device.createCommandEncoder();
-            encoder.copyBufferToBuffer(
-                buffer,
-                0,
-                stagingBuffer,
-                0,
-                buffer.size
-            );
-            device.queue.submit([encoder.finish()]);
-
-            // Read from staging buffer
-            await stagingBuffer.mapAsync(GPUMapMode.READ);
-            const arrayBuffer = stagingBuffer.getMappedRange();
-            data = new (data.constructor as any)(arrayBuffer);
-            stagingBuffer.unmap();
-        },
-
         destroy() {
             buffer.destroy();
-            stagingBuffer?.destroy();
         }
     };
 } 

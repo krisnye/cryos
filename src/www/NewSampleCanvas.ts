@@ -4,7 +4,7 @@ import { createCanvasContext } from "../functions/create-canvas-context.js"
 import { CanvasContext } from "../types/canvas-context.js"
 
 export interface Component {
-    update?(): boolean | void
+    update?(encoder: GPUCommandEncoder): Promise<boolean | void>
     render(renderPass: GPURenderPassEncoder)
     destroy()
 }
@@ -28,9 +28,10 @@ export const NewSampleCanvas = createCustomElement(function (props: SampleProper
                 }
             })
             frame = async() => {
-                let animated = component.update?.()
 
                 const encoder = c.device.createCommandEncoder();
+                let animated = await component.update?.(encoder);
+
                 const renderPass = beginRenderPass(c, encoder);
         
                 component.render(renderPass);

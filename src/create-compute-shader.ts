@@ -25,13 +25,13 @@ export interface ComputeCommand<T extends ComputeShaderDescriptor> extends Resou
 export type ComputeShader<T extends ComputeShaderDescriptor> = {
     descriptor: T,
     dispatch: (options: {
-        uniforms?: Record<string, any>;
-        resources?: Record<string, GPUBuffer>;
-        workgroupCount?: [number, number, number];
+        uniforms: ShaderUniformValues<T>;
+        resources: ShaderResourceValues<T>;
+        workgroupCount: [number, number, number];
     }) => ComputeCommand<T>,
 }
 
-export function getComputeShader(context: Context, descriptor: ComputeShaderDescriptor) {
+export function getComputeShader<T extends ComputeShaderDescriptor>(context: Context, descriptor: T): ComputeShader<T> {
     const { device } = context;
     
     // Generate header and get full shader source
@@ -61,22 +61,34 @@ export function getComputeShader(context: Context, descriptor: ComputeShaderDesc
     });
 
     return {
+        descriptor,
         dispatch: (options: {
-            uniforms?: Record<string, any>;
-            resources?: Record<string, GPUBuffer>;
-            workgroupCount?: [number, number, number];
-        }) => {
+            uniforms: ShaderUniformValues<T>;
+            resources: ShaderResourceValues<T>;
+            workgroupCount: [number, number, number];
+        }): ComputeCommand<T> => {
             // Create bind group helper
-            const bindGroupHelper = createBindGroupHelper(device, descriptor, options.uniforms ?? {}, options.resources ?? {});
+            const bindGroupHelper = createBindGroupHelper(device, descriptor, options.uniforms, options.resources);
+            let workgroupCount = [...options.workgroupCount] as [number, number, number];
 
             return {
+                uniforms: bindGroupHelper.uniforms,
+                resources: bindGroupHelper.resources,
+                get workgroupCount() {
+                    return [...workgroupCount];
+                },
+                set workgroupCount(value: [number, number, number]) {
+                    workgroupCount[0] = value[0];
+                    workgroupCount[1] = value[1];
+                    workgroupCount[2] = value[2];
+                },
                 compute: (computePass: GPUComputePassEncoder) => {
                     computePass.setPipeline(pipeline);
                     computePass.setBindGroup(0, bindGroupHelper.getBindGroup());
                     computePass.dispatchWorkgroups(
-                        options.workgroupCount?.[0] ?? 1,
-                        options.workgroupCount?.[1] ?? 1,
-                        options.workgroupCount?.[2] ?? 1
+                        workgroupCount[0],
+                        workgroupCount[1],
+                        workgroupCount[2]
                     );
                 },
                 destroy: () => {
