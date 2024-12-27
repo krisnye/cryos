@@ -332,7 +332,6 @@ describe("createBindGroupLayoutDescriptor", () => {
     test("should handle compute shader with read/write storage buffers", () => {
         const shader: ComputeShaderDescriptor = {   
             type: "compute",
-            workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4"
             },
@@ -384,7 +383,6 @@ describe("createBindGroupLayoutDescriptor", () => {
     test("should handle compute shader with only uniforms", () => {
         const shader: ComputeShaderDescriptor = {
             type: "compute",
-            workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4",
                 time: "f32"
@@ -413,7 +411,6 @@ describe("createBindGroupLayoutDescriptor", () => {
     test("should handle compute shader with only read-only storage", () => {
         const shader: ComputeShaderDescriptor = {
             type: "compute",
-            workgroupSize: [64, 1, 1],
             storage: {
                 data1: "f32",
                 data2: "vec4"
@@ -454,7 +451,6 @@ describe("createBindGroupLayoutDescriptor", () => {
         
         const shader: ComputeShaderDescriptor = {
             type: "compute",
-            workgroupSize: [64, 1, 1],
             storage: {
                 data: "f32"
             },
@@ -485,7 +481,6 @@ describe("createBindGroupLayoutDescriptor", () => {
     test("should handle complex storage access patterns in compute shader", () => {
         const shader: ComputeShaderDescriptor = {
             type: "compute",
-            workgroupSize: [64, 1, 1],
             storage: {
                 readOnly: "f32",
                 writeStruct: "vec4",

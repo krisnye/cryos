@@ -183,7 +183,6 @@ describe("toShaderHeaderInputs", () => {
     test("should generate compute shader uniform bindings", () => {
         const shader = {
             type: "compute",
-            workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4",
                 time: "f32"
@@ -197,8 +196,6 @@ describe("toShaderHeaderInputs", () => {
 
         const result = toShaderHeaderInputs(shader);
         expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
-            @workgroup_size(64, 1, 1)
-
             struct Uniforms {
                 params: vec4<f32>,
                 time: f32
@@ -210,7 +207,6 @@ describe("toShaderHeaderInputs", () => {
     test("should generate compute shader storage bindings with read/write access", () => {
         const shader = {
             type: "compute",
-            workgroupSize: [64, 1, 1],
             storage: {
                 inputData: "f32",
                 outputData: "f32"
@@ -228,8 +224,6 @@ describe("toShaderHeaderInputs", () => {
 
         const result = toShaderHeaderInputs(shader);
         expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
-            @workgroup_size(64, 1, 1)
-
             @group(0) @binding(0) var<storage, read> inputData: array<f32>;
             @group(0) @binding(1) var<storage, read_write> outputData: array<f32>;
         `));
@@ -238,7 +232,6 @@ describe("toShaderHeaderInputs", () => {
     test("should handle compute shader with mixed storage access patterns", () => {
         const shader = {
             type: "compute",
-            workgroupSize: [64, 1, 1],
             storage: {
                 readOnly: "vec4",
                 readWrite: "vec4",
@@ -264,8 +257,6 @@ describe("toShaderHeaderInputs", () => {
 
         const result = toShaderHeaderInputs(shader);
         expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
-            @workgroup_size(64, 1, 1)
-
             @group(0) @binding(0) var<storage, read> readOnly: array<vec4<f32>>;
             @group(0) @binding(1) var<storage, read_write> readWrite: array<vec4<f32>>;
             @group(0) @binding(2) var<storage, read_write> writeOnly: array<f32>;
@@ -276,7 +267,6 @@ describe("toShaderHeaderInputs", () => {
     test("should handle compute shader with all resource types", () => {
         const shader = {
             type: "compute",
-            workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4",
                 time: "f32"
@@ -296,8 +286,6 @@ describe("toShaderHeaderInputs", () => {
 
         const result = toShaderHeaderInputs(shader);
         expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
-            @workgroup_size(64, 1, 1)
-
             struct Uniforms {
                 params: vec4<f32>,
                 time: f32
@@ -308,10 +296,9 @@ describe("toShaderHeaderInputs", () => {
         `));
     });
 
-    test("should use default workgroup size if not specified", () => {
+    test("should handle basic compute shader storage", () => {
         const shader = {
             type: "compute",
-            workgroupSize: [1, 1, 1] as const,
             storage: {
                 data: "f32"
             },
@@ -324,30 +311,6 @@ describe("toShaderHeaderInputs", () => {
 
         const result = toShaderHeaderInputs(shader);
         expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
-            @workgroup_size(1, 1, 1)
-
-            @group(0) @binding(0) var<storage, read_write> data: array<f32>;
-        `));
-    });
-
-    test("should handle compute shader with custom workgroup size", () => {
-        const shader = {
-            type: "compute",
-            workgroupSize: [8, 8, 2],
-            storage: {
-                data: "f32"
-            },
-            source: `
-                fn main() {
-                    data[0] = 1.0;
-                }
-            `
-        } as const satisfies ComputeShaderDescriptor;
-
-        const result = toShaderHeaderInputs(shader);
-        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
-            @workgroup_size(8, 8, 2)
-
             @group(0) @binding(0) var<storage, read_write> data: array<f32>;
         `));
     });

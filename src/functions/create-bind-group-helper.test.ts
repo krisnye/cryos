@@ -8,7 +8,6 @@ import { Vec4 } from "../types/data-types.js";
 {
     const computeShader = {
         type: "compute",
-        workgroupSize: [64, 1, 1],
         uniforms: {
             params: "vec4",
             time: "f32"
@@ -176,7 +175,6 @@ describe("createBindGroupHelper", () => {
     test("should create bind group with compute shader uniforms and storage", () => {
         const descriptor: ComputeShaderDescriptor = {
             type: "compute",
-            workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4"
             },
@@ -277,7 +275,6 @@ describe("createBindGroupHelper", () => {
     test("should throw when required resource is missing (compute shader)", () => {
         const descriptor: ComputeShaderDescriptor = {
             type: "compute",
-            workgroupSize: [64, 1, 1],
             storage: {
                 data: "f32"
             },

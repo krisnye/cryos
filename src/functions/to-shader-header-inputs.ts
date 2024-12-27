@@ -7,12 +7,6 @@ export function toShaderHeaderInputs(descriptor: ShaderDescriptor): string {
     const { uniforms, storage } = descriptor;
     const parts: string[] = [];
 
-    // Add workgroup_size attribute for compute shaders
-    if (isComputeShaderDescriptor(descriptor)) {
-        const { workgroupSize = [1, 1, 1] } = descriptor;
-        parts.push(`@workgroup_size(${workgroupSize.join(', ')})`);
-    }
-
     // Generate vertex input struct if this is a graphics shader
     if (isGraphicShaderDescriptor(descriptor) && descriptor.attributes && Object.keys(descriptor.attributes).length > 0) {
         const attributeEntries = Object.entries(descriptor.attributes)

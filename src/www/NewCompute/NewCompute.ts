@@ -13,9 +13,8 @@ const computeShaderDescriptor = {
     storage: {
         positions: ["vec4", 4]
     },
-    workgroupSize: [4, 1, 1],
     source: `
-@compute
+@compute @workgroup_size(4, 1, 1)
 fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     let index = id.x;
     let pos = positions[index];
