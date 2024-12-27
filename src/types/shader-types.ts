@@ -48,7 +48,7 @@ export type GraphicShaderDescriptor = {
 };
 
 export type ComputeShaderDescriptor = {
-  workgroup_size: readonly [number, number, number];
+  workgroupSize: readonly [number, number, number];
   uniforms?: Record<string, DataType>;
   /**
    * The storage buffers used by the compute shader.
@@ -107,7 +107,7 @@ export type ShaderResourceValues<T> = Simplify<
 export const isGraphicShaderDescriptor = (
   descriptor: ShaderDescriptor
 ): descriptor is GraphicShaderDescriptor => {
-  return !('workgroup_size' in descriptor);
+  return !('workgroupSize' in descriptor);
 };
 
 /**
@@ -116,7 +116,7 @@ export const isGraphicShaderDescriptor = (
 export const isComputeShaderDescriptor = (
   descriptor: ShaderDescriptor
 ): descriptor is ComputeShaderDescriptor => {
-  return 'workgroup_size' in descriptor;
+  return 'workgroupSize' in descriptor;
 };
 
 {
@@ -151,12 +151,12 @@ export const isComputeShaderDescriptor = (
   } as const satisfies GraphicShaderDescriptor;
 
   const computeShader = {
-    workgroup_size: [8, 8, 1] as const,
+    workgroupSize: [8, 8, 1] as const,
     source: "compute shader code"
   } as const satisfies ComputeShaderDescriptor;
 
   // @ts-expect-error - Should error when trying to access compute-only property on graphics shader
-  const test1 = graphicsShader.workgroup_size;
+  const test1 = graphicsShader.workgroupSize;
   
   // @ts-expect-error - Should error when trying to access graphics-only property on compute shader
   const test2 = computeShader.attributes;
@@ -167,6 +167,6 @@ export const isComputeShaderDescriptor = (
   }
 
   if (isComputeShaderDescriptor(computeShader)) {
-    const _test = computeShader.workgroup_size;
+    const _test = computeShader.workgroupSize;
   }
 }

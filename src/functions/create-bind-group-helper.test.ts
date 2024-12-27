@@ -7,7 +7,7 @@ import { Vec4 } from "../types/data-types.js";
 // Type tests for createBindGroupHelper
 {
     const computeShader = {
-        workgroup_size: [64, 1, 1] as const,
+        workgroupSize: [64, 1, 1] as const,
         uniforms: {
             params: "vec4",
             time: "f32"
@@ -172,7 +172,7 @@ describe("createBindGroupHelper", () => {
 
     test("should create bind group with compute shader uniforms and storage", () => {
         const descriptor: ComputeShaderDescriptor = {
-            workgroup_size: [64, 1, 1],
+            workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4"
             },
@@ -181,7 +181,7 @@ describe("createBindGroupHelper", () => {
                 outputData: "f32"
             },
             source: `
-                fn compute_main() {
+                fn main() {
                     // Read from input
                     let value = inputData[0];
                     
@@ -270,7 +270,7 @@ describe("createBindGroupHelper", () => {
 
     test("should throw when required resource is missing (compute shader)", () => {
         const descriptor: ComputeShaderDescriptor = {
-            workgroup_size: [64, 1, 1],
+            workgroupSize: [64, 1, 1],
             storage: {
                 data: "f32"
             },

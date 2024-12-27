@@ -175,13 +175,13 @@ describe("toShaderHeaderInputs", () => {
 
     test("should generate compute shader uniform bindings", () => {
         const shader = {
-            workgroup_size: [64, 1, 1],
+            workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4",
                 time: "f32"
             },
             source: `
-                fn compute_main() {
+                fn main() {
                     let t = params.x * time;
                 }
             `
@@ -199,13 +199,13 @@ describe("toShaderHeaderInputs", () => {
 
     test("should generate compute shader storage bindings with read/write access", () => {
         const shader = {
-            workgroup_size: [64, 1, 1],
+            workgroupSize: [64, 1, 1],
             storage: {
                 inputData: "f32",
                 outputData: "f32"
             },
             source: `
-                fn compute_main() {
+                fn main() {
                     // Read only from input
                     let value = inputData[0];
                     
@@ -224,7 +224,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should handle compute shader with mixed storage access patterns", () => {
         const shader = {
-            workgroup_size: [64, 1, 1],
+            workgroupSize: [64, 1, 1],
             storage: {
                 readOnly: "vec4",
                 readWrite: "vec4",
@@ -232,7 +232,7 @@ describe("toShaderHeaderInputs", () => {
                 structAccess: "vec4"
             },
             source: `
-                fn compute_main() {
+                fn main() {
                     // Read only access
                     let x = readOnly[0];
                     
@@ -259,7 +259,7 @@ describe("toShaderHeaderInputs", () => {
 
     test("should handle compute shader with all resource types", () => {
         const shader = {
-            workgroup_size: [64, 1, 1],
+            workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4",
                 time: "f32"
@@ -269,7 +269,7 @@ describe("toShaderHeaderInputs", () => {
                 output: "vec4"
             },
             source: `
-                fn compute_main() {
+                fn main() {
                     let t = time * params.x;
                     let value = input[0];
                     output[0] = value * t;

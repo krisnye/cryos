@@ -12,15 +12,15 @@ export interface StorageBuffer<T extends StorageBufferType> {
      * Get the raw typed array for reading or writing.
      * If markDirty is true, the buffer will be marked for update on next maybeWriteToGPU.
      */
-    getValues(markDirty?: boolean): StorageBufferTypedArray<T>;
+    getData(markDirty?: boolean): StorageBufferTypedArray<T>;
 
     /**
-     * Write CPU values to GPU if they've changed since last write
+     * Write CPU data to GPU if it has changed since last write
      */
     maybeWriteToGPU(): void;
 
     /**
-     * Read current GPU values back to CPU.
+     * Read current GPU data back to CPU.
      * Only available for buffers created with GPUBufferUsage.MAP_READ
      */
     readFromGPU(): Promise<void>;
@@ -38,7 +38,12 @@ export interface StorageBuffer<T extends StorageBufferType> {
     destroy(): void;
 }
 
-export interface StorageBufferOptions {
+export interface StorageBufferOptions<T extends Float32Array | Int32Array | Uint32Array> {
+    /**
+     * Initial data for the buffer
+     */
+    data: T;
+
     /**
      * Whether the buffer can be read from GPU back to CPU
      */
@@ -63,10 +68,10 @@ export interface StorageBufferOptions {
 
 export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32Array>(
     device: GPUDevice,
-    initialData: T,
-    options: StorageBufferOptions = {}
+    options: StorageBufferOptions<T>
 ): StorageBuffer<StorageBufferTypeFromTypedArray<T>> {
     const {
+        data: initialData,
         readable = false,
         writable = true,
         storage = true,
@@ -89,9 +94,9 @@ export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32
     });
 
     // Initialize buffer with data
-    let values = new (initialData.constructor as any)(initialData);
+    let data = new (initialData.constructor as any)(initialData);
     let arrayBuffer: ArrayBuffer | undefined = buffer.getMappedRange();
-    new (values.constructor as any)(arrayBuffer).set(initialData);
+    new (data.constructor as any)(arrayBuffer).set(initialData);
     buffer.unmap();
     arrayBuffer = undefined;
 
@@ -101,16 +106,16 @@ export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32
     return {
         buffer,
         
-        getValues(markDirty = false) {
+        getData(markDirty = false) {
             if (markDirty && !writable) {
                 throw new Error("Buffer is not writable");
             }
             isDirty ||= markDirty;
-            return values;
+            return data;
         },
 
         resize(elementCount: number) {
-            const newSize = Math.ceil(elementCount * values.BYTES_PER_ELEMENT / 256) * 256;
+            const newSize = Math.ceil(elementCount * data.BYTES_PER_ELEMENT / 256) * 256;
             if (newSize === buffer.size) return;
 
             // Create new buffer
@@ -121,10 +126,10 @@ export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32
                 label
             });
 
-            // Create new values array
-            const newValues = new (values.constructor as any)(newSize / values.BYTES_PER_ELEMENT);
-            newValues.set(values);
-            values = newValues;
+            // Create new data array
+            const newData = new (data.constructor as any)(newSize / data.BYTES_PER_ELEMENT);
+            newData.set(data);
+            data = newData;
 
             // Create or resize staging buffer if needed
             if (!stagingBuffer || stagingBuffer.size < newSize) {
@@ -139,7 +144,7 @@ export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32
 
             // Write to staging buffer
             const arrayBuffer = stagingBuffer.getMappedRange();
-            new (values.constructor as any)(arrayBuffer).set(values);
+            new (data.constructor as any)(arrayBuffer).set(data);
             stagingBuffer.unmap();
 
             // Copy from staging to new buffer
@@ -174,7 +179,7 @@ export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32
 
                 // Write data to staging buffer
                 const arrayBuffer = stagingBuffer.getMappedRange();
-                new (values.constructor as any)(arrayBuffer).set(values);
+                new (data.constructor as any)(arrayBuffer).set(data);
                 stagingBuffer.unmap();
             }
 
@@ -220,7 +225,7 @@ export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32
             // Read from staging buffer
             await stagingBuffer.mapAsync(GPUMapMode.READ);
             const arrayBuffer = stagingBuffer.getMappedRange();
-            values = new (values.constructor as any)(arrayBuffer);
+            data = new (data.constructor as any)(arrayBuffer);
             stagingBuffer.unmap();
         },
 

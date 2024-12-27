@@ -5,10 +5,9 @@ import { toGPUVertexBufferLayout } from "./functions/to-gpu-vertex-buffer-layout
 import { toShaderHeaderInputs } from "./functions/to-shader-header-inputs.js";
 import { CanvasContext } from "./types/canvas-context.js";
 import { EmptyToNever, Mutable, Resource, VertexAttributes } from "./types/index.js";
-import { Renderable } from "./types/renderable.js";
 import { GraphicShaderDescriptor, ShaderResourceValues, ShaderUniformValues, ShaderVertexBuffer } from "./types/shader-types.js";
 
-export interface DrawCommand<G extends GraphicShaderDescriptor> extends Resource, Renderable {
+export interface DrawCommand<G extends GraphicShaderDescriptor> extends Resource {
     /**
      * Individual uniforms can be written to.
      */
@@ -20,6 +19,8 @@ export interface DrawCommand<G extends GraphicShaderDescriptor> extends Resource
     vertexCount: number;
     vertexBuffer?: ShaderVertexBuffer<G>;
     instanceCount?: number;
+
+    draw(renderPass: GPURenderPassEncoder): void;
 }
 
 export type GraphicShader<G extends GraphicShaderDescriptor> = {
@@ -83,7 +84,7 @@ function createGraphicShader<T extends GraphicShaderDescriptor>(
                 vertexBuffer: props.vertexBuffer,
                 vertexCount: props.vertexCount,
                 instanceCount: props.instanceCount,
-                render: (renderPass) => {
+                draw: (renderPass) => {
                     bindGroupHelper.maybeWriteToGPU();
                     renderPass.setPipeline(renderPipeline);
                     renderPass.setBindGroup(0, bindGroupHelper.getBindGroup());

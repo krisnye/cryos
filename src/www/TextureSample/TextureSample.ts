@@ -69,7 +69,7 @@ export function TextureSample() {
 
             return {
                 render(renderPass: GPURenderPassEncoder) {
-                    draw.render(renderPass);
+                    draw.draw(renderPass);
                 },
                 destroy() {
                     vertexBuffer.destroy();

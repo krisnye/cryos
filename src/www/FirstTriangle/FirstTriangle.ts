@@ -53,7 +53,7 @@ export function FirstTriangle() {
             // return a render function and a destroy function.
             return {
                 render(renderPass: GPURenderPassEncoder) {
-                    draw.render(renderPass);
+                    draw.draw(renderPass);
                 },
                 destroy() {
                     vertexBuffer.destroy();

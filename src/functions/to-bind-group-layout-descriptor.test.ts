@@ -323,7 +323,7 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle compute shader with read/write storage buffers", () => {
         const shader: ComputeShaderDescriptor = {
-            workgroup_size: [64, 1, 1],
+            workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4"
             },
@@ -332,7 +332,7 @@ describe("createBindGroupLayoutDescriptor", () => {
                 outputData: "f32"
             },
             source: `
-                fn compute_main() {
+                fn main() {
                     // Read from input
                     let value = inputData[0];
                     
@@ -374,13 +374,13 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle compute shader with only uniforms", () => {
         const shader: ComputeShaderDescriptor = {
-            workgroup_size: [64, 1, 1],
+            workgroupSize: [64, 1, 1],
             uniforms: {
                 params: "vec4",
                 time: "f32"
             },
             source: `
-                fn compute_main() {
+                fn main() {
                     let t = params.x * time;
                 }
             `
@@ -402,13 +402,13 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle compute shader with only read-only storage", () => {
         const shader: ComputeShaderDescriptor = {
-            workgroup_size: [64, 1, 1],
+            workgroupSize: [64, 1, 1],
             storage: {
                 data1: "f32",
                 data2: "vec4"
             },
             source: `
-                fn compute_main() {
+                fn main() {
                     let x = data1[0];
                     let y = data2[0].xy;
                 }
@@ -442,7 +442,7 @@ describe("createBindGroupLayoutDescriptor", () => {
         const consoleSpy = vi.spyOn(console, 'warn');
         
         const shader: ComputeShaderDescriptor = {
-            workgroup_size: [64, 1, 1],
+            workgroupSize: [64, 1, 1],
             storage: {
                 data: "f32"
             },
@@ -472,7 +472,7 @@ describe("createBindGroupLayoutDescriptor", () => {
 
     test("should handle complex storage access patterns in compute shader", () => {
         const shader: ComputeShaderDescriptor = {
-            workgroup_size: [64, 1, 1],
+            workgroupSize: [64, 1, 1],
             storage: {
                 readOnly: "f32",
                 writeStruct: "vec4",
@@ -480,7 +480,7 @@ describe("createBindGroupLayoutDescriptor", () => {
                 storeTarget: "f32"
             },
             source: `
-                fn compute_main() {
+                fn main() {
                     // Read only access
                     let x = readOnly[0];
                     

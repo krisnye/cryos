@@ -1,4 +1,9 @@
 
+constraints {
+    do not ask to run tests unless I ask for it. I am running them allways so I know when they fail.
+    do not ask to commit until I ask for it.
+}
+
 commands {
     /commit
         run a git status
@@ -8,4 +13,9 @@ commands {
     /test
         run vitest unit tests
         if there are any failures then fix them
+    /analyze
+        review the current file
+        search and review any other related files it depends upon
+        understand the code and how it fits into the project
+        write a concise summary that demonstrates your understanding
 }
