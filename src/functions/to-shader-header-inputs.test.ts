@@ -189,6 +189,8 @@ describe("toShaderHeaderInputs", () => {
 
         const result = toShaderHeaderInputs(shader);
         expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            @workgroup_size(64, 1, 1)
+
             struct Uniforms {
                 params: vec4<f32>,
                 time: f32
@@ -217,6 +219,8 @@ describe("toShaderHeaderInputs", () => {
 
         const result = toShaderHeaderInputs(shader);
         expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            @workgroup_size(64, 1, 1)
+
             @group(0) @binding(0) var<storage, read> inputData: array<f32>;
             @group(0) @binding(1) var<storage, read_write> outputData: array<f32>;
         `));
@@ -250,6 +254,8 @@ describe("toShaderHeaderInputs", () => {
 
         const result = toShaderHeaderInputs(shader);
         expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            @workgroup_size(64, 1, 1)
+
             @group(0) @binding(0) var<storage, read> readOnly: array<vec4<f32>>;
             @group(0) @binding(1) var<storage, read_write> readWrite: array<vec4<f32>>;
             @group(0) @binding(2) var<storage, read_write> writeOnly: array<f32>;
@@ -279,6 +285,8 @@ describe("toShaderHeaderInputs", () => {
 
         const result = toShaderHeaderInputs(shader);
         expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            @workgroup_size(64, 1, 1)
+
             struct Uniforms {
                 params: vec4<f32>,
                 time: f32
@@ -286,6 +294,48 @@ describe("toShaderHeaderInputs", () => {
             @group(0) @binding(0) var<uniform> uniforms: Uniforms;
             @group(0) @binding(1) var<storage, read> input: array<vec4<f32>>;
             @group(0) @binding(2) var<storage, read_write> output: array<vec4<f32>>;
+        `));
+    });
+
+    test("should use default workgroup size if not specified", () => {
+        const shader = {
+            workgroupSize: [1, 1, 1] as const,
+            storage: {
+                data: "f32"
+            },
+            source: `
+                fn main() {
+                    data[0] = 1.0;
+                }
+            `
+        } as const satisfies ComputeShaderDescriptor;
+
+        const result = toShaderHeaderInputs(shader);
+        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            @workgroup_size(1, 1, 1)
+
+            @group(0) @binding(0) var<storage, read_write> data: array<f32>;
+        `));
+    });
+
+    test("should handle compute shader with custom workgroup size", () => {
+        const shader = {
+            workgroupSize: [8, 8, 2],
+            storage: {
+                data: "f32"
+            },
+            source: `
+                fn main() {
+                    data[0] = 1.0;
+                }
+            `
+        } as const satisfies ComputeShaderDescriptor;
+
+        const result = toShaderHeaderInputs(shader);
+        expect(normalizeWhitespace(result)).toBe(normalizeWhitespace(`
+            @workgroup_size(8, 8, 2)
+
+            @group(0) @binding(0) var<storage, read_write> data: array<f32>;
         `));
     });
 }); 
