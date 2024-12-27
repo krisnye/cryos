@@ -1,6 +1,6 @@
 import { DataType, FromDataType, Vec4, Vec3 } from "./data-types.js";
 import { Simplify } from "./meta-types.js";
-import { VertexType, SamplerType, StorageBuffer, TextureType, VertexAttributes, VertexBuffer, StorageType } from "./resource-types.js";
+import { VertexType, SamplerType, TextureType, VertexAttributes, VertexBuffer, StorageType } from "./resource-types.js";
 import { IsEquivalent, IsTrue } from "./test-types.js";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ export type ShaderUniformValues<T> =
 export type ShaderResourceValues<T> = Simplify<
   & { [K in keyof ShaderTextureTypes<T>]: GPUTexture }
   & { [K in keyof ShaderSamplerTypes<T>]: GPUSampler }
-  & { [K in keyof ShaderStorageTypes<T>]: ShaderStorageTypes<T>[K] extends StorageType ? StorageBuffer<ShaderStorageTypes<T>[K]> : never }
+  & { [K in keyof ShaderStorageTypes<T>]: GPUBuffer }
 >;
 
 /**
@@ -141,7 +141,7 @@ export const isComputeShaderDescriptor = (
   type SampleShaderUniformValues = ShaderUniformValues<typeof sampleGraphicsShaderDescriptor>;
   type CheckUniformValues = IsTrue<IsEquivalent<SampleShaderUniformValues, { time: number, light: Vec4, gravity: Vec3 }>>;
   type SampleShaderResourceValues = ShaderResourceValues<typeof sampleGraphicsShaderDescriptor>;
-  type CheckResourceValues = IsTrue<IsEquivalent<SampleShaderResourceValues, { texture1: GPUTexture, texture2: GPUTexture, sampler1: GPUSampler, sampler2: GPUSampler, storage1: {}, storage2: {} }>>;
+  type CheckResourceValues = IsTrue<IsEquivalent<SampleShaderResourceValues, { texture1: GPUTexture, texture2: GPUTexture, sampler1: GPUSampler, sampler2: GPUSampler, storage1: GPUBuffer, storage2: GPUBuffer }>>;
 }
 
 {

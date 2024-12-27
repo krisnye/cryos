@@ -3,7 +3,6 @@ import { createBindGroupHelper } from "./create-bind-group-helper.js";
 import { GraphicShaderDescriptor, ComputeShaderDescriptor } from "../types/shader-types.js";
 import { IsEquivalent, IsTrue } from "../types/test-types.js";
 import { Vec4 } from "../types/data-types.js";
-import { StorageBuffer } from "../types/resource-types.js";
 
 // Type tests for createBindGroupHelper
 {
@@ -26,8 +25,8 @@ import { StorageBuffer } from "../types/resource-types.js";
     // Verify resources type
     type Resources = Helper["resources"];
     type CheckResources = IsTrue<IsEquivalent<Resources, {
-        inputData: StorageBuffer<"f32">;
-        outputData: StorageBuffer<"vec4">;
+        inputData: GPUBuffer;
+        outputData: GPUBuffer;
     }>>;
 
     // Verify uniforms type

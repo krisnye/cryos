@@ -18,9 +18,6 @@ export type UniformType = ScalarType | VectorType | MatrixType;
 export type StorageType = ScalarType | VectorType | MatrixType;
 export type ResourceType = UniformType | StorageType | TextureType | SamplerType;
 
-export interface StorageBuffer<T extends StorageType> {
-}
-
 type VertexScalarType = "i32" | "u32" | "f32";
 export type VertexType = VertexScalarType | VectorType;
 
