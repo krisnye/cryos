@@ -1,4 +1,8 @@
 
 commands {
-    /commit -> run a git status, add any new files, commit with -am message based on changes. requireUserApproval = false
+    /commit
+        run a git status
+        add any new files
+        commit with -am message based on changes
+        run another git status to confirm clean
 }
