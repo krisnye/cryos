@@ -1,8 +1,23 @@
-import { expect, test, describe, vi } from "vitest";
+import { expect, test, describe, vi, beforeEach, afterEach } from "vitest";
 import { toBindGroupLayoutDescriptor } from "./to-bind-group-layout-descriptor.js";
 import { GraphicShaderDescriptor, ComputeShaderDescriptor } from "../types/shader-types.js";
 
 describe("createBindGroupLayoutDescriptor", () => {
+    let originalConsoleWarn: typeof console.warn;
+
+    beforeEach(() => {
+        // Store the original console.warn
+        originalConsoleWarn = console.warn;
+        // Replace with a no-op function
+        console.warn = vi.fn();
+    });
+
+    afterEach(() => {
+        // Restore the original console.warn
+        console.warn = originalConsoleWarn;
+        vi.restoreAllMocks();
+    });
+
     test("should create layout for uniforms only", () => {
         const shader: GraphicShaderDescriptor = {
             attributes: {},
@@ -206,43 +221,46 @@ describe("createBindGroupLayoutDescriptor", () => {
         });
     });
 
-    test("should handle shared storage buffer visibility", () => {
+    test("should handle storage buffers in graphics shader", () => {
         const shader: GraphicShaderDescriptor = {
             attributes: {},
             storage: {
-                particles: "vec4",
-                shared_data: "vec3",
+                positions: "vec3",
+                colors: "vec4"
             },
             source: `
                 fn vertex_main() -> @builtin(position) vec4<f32> {
-                    let pos = particles[0];
-                    return pos;
+                    let pos = positions[0];
+                    return vec4<f32>(pos, 1.0);
                 }
 
                 fn fragment_main() -> @location(0) vec4<f32> {
-                    let data = shared_data[0];
-                    return vec4<f32>(data, 1.0);
+                    let color = colors[0];
+                    return color;
                 }
             `
         };
 
         const layout = toBindGroupLayoutDescriptor(shader);
         expect(layout).toEqual({
-            entries: [{
-                binding: 0,
-                visibility: GPUShaderStage.VERTEX,
-                buffer: {
-                    hasDynamicOffset: false,
-                    type: "storage"
+            entries: [
+                {
+                    binding: 0,
+                    visibility: GPUShaderStage.VERTEX,
+                    buffer: {
+                        type: "read-only-storage",
+                        hasDynamicOffset: false
+                    }
+                },
+                {
+                    binding: 1,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    buffer: {
+                        type: "storage",
+                        hasDynamicOffset: false
+                    }
                 }
-            }, {
-                binding: 1,
-                visibility: GPUShaderStage.FRAGMENT,
-                buffer: {
-                    hasDynamicOffset: false,
-                    type: "storage"
-                }
-            }]
+            ]
         });
     });
 

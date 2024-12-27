@@ -30,7 +30,8 @@ export function createUniformHelper<T extends Record<string, DataType>>(device: 
 
     const buffer = device.createBuffer({
         size: size,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        label: "uniforms"
     });
 
     const bufferWriter = createTypedBufferWriter(size);

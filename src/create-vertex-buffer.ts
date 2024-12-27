@@ -8,7 +8,8 @@ export function createVertexBuffer<VA extends VertexAttributes>(
     const buffer = device.createBuffer({
         size: data.length * Float32Array.BYTES_PER_ELEMENT,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-        mappedAtCreation: true
+        mappedAtCreation: true,
+        label: "vertex-buffer"
     });
 
     //  Technically, these values could be float or int or booleans.

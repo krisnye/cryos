@@ -185,13 +185,14 @@ export function toBindGroupLayoutDescriptor(
 
     // Handle storage buffers
     if (descriptor.storage) {
-      const storageAccess = parseComputeStorageAccess(descriptor.source, Object.keys(descriptor.storage));
       Object.keys(descriptor.storage).forEach((name) => {
+        const visibility = getVisibilityForResource(usage[name]);
         entries.push({
           binding: bindingIndex++,
-          visibility: getVisibilityForResource(usage[name]),
+          visibility,
           buffer: { 
-            type: "storage",
+            // Use read-only storage for vertex stage, regular storage for fragment stage
+            type: (visibility & GPUShaderStage.VERTEX) ? "read-only-storage" : "storage",
             hasDynamicOffset: false,
           }
         });

@@ -1,9 +1,8 @@
-
 type StorageBufferType = "f32" | "i32" | "u32";
 type StorageBufferTypedArray<T extends StorageBufferType> = T extends "f32" ? Float32Array : T extends "i32" ? Int32Array : Uint32Array;
 type StorageBufferTypeFromTypedArray<T extends StorageBufferTypedArray<any>> = T extends Float32Array ? "f32" : T extends Int32Array ? "i32" : "u32";
 
-export interface StorageBufferHelper<T extends StorageBufferType> {
+export interface StorageBuffer<T extends StorageBufferType> {
     /**
      * The underlying GPU buffer
      */
@@ -55,17 +54,23 @@ export interface StorageBufferOptions {
      * Defaults to true
      */
     storage?: boolean;
+
+    /**
+     * Optional label for the buffer
+     */
+    label?: string;
 }
 
 export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32Array>(
     device: GPUDevice,
     initialData: T,
     options: StorageBufferOptions = {}
-): StorageBufferHelper<StorageBufferTypeFromTypedArray<T>> {
+): StorageBuffer<StorageBufferTypeFromTypedArray<T>> {
     const {
         readable = false,
         writable = true,
-        storage = true
+        storage = true,
+        label
     } = options;
 
     // Set up buffer usage flags
@@ -79,7 +84,8 @@ export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32
     let buffer = device.createBuffer({
         size,
         usage,
-        mappedAtCreation: true
+        mappedAtCreation: true,
+        label
     });
 
     // Initialize buffer with data
@@ -111,7 +117,8 @@ export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32
             const newBuffer = device.createBuffer({
                 size: newSize,
                 usage,
-                mappedAtCreation: false
+                mappedAtCreation: false,
+                label
             });
 
             // Create new values array
@@ -125,7 +132,8 @@ export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32
                 stagingBuffer = device.createBuffer({
                     size: newSize,
                     usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC,
-                    mappedAtCreation: true
+                    mappedAtCreation: true,
+                    label: `${label ?? "storage"}-staging`
                 });
             }
 
@@ -160,7 +168,8 @@ export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32
                 stagingBuffer = device.createBuffer({
                     size: buffer.size,
                     usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC,
-                    mappedAtCreation: true
+                    mappedAtCreation: true,
+                    label: `${label ?? "storage"}-staging`
                 });
 
                 // Write data to staging buffer
@@ -193,6 +202,7 @@ export function createStorageBuffer<T extends Float32Array | Int32Array | Uint32
                 stagingBuffer = device.createBuffer({
                     size: buffer.size,
                     usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
+                    label: `${label ?? "storage"}-staging`
                 });
             }
 

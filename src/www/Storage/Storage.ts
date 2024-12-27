@@ -12,8 +12,11 @@ const storageShaderDescriptor = {
     uniforms: {
         viewProjection: "mat4x4",
     },
+    // WebGPU requires storage buffer elements to be aligned to their size, up to 16 bytes.
+    // vec3 would need 16-byte alignment anyway due to WGSL rules, so we use vec4 directly
+    // to make the alignment requirements explicit and avoid any padding confusion.
     storage: {
-        positions: ["vec3", 4]
+        positions: ["vec4", 4]
     },
     source: `
 alias float4 = vec4<f32>;
@@ -30,7 +33,7 @@ fn vertex_main(
     var out: VertexOutput;
     out.color = vert.color;
     let instancePos = positions[instance];
-    out.position = uniforms.viewProjection * (vert.position + vec4<f32>(instancePos, 0.0));
+    out.position = uniforms.viewProjection * (vert.position + instancePos);
     return out;
 };
 
@@ -46,14 +49,16 @@ export function Storage() {
         create: async (c) => {
             const storageShader = getGraphicShader(c, storageShaderDescriptor);
 
-            // Create storage buffer with 4 vec3 positions
+            // Create storage buffer with 4 vec4 positions
+            // Each vec4 is 16-byte aligned, which is required by WebGPU for storage buffers
+            // This matches both WGSL's vec4 alignment and WebGPU's storage buffer requirements
             const positionsBuffer = createStorageBuffer(
                 c.device,
                 new Float32Array([
-                    -0.6, 0.0, 0.0,  // left
-                    -0.2, 0.0, 0.0,  // center-left
-                    0.2, 0.0, 0.0,   // center-right
-                    0.6, 0.0, 0.0,   // right
+                    -0.6, -0.8, 0.0, 0.0,  // left (x,y,z,w)
+                    -0.2, -0.2, 0.0, 0.0,  // center-left
+                    0.2, 0.2, 0.0, 0.0,   // center-right
+                    0.6, 0.4, 0.0, 0.0,   // right
                 ]),
                 { 
                     storage: true, 

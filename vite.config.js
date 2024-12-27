@@ -36,6 +36,8 @@ export default defineConfig({
             enabled: false,
             skipOn: () => true
         },
+        silent: true,
+        onConsole: () => {}
     },
     build: {
         minify: true,

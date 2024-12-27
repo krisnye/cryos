@@ -4,6 +4,7 @@ import { Compute } from "./Compute/Compute.js"
 import { Instancing } from "./Instancing/Instancing.js"
 import { GPUMeshSample } from "./GPUMeshSample/GPUMeshSample.js"
 import { TextureSample } from "./TextureSample/TextureSample.js"
+import { Storage } from "./Storage/Storage.js"
 const { H2, P, Section } = html
 
 function addSample(name: string, sample: () => Factory<HTMLElement>) {
@@ -18,8 +19,9 @@ function addSample(name: string, sample: () => Factory<HTMLElement>) {
 }
 
 const samples = {
-    "5 GPU Mesh": GPUMeshSample,
-    "4 Compute": Compute,
+    "6 GPU Mesh": GPUMeshSample,
+    "5 Compute": Compute,
+    "4 New Storage": Storage,
     "3 New Instancing": Instancing,
     "2 New Textures": TextureSample,
     "1 New Triangle": FirstTriangle,

@@ -36,7 +36,8 @@ describe("createUniformHelper", () => {
         // Verify buffer was created with correct size (3 * 4 bytes)
         expect(device.createBuffer).toHaveBeenCalledWith({
             size: 12,
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+            label: "uniforms"
         });
     });
 
@@ -166,10 +167,11 @@ describe("createUniformHelper", () => {
         expect(helper.values.scene.lighting.ambient).toEqual([0.1, 0.2, 0.3]);
         expect(helper.values.scene.lighting.intensity).toBe(0.5);
 
-        // Verify buffer was created with correct size (16 * 4 bytes)
+        // Verify buffer was created with correct size and label
         expect(device.createBuffer).toHaveBeenCalledWith({
             size: 64, // 16 floats * 4 bytes
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+            label: "uniforms"
         });
 
         // Clear previous captured data

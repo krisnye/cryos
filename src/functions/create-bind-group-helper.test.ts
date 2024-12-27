@@ -1,4 +1,4 @@
-import { expect, test, describe, beforeEach, vi } from "vitest";
+import { expect, test, describe, beforeEach, vi, afterEach } from "vitest";
 import { createBindGroupHelper } from "./create-bind-group-helper.js";
 import { GraphicShaderDescriptor, ComputeShaderDescriptor } from "../types/shader-types.js";
 import { IsEquivalent, IsTrue } from "../types/test-types.js";
@@ -38,28 +38,43 @@ import { Vec4 } from "../types/data-types.js";
 }
 
 describe("createBindGroupHelper", () => {
-    // Mock GPU objects and device
-    const mockBuffer = {
-        size: 256,
-        destroy: vi.fn()
-    } as unknown as GPUBuffer;
-
-    const mockTexture = {
-        createView: vi.fn().mockReturnValue({})
-    } as unknown as GPUTexture;
-
-    const mockSampler = {} as GPUSampler;
-
-    const mockBindGroupLayout = {} as GPUBindGroupLayout;
-
-    const mockDevice = {
-        createBindGroupLayout: vi.fn().mockReturnValue(mockBindGroupLayout),
-        createBindGroup: vi.fn().mockReturnValue({}),
-        createBuffer: vi.fn().mockReturnValue(mockBuffer)
-    } as unknown as GPUDevice;
+    let originalConsoleWarn: typeof console.warn;
+    let mockBindGroupLayout: GPUBindGroupLayout;
+    let mockBuffer: GPUBuffer;
+    let mockTexture: GPUTexture;
+    let mockSampler: GPUSampler;
+    let mockDevice: GPUDevice;
 
     beforeEach(() => {
+        // Store the original console.warn
+        originalConsoleWarn = console.warn;
+        // Replace with a no-op function
+        console.warn = vi.fn();
+
+        // Setup mock objects
+        mockBindGroupLayout = {} as GPUBindGroupLayout;
+        mockBuffer = {
+            size: 256,
+            destroy: vi.fn()
+        } as unknown as GPUBuffer;
+        mockTexture = {
+            createView: vi.fn().mockReturnValue({})
+        } as unknown as GPUTexture;
+        mockSampler = {} as GPUSampler;
+
+        mockDevice = {
+            createBindGroupLayout: vi.fn().mockReturnValue(mockBindGroupLayout),
+            createBindGroup: vi.fn().mockReturnValue({}),
+            createBuffer: vi.fn().mockReturnValue(mockBuffer)
+        } as unknown as GPUDevice;
+
         vi.clearAllMocks();
+    });
+
+    afterEach(() => {
+        // Restore the original console.warn
+        console.warn = originalConsoleWarn;
+        vi.restoreAllMocks();
     });
 
     test("should create bind group with uniforms only (graphics shader)", () => {
