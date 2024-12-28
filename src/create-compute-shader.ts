@@ -83,6 +83,7 @@ export function getComputeShader<T extends ComputeShaderDescriptor>(context: Con
                     workgroupCount[2] = value[2];
                 },
                 compute: (computePass: GPUComputePassEncoder) => {
+                    bindGroupHelper.maybeWriteToGPU();
                     computePass.setPipeline(pipeline);
                     computePass.setBindGroup(0, bindGroupHelper.getBindGroup());
                     computePass.dispatchWorkgroups(
