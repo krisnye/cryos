@@ -106,9 +106,16 @@ export function NewCompute() {
                 }
             );
 
+            // Create readback buffer for debugging
+            const readbackBuffer = c.device.createBuffer({
+                size: 64, // 16 floats * 4 bytes
+                usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
+                label: "readback buffer"
+            });
+
             // Set up compute command
             const compute = computeShader.dispatch({
-                uniforms: { angle: 0.01 },
+                uniforms: { angle: 42 },
                 resources: { positions: computePositionsBuffer.buffer },
                 workgroupCount: [1, 1, 1]
             });
@@ -136,13 +143,12 @@ export function NewCompute() {
                 }
             });
 
-            let time = 0;
+            let frameCount = 0;
 
             return {
                 update: async (commandEncoder: GPUCommandEncoder) => {                    
-                    // Update rotation angle
-                    time += 0.01;
-                    compute.uniforms.angle = Math.sin(time) * 0.02;
+                    frameCount++;
+                    compute.uniforms.angle = Math.sin(frameCount * 0.01) * 0.2;
 
                     // Run compute pass
                     const computePass = commandEncoder.beginComputePass();
@@ -156,15 +162,35 @@ export function NewCompute() {
                         64  // 16 floats * 4 bytes
                     );
 
-                    return true;
+                    // On first frame, copy to readback buffer
+                    commandEncoder.copyBufferToBuffer(
+                        computePositionsBuffer.buffer, 0,
+                        readbackBuffer, 0,
+                        64
+                    );
+
+                    // Let the frame complete normally
+                    return frameCount <= 1000;
                 },
-                render(renderPass: GPURenderPassEncoder) {
+                render: async (renderPass: GPURenderPassEncoder) => {
                     draw.draw(renderPass);
+                },
+                postRender: async () => {
+                    // After first frame render, read back the results
+                    // Wait for GPU to complete
+                    // if (frameCount % 100 === 0) {
+                    //     await c.device.queue.onSubmittedWorkDone();
+                    //     await readbackBuffer.mapAsync(GPUMapMode.READ);
+                    //     const data = new Float32Array(readbackBuffer.getMappedRange());
+                    //     console.log(JSON.stringify([...data]));
+                    //     readbackBuffer.unmap();
+                    // }
                 },
                 destroy() {
                     vertexBuffer.destroy();
                     computePositionsBuffer.destroy();
                     renderPositionsBuffer.destroy();
+                    readbackBuffer.destroy();
                     draw.destroy();
                     compute.destroy();
                 }
