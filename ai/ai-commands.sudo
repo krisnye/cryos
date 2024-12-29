@@ -6,10 +6,12 @@ constraints {
 
 commands {
     /commit
-        run a git status
-        add any new files
-        commit with -am message based on changes
-        run another git status to confirm clean
+        run commands sequentially {
+            - run a git status
+            - add any new files
+            - commit with -am message based on changes
+            - run another git status to confirm clean
+        }
     /test
         run vitest unit tests
         if there are any failures then fix them
