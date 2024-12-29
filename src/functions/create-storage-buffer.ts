@@ -18,11 +18,11 @@ export interface StorageBufferOptions {
     /**
      * Whether this buffer can be copied to other buffers
      */
-    copySrc?: boolean;
+    copyFrom?: boolean;
     /**
      * Whether this buffer can receive copies from other buffers
      */
-    copyDst?: boolean;
+    copyTo?: boolean;
 }
 
 export interface StorageBuffer {
@@ -42,9 +42,8 @@ export function createStorageBuffer(
     const {
         data,
         storage = true,
-        writable = false,
-        copySrc = true,
-        copyDst = true,
+        copyFrom: copySrc = true,
+        copyTo: copyDst = true,
         label
     } = options;
 

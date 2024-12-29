@@ -88,8 +88,8 @@ export function NewCompute() {
                     ]),
                     storage: true,
                     writable: true,
-                    copySrc: true,
-                    copyDst: true,
+                    copyFrom: true,
+                    copyTo: true,
                     label: "compute positions"
                 }
             );
@@ -101,7 +101,7 @@ export function NewCompute() {
                     data: new Float32Array(16), // 4 vec4s
                     storage: true,
                     writable: false,
-                    copyDst: true,
+                    copyTo: true,
                     label: "render positions"
                 }
             );
@@ -162,12 +162,11 @@ export function NewCompute() {
                         64  // 16 floats * 4 bytes
                     );
 
-                    // On first frame, copy to readback buffer
-                    commandEncoder.copyBufferToBuffer(
-                        computePositionsBuffer.buffer, 0,
-                        readbackBuffer, 0,
-                        64
-                    );
+                    // commandEncoder.copyBufferToBuffer(
+                    //     computePositionsBuffer.buffer, 0,
+                    //     readbackBuffer, 0,
+                    //     64
+                    // );
 
                     // Let the frame complete normally
                     return frameCount <= 1000;
