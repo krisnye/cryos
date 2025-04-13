@@ -1,0 +1,14 @@
+
+Read the following files and related interfaces to understand the ECS:
+- src/data/ecs/createDatabase.ts
+- src/data/ecs/Archetype/createArchetype.ts
+- src/data/ecs/EntityLocationTable/createEntityLocationTable.ts
+
+Answer the following questions:
+
+1. What is the purpose of the EntityLocationTable?
+2. What is the type of values in the Archetype.columns?
+3. Why does locateEntity return an object with archetype and row?
+4. Why does a non-existent entity return { archetype: -1, row: -1 }?
+5. Why does selectEntity return null for a non-existent entity?
+

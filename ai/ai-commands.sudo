@@ -1,23 +1,29 @@
-
-constraints {
-    do not ask to run tests unless I ask for it. I am running them allways so I know when they fail.
-    do not ask to commit until I ask for it.
-}
-
 commands {
-    /commit
-        run commands sequentially {
-            - run a git status
-            - add any new files
-            - commit with -am message based on changes
-            - run another git status to confirm clean
+    /commit {
+        execute all of these sequentially {
+            - run git status
+            - review any changes including new folders/files.
+            - git add any missing files
+            - git commit -am "<generate comment based on reviewed changes>"
+            - git status (again to verify working directory is clean)
         }
-    /test
-        run vitest unit tests
-        if there are any failures then fix them
-    /analyze
-        review the current file
-        search and review any other related files it depends upon
-        understand the code and how it fits into the project
-        write a concise summary that demonstrates your understanding
+    }
+    /review {
+        - review current file as an expert application architect
+        - identify redundancies or dead code
+        - make improvements to the code
+    }
+    /unit {
+        - review all of our current *.test.ts files to learn our standards.
+        - create a new file of same name with .test.ts extension if doesn't exist
+        - write new standard vite unit tests for any missing functionality.
+    }
+    /doc {
+        - add concise single-line JSDoc comments to types and interfaces
+        - use /** comment */ format
+        - keep comments brief but descriptive
+        - only use multi-line comments for lists or complex explanations
+        - avoid redundant type information that TypeScript already provides
+        - document the purpose and key characteristics of each type/interface
+    }
 }

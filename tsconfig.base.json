@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/lib",
+    "rootDir": "./src",
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ES2024", "DOM", "DOM.Iterable", "esnext"],
+    "skipLibCheck": true,
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "allowImportingTsExtensions": false,
+    "allowJs": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "emitDecoratorMetadata": true,
+    "types": ["@webgpu/types", "@types/wicg-file-system-access"],
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": false
+  }
+} 
