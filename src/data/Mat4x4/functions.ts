@@ -1,18 +1,18 @@
 import type { Mat4x4 } from './Mat4x4.js';
 import type { Vec4 } from '../Vec4/Vec4.js';
 import type { Vec3 } from '../Vec3/Vec3.js';
-import { Vec3_subtract, Vec3_cross, Vec3_normalize, Vec3_dot, Vec3_length } from '../Vec3/functions.js';
-import { Vec4_dot } from '../Vec4/functions.js';
+import * as vec3 from '../Vec3/functions.js';
+import * as vec4 from '../Vec4/functions.js';
 
 // Basic Matrix Operations
-export const Mat4x4_identity = (): Mat4x4 => [
+export const identity = (): Mat4x4 => [
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
     0, 0, 0, 1
 ];
 
-export const Mat4x4_zero = (): Mat4x4 => [
+export const zero = (): Mat4x4 => [
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
@@ -20,21 +20,21 @@ export const Mat4x4_zero = (): Mat4x4 => [
 ];
 
 // Matrix-Matrix Operations
-export const Mat4x4_add = (a: Mat4x4, b: Mat4x4): Mat4x4 => [
+export const add = (a: Mat4x4, b: Mat4x4): Mat4x4 => [
     a[0] + b[0],  a[1] + b[1],  a[2] + b[2],  a[3] + b[3],
     a[4] + b[4],  a[5] + b[5],  a[6] + b[6],  a[7] + b[7],
     a[8] + b[8],  a[9] + b[9],  a[10] + b[10], a[11] + b[11],
     a[12] + b[12], a[13] + b[13], a[14] + b[14], a[15] + b[15]
 ];
 
-export const Mat4x4_subtract = (a: Mat4x4, b: Mat4x4): Mat4x4 => [
+export const subtract = (a: Mat4x4, b: Mat4x4): Mat4x4 => [
     a[0] - b[0],  a[1] - b[1],  a[2] - b[2],  a[3] - b[3],
     a[4] - b[4],  a[5] - b[5],  a[6] - b[6],  a[7] - b[7],
     a[8] - b[8],  a[9] - b[9],  a[10] - b[10], a[11] - b[11],
     a[12] - b[12], a[13] - b[13], a[14] - b[14], a[15] - b[15]
 ];
 
-export const Mat4x4_multiply = (a: Mat4x4, b: Mat4x4): Mat4x4 => {
+export const multiply = (a: Mat4x4, b: Mat4x4): Mat4x4 => {
     const result: number[] = new Array(16);
     for (let i = 0; i < 4; i++) {
         for (let j = 0; j < 4; j++) {
@@ -49,7 +49,7 @@ export const Mat4x4_multiply = (a: Mat4x4, b: Mat4x4): Mat4x4 => {
 };
 
 // Matrix-Scalar Operations
-export const Mat4x4_scale = (m: Mat4x4, s: number): Mat4x4 => [
+export const scale = (m: Mat4x4, s: number): Mat4x4 => [
     m[0] * s, m[1] * s, m[2] * s, m[3] * s,
     m[4] * s, m[5] * s, m[6] * s, m[7] * s,
     m[8] * s, m[9] * s, m[10] * s, m[11] * s,
@@ -57,7 +57,7 @@ export const Mat4x4_scale = (m: Mat4x4, s: number): Mat4x4 => [
 ];
 
 // Matrix-Vector Operations
-export const Mat4x4_multiplyVec4 = (m: Mat4x4, v: Vec4): Vec4 => [
+export const multiplyVec4 = (m: Mat4x4, v: Vec4): Vec4 => [
     m[0] * v[0] + m[4] * v[1] + m[8] * v[2] + m[12] * v[3],
     m[1] * v[0] + m[5] * v[1] + m[9] * v[2] + m[13] * v[3],
     m[2] * v[0] + m[6] * v[1] + m[10] * v[2] + m[14] * v[3],
@@ -65,7 +65,7 @@ export const Mat4x4_multiplyVec4 = (m: Mat4x4, v: Vec4): Vec4 => [
 ];
 
 // Matrix Properties
-export const Mat4x4_determinant = (m: Mat4x4): number => {
+export const determinant = (m: Mat4x4): number => {
     const [
         m00, m01, m02, m03,
         m10, m11, m12, m13,
@@ -89,8 +89,8 @@ export const Mat4x4_determinant = (m: Mat4x4): number => {
     return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 };
 
-export const Mat4x4_inverse = (m: Mat4x4): Mat4x4 => {
-    const det = Mat4x4_determinant(m);
+export const inverse = (m: Mat4x4): Mat4x4 => {
+    const det = determinant(m);
     if (det === 0) {
         throw new Error('Matrix is not invertible');
     }
@@ -136,7 +136,7 @@ export const Mat4x4_inverse = (m: Mat4x4): Mat4x4 => {
     ];
 };
 
-export const Mat4x4_transpose = (m: Mat4x4): Mat4x4 => [
+export const transpose = (m: Mat4x4): Mat4x4 => [
     m[0], m[4], m[8], m[12],
     m[1], m[5], m[9], m[13],
     m[2], m[6], m[10], m[14],
@@ -144,21 +144,21 @@ export const Mat4x4_transpose = (m: Mat4x4): Mat4x4 => [
 ];
 
 // Transformation Matrices
-export const Mat4x4_translation = (x: number, y: number, z: number): Mat4x4 => [
+export const translation = (x: number, y: number, z: number): Mat4x4 => [
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
     x, y, z, 1
 ];
 
-export const Mat4x4_scaling = (x: number, y: number, z: number): Mat4x4 => [
+export const scaling = (x: number, y: number, z: number): Mat4x4 => [
     x, 0, 0, 0,
     0, y, 0, 0,
     0, 0, z, 0,
     0, 0, 0, 1
 ];
 
-export const Mat4x4_rotation_x = (angle: number): Mat4x4 => {
+export const rotation_x = (angle: number): Mat4x4 => {
     const c = Math.cos(angle);
     const s = Math.sin(angle);
     return [
@@ -169,7 +169,7 @@ export const Mat4x4_rotation_x = (angle: number): Mat4x4 => {
     ];
 };
 
-export const Mat4x4_rotation_y = (angle: number): Mat4x4 => {
+export const rotation_y = (angle: number): Mat4x4 => {
     const c = Math.cos(angle);
     const s = Math.sin(angle);
     return [
@@ -180,7 +180,7 @@ export const Mat4x4_rotation_y = (angle: number): Mat4x4 => {
     ];
 };
 
-export const Mat4x4_rotation_z = (angle: number): Mat4x4 => {
+export const rotation_z = (angle: number): Mat4x4 => {
     const c = Math.cos(angle);
     const s = Math.sin(angle);
     return [
@@ -192,7 +192,7 @@ export const Mat4x4_rotation_z = (angle: number): Mat4x4 => {
 };
 
 // Projection Matrices
-export const Mat4x4_perspective = (fovy: number, aspect: number, near: number, far: number): Mat4x4 => {
+export const perspective = (fovy: number, aspect: number, near: number, far: number): Mat4x4 => {
     if (fovy <= 0) throw new Error('Field of view must be greater than 0');
     if (aspect <= 0) throw new Error('Aspect ratio must be greater than 0');
     if (near <= 0) throw new Error('Near plane must be greater than 0');
@@ -209,7 +209,7 @@ export const Mat4x4_perspective = (fovy: number, aspect: number, near: number, f
     ];
 };
 
-export const Mat4x4_orthographic = (
+export const orthographic = (
     left: number,
     right: number,
     bottom: number,
@@ -229,25 +229,25 @@ export const Mat4x4_orthographic = (
 };
 
 // View Matrix
-export const Mat4x4_lookAt = (eye: Vec3, center: Vec3, up: Vec3): Mat4x4 => {
+export const lookAt = (eye: Vec3, center: Vec3, up: Vec3): Mat4x4 => {
     // Validate inputs
-    if (Vec3_length(up) === 0) throw new Error('Up vector cannot be zero');
+    if (vec3.length(up) === 0) throw new Error('Up vector cannot be zero');
     
-    const forward = Vec3_subtract(center, eye);
-    if (Vec3_length(forward) === 0) throw new Error('Eye and center cannot be the same position');
+    const forward = vec3.subtract(center, eye);
+    if (vec3.length(forward) === 0) throw new Error('Eye and center cannot be the same position');
 
-    const f = Vec3_normalize(forward);
-    const s = Vec3_normalize(Vec3_cross(f, up));
+    const f = vec3.normalize(forward);
+    const s = vec3.normalize(vec3.cross(f, up));
     
     // Check if up vector is parallel to view direction
-    if (Vec3_length(s) === 0) throw new Error('Up vector cannot be parallel to view direction');
+    if (vec3.length(s) === 0) throw new Error('Up vector cannot be parallel to view direction');
     
-    const u = Vec3_cross(s, f);
+    const u = vec3.cross(s, f);
 
     return [
         s[0], s[1], s[2], 0,
         u[0], u[1], u[2], 0,
         -f[0], -f[1], -f[2], 0,
-        -Vec3_dot(s, eye), -Vec3_dot(u, eye), Vec3_dot(f, eye), 1
+        -vec3.dot(s, eye), -vec3.dot(u, eye), vec3.dot(f, eye), 1
     ];
 }; 

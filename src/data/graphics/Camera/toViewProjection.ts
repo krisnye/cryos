@@ -1,11 +1,10 @@
-import { Mat4x4_lookAt } from "../../Mat4x4/functions";
-import { Mat4x4_multiply } from "../../Mat4x4";
-import { Mat4x4_perspective } from "../../Mat4x4";
-import { Camera } from "./Camera";
+import * as mat4 from "../../Mat4x4/functions";
+import type { Camera } from "./Camera";
+import type { Mat4x4 } from "../../Mat4x4/Mat4x4";
 
-export const Camera_toViewProjection = (camera: Camera) => {
-    const perspective = Mat4x4_perspective(camera.fieldOfView, camera.aspect, camera.nearPlane, camera.farPlane);
-    const lookAt = Mat4x4_lookAt(camera.position, camera.target, camera.up);
-    const viewProjection = Mat4x4_multiply(perspective, lookAt);
+export const toViewProjection = (camera: Camera): Mat4x4 => {
+    const perspective = mat4.perspective(camera.fieldOfView, camera.aspect, camera.nearPlane, camera.farPlane);
+    const lookAt = mat4.lookAt(camera.position, camera.target, camera.up);
+    const viewProjection = mat4.multiply(perspective, lookAt);
     return viewProjection;
-}
+};

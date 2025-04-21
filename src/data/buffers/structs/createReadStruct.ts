@@ -1,4 +1,4 @@
-import { memoize } from "../../../functions/memoize";
+import { memoize } from "../../functions/memoize";
 import type { ReadStruct } from "./ReadStruct";
 import type { StructLayout } from "./StructLayout";
 import { getFieldOffset } from "./getFieldOffset";

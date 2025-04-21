@@ -1,6 +1,6 @@
 import { StateService } from "../../StateService";
 import { Systems } from "../Systems";
-import { Vec3_cross, Vec3_normalize, Vec3_subtract } from "../../../../../data/Vec3/functions";
+import * as vec3 from "../../../../../data/Vec3/functions";
 
 const CAMERA_SPEED = 10.0;
 const ROTATION_SPEED = 2.0;
@@ -33,7 +33,7 @@ export const createAnimateCamera = (db: StateService): Systems => {
             // Rotation - rotate up vector around look direction
             if (pressedKeys.has("q") || pressedKeys.has("e")) {
                 // Calculate look direction (from position to target)
-                const lookDir = Vec3_normalize(Vec3_subtract(camera.target, camera.position));
+                const lookDir = vec3.normalize(vec3.subtract(camera.target, camera.position));
                 
                 // Calculate rotation angle
                 const angle = (pressedKeys.has("q") ? -1 : 1) * ROTATION_SPEED * deltaTime;
@@ -41,18 +41,20 @@ export const createAnimateCamera = (db: StateService): Systems => {
                 // Rotate up vector using Rodrigues rotation formula
                 const cos = Math.cos(angle);
                 const sin = Math.sin(angle);
-                const cross = Vec3_cross(lookDir, camera.up);
+                const crossProduct = vec3.cross(lookDir, camera.up);
                 
                 // Apply rotation: v' = v*cos + (k×v)*sin
-                const x = camera.up[0] * cos + cross[0] * sin;
-                const y = camera.up[1] * cos + cross[1] * sin;
-                const z = camera.up[2] * cos + cross[2] * sin;
+                const rotatedUp = [
+                    camera.up[0] * cos + crossProduct[0] * sin,
+                    camera.up[1] * cos + crossProduct[1] * sin,
+                    camera.up[2] * cos + crossProduct[2] * sin
+                ];
                 
                 // Normalize and update
-                const len = Math.sqrt(x * x + y * y + z * z);
-                camera.up[0] = x / len;
-                camera.up[1] = y / len;
-                camera.up[2] = z / len;
+                const len = Math.sqrt(rotatedUp[0] * rotatedUp[0] + rotatedUp[1] * rotatedUp[1] + rotatedUp[2] * rotatedUp[2]);
+                camera.up[0] = rotatedUp[0] / len;
+                camera.up[1] = rotatedUp[1] / len;
+                camera.up[2] = rotatedUp[2] / len;
             }
 
             // Zoom

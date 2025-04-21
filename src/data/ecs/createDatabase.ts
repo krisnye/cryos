@@ -9,7 +9,7 @@ import { Entity, EntitySchema } from "./Entity";
 import { createEntityLocationTable } from "./EntityLocationTable/createEntityLocationTable";
 import { Table_addRow } from "../Table/addRow";
 import { CoreComponents } from "./CoreComponents";
-import { deepAssign } from "../../functions/deepAssign";
+import { deepAssign } from "../functions/deepAssign";
 import { Extensions } from "./Extensions";
 
 export function createDatabase(): Database<CoreComponents> {

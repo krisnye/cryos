@@ -3,7 +3,8 @@ import { addGameExtensions } from "../../../data/ecs/extensions/addGameExtension
 import { Particle, ParticleSchema } from "../types/Particle"
 import { GraphicsContext } from "../../../data/graphics/GraphicsContext";
 import { Camera } from "../../../data/graphics/Camera/Camera";
-import { Vec3, Vec3_normalize } from "../../../data/Vec3";
+import { Vec3 } from "../../../data/Vec3";
+import * as vec3 from "../../../data/Vec3/functions";
 import { TrueSchema } from "../../../data/True";
 
 export const createStateService = (graphicsContext: GraphicsContext) => {
@@ -28,7 +29,7 @@ export const createStateService = (graphicsContext: GraphicsContext) => {
                 target: [0, 0, 0],
                 up: [0, 1, 0],
             } satisfies Camera,
-            lightDirection: Vec3_normalize([1, 2, 5.0]),
+            lightDirection: vec3.normalize([1, 2, 5.0]),
             ambientStrength: 0.5,
             lightColor: [1.2, 1.2, 1.2] as Vec3,
         })

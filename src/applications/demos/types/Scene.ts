@@ -3,7 +3,6 @@ import { Mat4x4Schema } from "../../../data/Mat4x4/Mat4x4";
 import { Schema, InferType } from "../../../data/Schema";
 import { Vec3Schema } from "../../../data/Vec3/Vec3";
 
-
 export const SceneSchema = {
     type: 'object',
     properties: {

@@ -3,11 +3,11 @@ import type { TemplateResult, nothing } from 'lit';
 // import { findAncestor } from '../../functions/dom-functions.js';
 // import { withHooks } from '../../hooks/with-hooks.js';
 // import { attachDecorator } from '../../functions/index.js';
+
 export abstract class ApplicationElement<MainService> extends LitElement {
 
     constructor() {
         super();
-        // attachDecorator(this, "render", withHooks);
     }
 
     // connectedCallback(): void {

@@ -1,5 +1,5 @@
 import { createStructBuffer } from "../../../../../data/buffers";
-import { Camera_toViewProjection } from "../../../../../data/graphics/Camera/toViewProjection";
+import { toViewProjection } from "../../../../../data/graphics/Camera/toViewProjection";
 import { SceneSchema } from "../../../types/Scene";
 import { StateService } from "../../StateService";
 import { Systems } from "../Systems";
@@ -16,7 +16,7 @@ export const createSceneUpdate = (db: StateService): Systems => {
         name: "sceneUpdate",
         update(commandEncoder: GPUCommandEncoder) {
             sceneTypedBuffer.set(0, {
-                viewProjection: Camera_toViewProjection(db.resources.camera),
+                viewProjection: toViewProjection(db.resources.camera),
                 lightDirection: db.resources.lightDirection,
                 lightColor: db.resources.lightColor,
                 ambientStrength: db.resources.ambientStrength,
