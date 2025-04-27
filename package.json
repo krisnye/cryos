@@ -1,35 +1,41 @@
 {
   "name": "cryos",
-  "version": "0.0.1",
+  "version": "0.3.0",
   "description": "Declarative Web Components in 1Kb",
-  "main": "lib/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "tsc --build && tsc-alias && vite build",
     "dev": "run-p dev:*",
-    "dev:build": "tsc -w --preserveWatchOutput",
+    "dev:build": "tsc --build --watch --preserveWatchOutput & tsc-alias --watch",
     "dev:build-vite": "vite build --watch",
-    "dev:test": "vitest watch",
+    "dev:test": "echo vitest watch",
     "dev:web": "vite --port 8080",
     "test": "vitest run",
-    "clean": "rm -rf lib",
+    "clean": "rm -rf lib dist",
     "deploy": "npm run clean && npm run build && npm publish --access public",
-    "test:debug": "node --inspect-brk ./node_modules/vitest/vitest.mjs run --no-browser"
+    "test:debug": "node --inspect-brk ./node_modules/vitest/vitest.mjs run --no-browser",
+    "typecheck": "tsc --build --noEmit"
   },
   "exports": {
     "./*": "./lib/*.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^22.10.2",
+    "@types/wicg-file-system-access": "^2023.10.5",
+    "@types/dom": "^0.0.3",
     "@vitest/browser": "^2.1.8",
     "@vitest/runner": "^2.1.8",
-    "@webgpu/types": "^0.1.35",
+    "@webgpu/types": "^0.1.60",
     "happy-dom": "^15.11.7",
     "lit": "^2.8.0",
     "nodemon": "^3.0.1",
     "npm-run-all": "^4.1.5",
     "playwright": "^1.49.1",
     "rollup-plugin-terser": "^7.0.2",
+    "tsc-alias": "^1.8.15",
     "typescript": "^5.2.2",
     "vite": "^4.3.9",
     "vite-plugin-string": "^1.2.1",
@@ -37,7 +43,5 @@
     "webdriverio": "^9.4.1"
   },
   "author": "krisnye@gmail.com",
-  "license": "MIT",
-  "dependencies": {
-  }
+  "license": "MIT"
 }
