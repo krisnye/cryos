@@ -1,6 +1,6 @@
 import { InferType, Schema, TypedBuffer } from "data";
 import { Assert, Equal, Simplify } from "types";
-import { Archetype, Entity, EntityLocation, CoreComponents, Extensions, Extension } from "ecs";
+import { Archetype, Entity, EntityLocation, CoreComponents, Extensions } from "ecs";
 
 export interface Database<
     C = CoreComponents,
@@ -10,7 +10,6 @@ export interface Database<
     readonly components: { [K in keyof C]: Schema };
     readonly archetypes: Archetype<CoreComponents & Partial<C>>[] & E["archetypes"];
     readonly resources: E["resources"];
-    readonly queries: E["queries"];
     readonly actions: E["actions"];
     getArchetypes: <Include extends keyof C, Exclude extends keyof C = never>(
         components: Include[],
@@ -32,9 +31,6 @@ export interface Database<
     withComponents: <NC extends { [name: string]: Schema }>(
         addComponents: NC,
     ) => Database<C & { -readonly [K in keyof NC]: InferType<NC[K]> }, E>;
-    withExtension: <NE extends Extension>(
-        extension: NE
-    ) => Database<C, E & NE>;
     withArchetypes: <A extends { [name: string]: (keyof C)[] }>(
         namedArchetypes: A
     ) => Database<C, E & { archetypes: { [K in keyof A]: Archetype<CoreComponents & Pick<C, A[K][number]>> } }>;
@@ -50,12 +46,12 @@ export interface Database<
 function test() {
     let db!: Database<{ id: number, a: string }>;
     let db2 = db.withComponents({ c: { type: "number" }, d: { type: "string" } });
-    let db3 = db2.withExtension({ archetypes: { a: 1 }});
+    let db3 = db2.withArchetypes({ a: ["id", "a"] });
     let db4 = db3.withComponents({ e: { type: "number" }});
-    let db5 = db4.withExtension({ archetypes: { b: "foo" }});
+    let db5 = db4.withArchetypes({ b: ["id", "c", "d", "e"] });
     let db6 = db5.withComponent("b")<string>();
     let db7 = db6.withArchetypes({ alpha: ["id", "a", "b"] });
-    type CheckA = Assert<Equal<(typeof db6)["archetypes"]["a"], number>>;
-    type CheckB = Assert<Equal<(typeof db6)["archetypes"]["b"], string>>;
+    type CheckA = Assert<Equal<(typeof db6)["archetypes"]["a"], Archetype<{ id: number, a: string }>>>;
+    type CheckB = Assert<Equal<(typeof db6)["archetypes"]["b"], Archetype<{ id: number, c: number, d: string, e: number }>>>;
     type CheckC = Assert<Equal<(typeof db7)["archetypes"]["alpha"]["columns"]["a"], TypedBuffer<string, ArrayLike<unknown>>>>;
 }

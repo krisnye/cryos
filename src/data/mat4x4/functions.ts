@@ -1,4 +1,4 @@
-import type { Mat4x4 } from './mat4x4.js';
+import type { Mat4x4, Mat4x4Index } from './mat4x4.js';
 import type { Vec4 } from '../vec4/vec4.js';
 import type { Vec3 } from '../vec3/vec3.js';
 import * as vec3 from '../vec3/functions.js';
@@ -39,7 +39,7 @@ export const multiply = (a: Mat4x4, b: Mat4x4): Mat4x4 => {
         for (let j = 0; j < 4; j++) {
             let sum = 0;
             for (let k = 0; k < 4; k++) {
-                sum += a[k * 4 + i] * b[j * 4 + k];
+                sum += a[k * 4 + i as Mat4x4Index] * b[j * 4 + k as Mat4x4Index];
             }
             result[j * 4 + i] = sum;
         }

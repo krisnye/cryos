@@ -1,2 +1,2 @@
 
-export type System = () => void;
+export type System = () => Promise<void>;

@@ -10,3 +10,5 @@ export const Mat4x4Schema = {
 } as const satisfies Schema;
 
 export type Mat4x4 = InferType<typeof Mat4x4Schema>;
+
+export type Mat4x4Index = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15;

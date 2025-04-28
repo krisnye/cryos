@@ -3,9 +3,11 @@ import { resolve } from 'path';
 import terser from '@rollup/plugin-terser';
 import vitePluginString from 'vite-plugin-string';
 import type { UserConfig } from 'vite';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
     plugins: [
+        tsconfigPaths(),
         vitePluginString({ compress: false })
     ],
     test: {
