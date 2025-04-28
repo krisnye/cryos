@@ -19,7 +19,9 @@ export const createObservableState = <T>(initialValue: T): [Observe<T>, SetValue
 
     const setValue = (newValue: T) => {
         value = newValue;
-        observers.forEach(observer => observer(value));
+        for (const observer of observers) {
+            observer(value);
+        }
     }
 
     return [observe, setValue];

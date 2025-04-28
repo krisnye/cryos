@@ -12,6 +12,7 @@ export function createDatabase(): Database<CoreComponents> {
     const archetypes: Archetype<CoreComponents>[] = [];
     const actions = {};
     const resources = {};
+    const observe = {};
 
     const getArchetypes = function* <Include extends keyof CoreComponents, Exclude extends keyof CoreComponents = never>(
         components: Include[],
@@ -192,6 +193,7 @@ export function createDatabase(): Database<CoreComponents> {
         archetypes,
         resources,
         actions,
+        observe,
         getArchetype,
         getArchetypes,
         locateEntity,

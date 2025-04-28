@@ -47,6 +47,7 @@ type GameExtensions = {
         updateSystems: {};
         renderSystems: {};
     };
+    observe: {};
     actions: {
         update: (commandEncoder: GPUCommandEncoder) => void;
         render: (renderPassEncoder: GPURenderPassEncoder) => void;

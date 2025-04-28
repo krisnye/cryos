@@ -1,4 +1,4 @@
-import { memoize } from "../../function/memoize";
+import { memoize } from "../../functions/memoize";
 import { I32Schema } from "../../i32";
 import { type Schema, isArraySchema, isNumberSchema, isObjectSchema } from "../../schema";
 import { U32Schema } from "../../u32";

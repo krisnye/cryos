@@ -18,7 +18,8 @@ export default defineConfig({
             headless: true,
             options: {
                 args: ['--enable-unsafe-webgpu']
-            }
+            },
+            screenshot: false
         },
         include: ['src/**/*.test.ts'],
         exclude: ['lib/**/*'],

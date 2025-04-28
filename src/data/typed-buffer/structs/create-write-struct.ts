@@ -1,4 +1,4 @@
-import { memoize } from "../../function/memoize";
+import { memoize } from "../../functions/memoize";
 import type { StructLayout } from "./struct-layout";
 import type { WriteStruct } from "./write-struct";
 import { getFieldOffset } from "./get-field-offset";

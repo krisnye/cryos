@@ -11,3 +11,5 @@ export { type F32, F32Schema } from "./f32";
 export { type I32, I32Schema } from "./i32";
 export { type True, TrueSchema } from "./true";
 export { type U32, U32Schema } from "./u32";
+export type { Data } from "./data";
+export * from "./functions";

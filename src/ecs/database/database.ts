@@ -11,6 +11,7 @@ export interface Database<
     readonly archetypes: Archetype<CoreComponents & Partial<C>>[] & E["archetypes"];
     readonly resources: E["resources"];
     readonly actions: E["actions"];
+    readonly observe: E["observe"];
     getArchetypes: <Include extends keyof C, Exclude extends keyof C = never>(
         components: Include[],
         options?: {
