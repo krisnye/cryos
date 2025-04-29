@@ -1,3 +1,4 @@
+import { Data } from "data/data";
 import { Notify } from "./notify";
 import { Observe } from "./observe";
 import { SetValue } from "./set-value";
@@ -7,7 +8,7 @@ import { SetValue } from "./set-value";
  * @param initialValue - The initial value of the state.
  * @returns A tuple containing the observe function and the setValue function.
  */
-export const createObservableState = <T>(initialValue: T): [Observe<T>, SetValue<T>] => {
+export const createObservableState = <T extends Data>(initialValue: T): [Observe<T>, SetValue<T>] => {
     let value = initialValue;
     const observers = new Set<Notify<T>>();
 

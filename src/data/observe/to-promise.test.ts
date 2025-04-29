@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { toPromise } from './toPromise';
+import { toPromise } from './to-promise';
 import type { Observe } from './observe';
 
 describe('toPromise', () => {

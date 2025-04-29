@@ -5,6 +5,9 @@
     { "path": "./data" },
     { "path": "./graphics" },
     { "path": "./types" },
-    { "path": "./ecs" }
+    { "path": "./ecs" },
+    { "path": "./samples" },
+    { "path": "./ui" },
+    { "path": "./services" }
   ]
 } 

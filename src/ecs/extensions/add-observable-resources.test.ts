@@ -1,7 +1,7 @@
 import { createDatabase } from "ecs/database/create-database";
 import { describe, it, expect } from "vitest";
 import { addObservableResources } from "./add-observable-resources";
-import { toPromise } from "data/observe/toPromise";
+import { toPromise } from "data/observe/to-promise";
 
 describe("addObservableResources", () => {
     it("should add observable resources to the database", async () => {
