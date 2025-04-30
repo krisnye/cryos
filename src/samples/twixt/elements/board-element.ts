@@ -16,7 +16,7 @@ export class BoardElement extends TwixtElement {
             return html`<div>Board NO VALUES</div>`;
 
         return html`
-            <div>Board ${values?.size}</div>
+            <div>Twixt404: ${values?.size}</div>
         `;
     }
 }
