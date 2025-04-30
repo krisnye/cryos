@@ -18,5 +18,4 @@ export class TwixtGame extends ServiceApplication<MainService> {
             <board-element></board-element>
         `;
     }
-
 }

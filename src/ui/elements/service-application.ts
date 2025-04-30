@@ -3,6 +3,7 @@ import { property } from "lit/decorators.js";
 import { provide } from "@lit/context";
 import { serviceContext } from "./service-context";
 import { Service } from "services";
+import { applyServiceDecorators } from "../decorators/apply-service-decorators";
 
 export abstract class ServiceApplication<S extends Service> extends LitElement {
 
@@ -14,6 +15,7 @@ export abstract class ServiceApplication<S extends Service> extends LitElement {
 
     override async connectedCallback() {
         super.connectedCallback();
+        applyServiceDecorators(this);
         this.service = await this.createService();
     }
 
@@ -21,5 +23,4 @@ export abstract class ServiceApplication<S extends Service> extends LitElement {
         super.disconnectedCallback();
         this.service?.dispose?.();
     }
-
 }

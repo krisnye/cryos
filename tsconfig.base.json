@@ -27,7 +27,9 @@
     "types": ["@webgpu/types"],
     "rootDir": "./src",
     "baseUrl": "./src",
-    "outDir": "./lib"
+    "outDir": "./lib",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": [
   ],
