@@ -19,7 +19,7 @@ export abstract class ServiceApplication<S extends Service> extends LitElement {
 
     override disconnectedCallback() {
         super.disconnectedCallback();
-        this.service?.dispose();
+        this.service?.dispose?.();
     }
 
 }

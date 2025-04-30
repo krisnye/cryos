@@ -1,4 +1,4 @@
 
 export interface Service {
-    dispose(): void;
+    dispose?(): void;
 }

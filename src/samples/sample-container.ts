@@ -1,6 +1,7 @@
 import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 import "./service-sample";
+import "./twixt";
 
 @customElement("cryos-sample-container")
 export class SampleContainer extends LitElement {
@@ -8,6 +9,8 @@ export class SampleContainer extends LitElement {
         return html`
             <h1>Sample Container</h1>
             <cryos-service-sample></cryos-service-sample>
+            <hr/>
+            <twixt-game></twixt-game>
         `;
     }
 }

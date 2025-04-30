@@ -1,5 +1,5 @@
 import { customElement } from "lit/decorators.js";
-import { MainService } from "../services/main-service";
+import { MainService } from "../services/database";
 import { ServiceElement } from "ui/elements";
 import { html } from "lit";
 import { withHooks } from "ui/hooks/with-hooks";
@@ -16,10 +16,12 @@ export class ServiceSampleChild extends ServiceElement<MainService> {
         }
         const values = useObservableValues(() => ({
             name: service.name,
+            counter: service.counter
         }));
         return html`
             <div>
-                Service Sample Child: ${values?.name ?? "unknown"}
+                <div>Service Sample Child: ${values?.name ?? "unknown"}</div>
+                <div>Counter: ${values?.counter ?? 0}</div>
             </div>
         `;
     }
