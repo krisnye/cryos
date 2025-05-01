@@ -3,20 +3,24 @@ import { html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { useObservableValues } from "ui/hooks/use-observable-values";
 import { boardSize } from "../dependent-state/board-size";
+import { range } from "data/functions/range";
 
-@customElement("board-element")
-export class BoardElement extends TwixtElement {
-
+@customElement("twixt-board")
+export class TwixtBoard extends TwixtElement {
     protected override render() {
         const values = useObservableValues(() => ({
             size: boardSize(this.service!),
         }));
 
         if (!values)
-            return html`<div>Board NO VALUES</div>`;
+            return;
 
         return html`
-            <div>Twixt404: ${values?.size}</div>
+            <div class="board" style="display: grid; grid-template-columns: repeat(${values.size}, 1fr); gap: 4px;">
+                ${[...range(values.size * values.size)].map(index => html`
+                    <twixt-point .index=${index}></twixt-point>
+                `)}
+            </div>
         `;
     }
 }
