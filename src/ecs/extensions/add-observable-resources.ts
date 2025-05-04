@@ -8,11 +8,11 @@ import { Database } from "ecs";
 export function addObservableResources<
     C extends CoreComponents,
     E extends Extensions,
-    R extends { [name: string]: Data }
+    R extends { readonly [name: string]: Data }
 >(
     db: Database<C, E>,
     resources: R
-): Database<C, E & { resources: R, observe: { [K in keyof R]: Observe<R[K]> } }> {
+): Database<C, E & { resources: { -readonly [K in keyof R]: R[K] }, observe: { [K in keyof R]: Observe<R[K]> } }> {
     for (const [name, resource] of Object.entries(resources) as [keyof R, R[keyof R]][]) {
         let currentValue: R[keyof R] = (db.resources as any)[name] ?? resource;
         const [observe, setValue] = createObservableState(currentValue);

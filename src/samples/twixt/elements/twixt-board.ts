@@ -4,6 +4,7 @@ import { customElement } from "lit/decorators.js";
 import { useObservableValues } from "ui/hooks/use-observable-values";
 import { boardSize } from "../dependent-state/board-size";
 import { range } from "data/functions/range";
+import "./twixt-point";
 
 @customElement("twixt-board")
 export class TwixtBoard extends TwixtElement {
