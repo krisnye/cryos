@@ -1,6 +1,6 @@
-import { F32Schema } from "../f32";
-import type { InferType } from "../schema/infer-type";
-import type { Schema } from "../schema/schema";
+import { F32Schema } from "../../data/f32";
+import type { InferType } from "../../data/schema/infer-type";
+import type { Schema } from "../../data/schema/schema";
 
 export const Vec3Schema = {
     type: 'array',

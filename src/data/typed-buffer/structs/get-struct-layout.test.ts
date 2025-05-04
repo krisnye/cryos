@@ -4,10 +4,6 @@ import type { Schema } from "../../schema";
 import { F32Schema } from "../../f32";
 import { U32Schema } from "../../u32";
 import { I32Schema } from "../../i32";
-import { Vec3Schema } from "../../vec3/vec3";
-import { Mat4x4Schema } from "../../mat4x4/mat4x4";
-import { createReadStruct } from "./create-read-struct";
-import { createWriteStruct } from "./create-write-struct";
 
 describe("getStructLayout", () => {
     it("should handle primitive types", () => {
@@ -125,23 +121,5 @@ describe("getStructLayout", () => {
             maxItems: 1
         })).toThrow();
     });
-
-    // it("should handle advanced structs", () => {
-    //     const SceneSchema = {
-    //         type: 'object',
-    //         properties: {
-    //             viewProjection: Mat4x4Schema,
-    //             lightDirection: Vec3Schema,
-    //             ambientStrength: F32Schema,
-    //             lightColor: Vec3Schema,
-    //         }
-    //     } as const satisfies Schema;
-    //     const layout = getStructLayout(SceneSchema)!;
-    //     const readFunction = createReadStruct(layout);
-    //     const writeFunction = createWriteStruct(layout);
-    //     console.log(JSON.stringify(layout, null, 2));
-    //     console.log(readFunction.toString());
-    //     console.log(writeFunction.toString());
-    // });
 
 }); 

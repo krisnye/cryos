@@ -1,12 +1,8 @@
 export type { DataView32 } from "./data-view-32";
-export { type Mat4x4, Mat4x4Schema } from "./mat4x4";
 export type { Schema, InferType } from "./schema";
 export type { TypedBuffer } from "./typed-buffer";
 export type { Table } from "./table";
 export type { TypedArray } from "./typed-array";
-export { Vec2Schema, type Vec2 } from "./vec2";
-export { Vec3Schema, type Vec3 } from "./vec3";
-export { Vec4Schema, type Vec4 } from "./vec4";
 export { type F32, F32Schema } from "./f32";
 export { type I32, I32Schema } from "./i32";
 export { type True, TrueSchema } from "./true";

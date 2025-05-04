@@ -1,4 +1,4 @@
-import { Vec3 } from "data";
+import { Vec3 } from "math";
 
 export type Camera = {
     aspect: number;

@@ -1,5 +1,5 @@
-import * as MAT4 from "data/mat4x4";
-import type { Mat4x4 } from "data";
+import * as MAT4 from "math/mat4x4";
+import type { Mat4x4 } from "math";
 import type { Camera } from "./camera";
 
 export const toViewProjection = (camera: Camera): Mat4x4 => {

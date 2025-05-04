@@ -1,6 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { createDatabase } from "./create-database";
-import { Schema, Vec3Schema, U32Schema } from "data";
+import { F32Schema, Schema, U32Schema } from "data";
+
+const Vec3Schema = {
+    type: 'array',
+    items: F32Schema,
+    minItems: 3,
+    maxItems: 3,
+} as const satisfies Schema;
 
 // Test component schemas
 const testSchemas = {
