@@ -4,8 +4,8 @@ import { customElement, property } from "lit/decorators.js";
 import { useObservableValues } from "ui/hooks/use-observable-values";
 import { boardPointValue } from "../../dependent-state/board-point-value";
 import { clickPoint } from "../../actions/click-point";
-import redCircle from "./red-circle.svg";
-import blackCircle from "./black-circle.svg";
+import redCircle from "../../assets/red-circle.svg";
+import blackCircle from "../../assets/black-circle.svg";
 import { boardPointHover } from "../../dependent-state/board-point-hover";
 
 @customElement("twixt-point")

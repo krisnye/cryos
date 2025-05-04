@@ -14,7 +14,7 @@ export class TwixtGame extends ServiceApplication<MainService> {
 
     protected override render() {
         return html`
-            Hello Twixt Game!
+            <twixt-turn-indicator></twixt-turn-indicator>
             <twixt-board></twixt-board>
         `;
     }
