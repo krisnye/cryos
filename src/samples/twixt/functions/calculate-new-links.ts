@@ -2,8 +2,7 @@ import { MainService } from "../services/main-service/main-service";
 import { Player, BoardLink } from "../services/state-service/create-state-service";
 import { Line2, subLine } from "math/line2";
 import { intersects } from "math/line2/intersects";
-import { toPromise } from "data/observe";
-import { boardSize } from "../dependent-state/board-size";
+import { getBoardSize } from "../dependent-state/board-size";
 
 // Convert board index to x,y coordinates (0,0 is top-left)
 const indexToCoords = (index: number, size: number): [number, number] => {
@@ -30,21 +29,33 @@ const linkToLine2 = (link: BoardLink, size: number): Line2 => {
     }, 0.01, 0.99); // shorten the line to avoid counting endpoints as intersections
 };
 
-export const addLinks = async (
-    service: MainService, player: Player, newIndex: number,
+export const calculateNewLinks = (
+    service: MainService,
+    player: Player,
+    newIndex: number,
     dependencies = {
-        boardSize: boardSize(service),
         board: service.state.resources.board,
         links: service.state.resources.links,
     }
-): Promise<BoardLink[]> => {
-    const size = await toPromise(dependencies.boardSize);
+): BoardLink[] => {
     const { board, links } = dependencies;
+    const size = getBoardSize(board);
 
-    // Find all points of the same color
+    // If the point is already occupied by the opponent, return no potential links
+    const pointValue = board[newIndex];
+    if (pointValue !== null && pointValue !== player) {
+        return [];
+    }
+
+    // Find all points of the same color, including the new point
     const playerPoints = board
         .map((point, index) => ({ point, index }))
-        .filter(({ point }) => point === player)
+        .filter(({ point, index }) => 
+            // Only include points that are either:
+            // 1. The new point we're considering
+            // 2. Points that are the same color as the current player
+            index === newIndex || point === player
+        )
         .map(({ index }) => index);
 
     // Get coordinates of the new point
@@ -76,9 +87,5 @@ export const addLinks = async (
         }
     }
     
-    // Add all valid new links
-    if (newLinks.length > 0) {
-        console.log(newLinks);
-    }
     return newLinks;
 }; 

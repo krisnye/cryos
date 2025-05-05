@@ -9,7 +9,7 @@ export abstract class ServiceApplication<S extends Service> extends LitElement {
 
     @provide({context: serviceContext})
     @property({type: Object})
-    protected service?: S;
+    protected service!: S;
 
     protected abstract createService(): Promise<S>;
 

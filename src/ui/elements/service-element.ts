@@ -9,7 +9,7 @@ export class ServiceElement<S extends Service> extends LitElement {
 
     @consume({context: serviceContext})
     @property({type: Object})
-    protected service?: S;
+    protected service!: S;
 
     override connectedCallback() {
         super.connectedCallback();

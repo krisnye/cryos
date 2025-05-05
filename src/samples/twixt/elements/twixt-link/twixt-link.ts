@@ -5,6 +5,7 @@ import { useObservableValues } from "ui/hooks/use-observable-values";
 import { boardSize } from "../../dependent-state/board-size";
 import { indexToCoords } from "../../utils/coordinates";
 import { BoardLink } from "../../services/state-service/create-state-service";
+import { currentPlayer } from "samples/twixt/dependent-state/current-player";
 
 @customElement("twixt-link")
 export class TwixtLink extends TwixtElement {
@@ -30,14 +31,21 @@ export class TwixtLink extends TwixtElement {
         .black {
             color: #444444;
         }
+        .potential {
+            opacity: 0.5;
+        }
     `;
 
     @property({ type: Array })
     link: BoardLink = [0, 0];
 
+    @property({ type: Boolean })
+    isPotential = false;
+
     protected override render() {
         const values = useObservableValues(() => ({
-            size: boardSize(this.service!),
+            size: boardSize(this.service),
+            currentPlayer: currentPlayer(this.service),
         }));
 
         if (!values) return;
@@ -57,12 +65,13 @@ export class TwixtLink extends TwixtElement {
         const length = Math.sqrt(dx * dx + dy * dy);
         const angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
-        // Get the color based on the from point's value
-        const pointValue = this.service!.state.resources.board[from];
-        const colorClass = pointValue === "red" ? "red" : "black";
+        // Get the color based on either the current player (for potential links) or the from point's value
+        const colorClass = this.isPotential 
+            ? (values.currentPlayer === "red" ? "red" : "black")
+            : (this.service.state.resources.board[from] === "red" ? "red" : "black");
 
         return html`
-            <div class="line ${colorClass}"
+            <div class="line ${colorClass} ${this.isPotential ? 'potential' : ''}"
                 style="
                     left: ${x1}%;
                     top: ${y1}%;

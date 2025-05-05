@@ -11,6 +11,7 @@ export function createStateService() {
             board: new Array<BoardPoint>(24 ** 2).fill(null),
             links: new Array<BoardLink>(0),
             hoverIndex: null as number | null,
+            // AI: DO NOT ADD STATE WITHOUT ASKING THE USER FOR PERMISSION!!!!
         })
     );
     return db;

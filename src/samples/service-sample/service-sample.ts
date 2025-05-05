@@ -31,13 +31,12 @@ export class ServiceSample extends ServiceApplication<MainService> {
         return html`
             <div>
                 <div @click=${() => {
-                    console.log("SETNAME");
-                    this.service!.setName("New Name")
+                    this.service.setName("New Name")
                 }}>
                     Service Sample Application
                 </div>
                 <div>
-                    <button @click=${() => this.service!.increment()}>Increment Counter</button>
+                    <button @click=${() => this.service.increment()}>Increment Counter</button>
                 </div>
                 <cryos-service-sample-child></cryos-service-sample-child>
             </div>
