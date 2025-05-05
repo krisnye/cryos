@@ -3,6 +3,7 @@ import { CoreComponents, Extensions, Database } from "ecs";
 import { createDatabase } from "ecs/database";
 import { F32Schema } from "data";
 import { GraphicsContext } from "graphics";
+import { staticResources } from "ecs/extensions/static-resources";
 
 export const addGameExtensions = <
     C extends CoreComponents,
@@ -14,12 +15,14 @@ export const addGameExtensions = <
     return db.withComponents({
         changedTime: F32Schema
     } as const)
-    .withResources({
-        ...graphicsContext,
-        deltaTime: 1 / 60,
-        updateSystems: {},
-        renderSystems: {},
-    })
+    .withExtension(
+        staticResources({
+            ...graphicsContext,
+            deltaTime: 1 / 60,
+            updateSystems: {},
+            renderSystems: {},
+        })
+    )
     .withActions({
         update(commandEncoder: GPUCommandEncoder) {
             for (const name in this.resources.updateSystems) {
@@ -40,12 +43,12 @@ type GameComponents = CoreComponents & {
 type GameExtensions = {
     archetypes: {};
     resources: {
-        deltaTime: number;
-        context: GPUCanvasContext;
-        canvas: HTMLCanvasElement;
-        device: GPUDevice;
-        updateSystems: {};
-        renderSystems: {};
+        readonly deltaTime: number;
+        readonly context: GPUCanvasContext;
+        readonly canvas: HTMLCanvasElement;
+        readonly device: GPUDevice;
+        readonly updateSystems: {};
+        readonly renderSystems: {};
     };
     observe: {};
     actions: {
@@ -62,7 +65,7 @@ function test() {
         changedTime: number;
     }, GameExtensions>>>;
 
-    const db2 = db.withResources({
+    const db2 = db.withExtension(staticResources({
         updateSystems: {
             foo: () => {},
             bar: () => {},
@@ -71,5 +74,5 @@ function test() {
             baz: () => {},
             qux: () => {},
         },
-    }).simplifyTypes();
+    })).simplifyTypes();
 }

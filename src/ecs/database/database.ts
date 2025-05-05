@@ -25,22 +25,16 @@ export interface Database<
     updateEntity: (entity: Entity, 
         values: { [K in keyof C]?: C[K] | undefined },
     ) => void;
-    withComponent: <NC extends string>(
-        name: NC,
-    ) => <T>(schema?: Schema) =>
-        Database<C & { [K in NC]: T }, E>;
     withComponents: <NC extends { [name: string]: Schema }>(
         addComponents: NC,
     ) => Database<C & { -readonly [K in keyof NC]: InferType<NC[K]> }, E>;
     withArchetypes: <A extends { [name: string]: (keyof C)[] }>(
         namedArchetypes: A
     ) => Database<C, E & { archetypes: { [K in keyof A]: Archetype<CoreComponents & Pick<C, A[K][number]>> } }>;
-    withResources: <NR extends { [name: string]: any }>(
-        newResources: NR
-    ) => Database<C, E & { resources: NR }>;
     withActions: <NA extends Record<string, (this: Database<C, E>, ...args: any[]) => void>>(
         newActions: NA
     ) => Database<C, E & { actions: { [K in keyof NA]: OmitThisParameter<NA[K]> } }>;
+    withExtension: <NT extends Database<C,E>>(extension: (db: Database<C, E>) => NT) => NT
     simplifyTypes: () => Database<Simplify<C>, Simplify<E>>;
 }
 
@@ -50,7 +44,7 @@ function test() {
     let db3 = db2.withArchetypes({ a: ["id", "a"] });
     let db4 = db3.withComponents({ e: { type: "number" }});
     let db5 = db4.withArchetypes({ b: ["id", "c", "d", "e"] });
-    let db6 = db5.withComponent("b")<string>();
+    let db6 = db5.withComponents({ b: { type: "string" }});
     let db7 = db6.withArchetypes({ alpha: ["id", "a", "b"] });
     type CheckA = Assert<Equal<(typeof db6)["archetypes"]["a"], Archetype<{ id: number, a: string }>>>;
     type CheckB = Assert<Equal<(typeof db6)["archetypes"]["b"], Archetype<{ id: number, c: number, d: string, e: number }>>>;

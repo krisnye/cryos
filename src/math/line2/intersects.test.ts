@@ -48,7 +48,8 @@ describe('intersects', () => {
             a: [2, 2],
             b: [4, 4]
         };
-        expect(intersects(line1, line2)).toBe(true);
+        expect(intersects(line1, line2, false)).toBe(false);
+        expect(intersects(line1, line2, true)).toBe(true);
     });
 
     it('should return false for collinear lines that do not overlap', () => {

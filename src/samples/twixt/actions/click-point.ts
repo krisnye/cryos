@@ -2,15 +2,7 @@ import { mutableClone } from "data/functions/mutable-clone";
 import { MainService } from "../services/main-service/main-service";
 import { toPromise } from "data/observe";
 import { currentPlayer } from "../dependent-state/current-player";
-import { Player } from "../services/state-service/create-state-service";
-import { boardSize } from "../dependent-state/board-size";
-
-
-async function addLinks(service: MainService, player: Player) {
-    const size = await toPromise(boardSize(service))
-    const board = service.state.resources.board;
-    const links = service.state.resources.links;
-}
+import { addLinks } from "./add-links";
 
 export const clickPoint = async (
     service: MainService,
@@ -21,5 +13,8 @@ export const clickPoint = async (
     if (board[index] === null) {
         board[index] = player;
         service.state.resources.board = board;
+        const links = service.state.resources.links;
+        const newLinks = await addLinks(service, player, index);
+        service.state.resources.links = [...links, ...newLinks];
     }
 };

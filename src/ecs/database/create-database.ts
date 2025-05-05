@@ -118,15 +118,6 @@ export function createDatabase(): Database<CoreComponents> {
         }
     }
 
-    const withComponent = <NC extends string, T>(
-        componentName: NC,
-    ) => {
-        return <T>(schema: Schema = {}) => {
-            (components as any)[componentName] = schema;
-            return database as any;
-        }
-    }
-
     const withComponents = <NC extends { [name: string]: Schema }>(
         newComponentSchemas: NC
     ) => {
@@ -148,13 +139,6 @@ export function createDatabase(): Database<CoreComponents> {
         return database as any;
     }
 
-    const withResources = <NR extends { [name: string]: unknown }>(
-        newResources: NR
-    ) => {
-        deepAssign(resources, newResources);
-        return database as any;
-    }
-
     const withActions = <NA extends Record<string, (this: Database<CoreComponents, Extensions>, ...args: unknown[]) => void>>(
         newActions: NA
     ) => {
@@ -169,19 +153,9 @@ export function createDatabase(): Database<CoreComponents> {
         return database as any;
     }
 
-    const withExtension = <E extends Partial<Extensions>>(extension: E) => {
-        if (extension.archetypes) {
-            withArchetypes(extension.archetypes);
-        }
-        if (extension.resources) {
-            withResources(extension.resources);
-        }
-        if (extension.actions) {
-            withActions(extension.actions);
-        }
-        return database as any;
+    const withExtension = <NT extends Database<CoreComponents, Extensions>>(extension: (db: Database<CoreComponents, Extensions>) => NT) => {
+        return extension(database);
     }
-
 
     const simplifyTypes = () => {
         return database as any;
@@ -200,11 +174,10 @@ export function createDatabase(): Database<CoreComponents> {
         selectEntity,
         deleteEntity,
         updateEntity,
-        withComponent,
         withComponents,
         withArchetypes,
-        withResources,
         withActions,
+        withExtension,
         simplifyTypes,
     };
     return database;
