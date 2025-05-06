@@ -45,7 +45,7 @@ export default defineConfig({
         emptyOutDir: true,
         reportCompressedSize: false,
         lib: {
-            entry: resolve(__dirname, './src/index.ts'),
+            entry: resolve(__dirname, './index.html'),
             formats: ['es']
         },
         rollupOptions: {
