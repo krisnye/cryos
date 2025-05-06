@@ -6,6 +6,7 @@ import type { UserConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
+    base: './',
     plugins: [
         tsconfigPaths(),
         vitePluginString({ compress: false })
