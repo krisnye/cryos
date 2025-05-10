@@ -1,4 +1,4 @@
-import { InferType, Schema, TypedBuffer } from "data";
+import { Data, InferType, Schema, TypedBuffer } from "data";
 import { Assert, Equal, Simplify } from "types";
 import { Archetype, Entity, EntityLocation, CoreComponents, Extensions } from "ecs";
 
@@ -25,7 +25,7 @@ export interface Database<
     updateEntity: (entity: Entity, 
         values: { [K in keyof C]?: C[K] | undefined },
     ) => void;
-    withComponents: <NC extends { [name: string]: Schema }>(
+    withComponents: <NC extends { [name: string]: Schema & { default: unknown } }>(
         addComponents: NC,
     ) => Database<C & { -readonly [K in keyof NC]: InferType<NC[K]> }, E>;
     withArchetypes: <A extends { [name: string]: (keyof C)[] }>(
@@ -40,11 +40,11 @@ export interface Database<
 
 function test() {
     let db!: Database<{ id: number, a: string }>;
-    let db2 = db.withComponents({ c: { type: "number" }, d: { type: "string" } });
+    let db2 = db.withComponents({ c: { type: "number", default: 0 as number }, d: { type: "string", default: "" as string } });
     let db3 = db2.withArchetypes({ a: ["id", "a"] });
-    let db4 = db3.withComponents({ e: { type: "number" }});
+    let db4 = db3.withComponents({ e: { type: "number", default: 0 as number }});
     let db5 = db4.withArchetypes({ b: ["id", "c", "d", "e"] });
-    let db6 = db5.withComponents({ b: { type: "string" }});
+    let db6 = db5.withComponents({ b: { type: "string", default: "" as string }});
     let db7 = db6.withArchetypes({ alpha: ["id", "a", "b"] });
     type CheckA = Assert<Equal<(typeof db6)["archetypes"]["a"], Archetype<{ id: number, a: string }>>>;
     type CheckB = Assert<Equal<(typeof db6)["archetypes"]["b"], Archetype<{ id: number, c: number, d: string, e: number }>>>;

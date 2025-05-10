@@ -2,13 +2,9 @@ type PrimitiveType = 'string' | 'number' | 'boolean' | 'null' | 'integer';
 
 interface BaseSchema<T = unknown> {
     type?: PrimitiveType | 'array' | 'object';
-    title?: string;
-    description?: string;
     default?: T;
-    examples?: T[];
     enum?: T[];
     const?: T;
-    $ref?: string;
 }
 
 export interface StringSchema extends BaseSchema<string> {

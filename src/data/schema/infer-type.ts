@@ -27,7 +27,8 @@ type InferProperties<T> = T extends Record<string, Schema> ? {
 } : never;
 
 // Utility type to infer TypeScript type from Schema
-export type InferType<T> = T extends { const: infer C } ? C
+export type InferType<T> = T extends { default: infer D } ? D
+    : T extends { const: infer C } ? C
     : T extends { enum: readonly (infer E)[] } ? E
     : T extends StringSchema ? string
     : T extends NumberSchema ? number
@@ -40,6 +41,8 @@ export type InferType<T> = T extends { const: infer C } ? C
             : Record<string, unknown>
     )
     : unknown;
+
+type SchemaValid<S extends Schema, T> = Equal<InferType<Omit<S, 'default'>>, T>;
 
 // Type inference tests
 type __TypeTests = {
@@ -244,4 +247,21 @@ type __TypeTests = {
         }>,
         readonly boolean[]
     >>;
+
 };
+
+// test infering from default
+interface Foo {
+    readonly alpha: string;
+    readonly beta: number;
+}
+const FooSchema = {
+    type: "object",
+    properties: {
+        alpha: { type: "string" },
+        beta: { type: "number" },
+    },
+    default: { alpha: "hello", beta: 42 } as Foo,
+} satisfies ObjectSchema<Foo>;
+type CheckFoo =  Assert<SchemaValid<typeof FooSchema, Foo>>;
+

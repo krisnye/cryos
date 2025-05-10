@@ -8,6 +8,7 @@
     { "path": "./ecs" },
     { "path": "./samples" },
     { "path": "./ui" },
-    { "path": "./services" }
+    { "path": "./services" },
+    { "path": "./physics" }
   ]
 } 

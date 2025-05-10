@@ -7,6 +7,7 @@ const Vec3Schema = {
     items: F32Schema,
     minItems: 3,
     maxItems: 3,
+    default: [0, 0, 0] as [number, number, number],
 } as const satisfies Schema;
 
 // Test component schemas
@@ -14,7 +15,8 @@ const testSchemas = {
     position: Vec3Schema,
     velocity: Vec3Schema,
     name: {
-        type: "string"
+        type: "string",
+        default: "" as string,
     } as const satisfies Schema,
     age: U32Schema,
 } as const;
@@ -30,8 +32,8 @@ describe("createDatabase", () => {
         it("should merge new component schemas into database schemas", () => {
             const db = createDatabase();
             const newComponents = {
-                position: { type: "object", properties: { x: { type: "number" }, y: { type: "number" } } } as const satisfies Schema,
-                velocity: { type: "object", properties: { vx: { type: "number" }, vy: { type: "number" } } } as const satisfies Schema,
+                position: { type: "object", properties: { x: { type: "number" }, y: { type: "number" } }, default: { x: 0, y: 0 } as { x: number, y: number } } as const satisfies Schema,
+                velocity: { type: "object", properties: { vx: { type: "number" }, vy: { type: "number" } }, default: { vx: 0, vy: 0 } as { vx: number, vy: number } } as const satisfies Schema,
             };
             
             const extendedDb = db.withComponents(newComponents);

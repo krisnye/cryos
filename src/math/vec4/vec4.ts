@@ -7,6 +7,7 @@ export const Vec4Schema = {
     items: F32Schema,
     minItems: 4,
     maxItems: 4,
+    default: [0, 0, 0, 0] as [number, number, number, number],
 } as const satisfies Schema;
 
 export type Vec4 = InferType<typeof Vec4Schema>;

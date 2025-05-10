@@ -58,7 +58,7 @@ type GameExtensions = {
 };
 
 function test() {
-    const db = addGameExtensions(createDatabase().withComponents({ a: { type: "number" }}), null as unknown as GraphicsContext).simplifyTypes();
+    const db = addGameExtensions(createDatabase().withComponents({ a: { type: "number", default: 0 as number }}), null as unknown as GraphicsContext).simplifyTypes();
     type Check1 = Assert<Equal<typeof db, Database<{
         id: number;
         a: number;
