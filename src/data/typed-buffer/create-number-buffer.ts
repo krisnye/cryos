@@ -56,8 +56,11 @@ export const createNumberBuffer = (args: {
         set(index: number, value: number): void {
             array[index] = value;
         },
-        move(fromIndex: number, toIndex: number): void {
-            array[toIndex] = array[fromIndex];
+        copyWithin(target: number, start: number, end: number): void {
+            array.copyWithin(target, start, end);
+        },
+        [Symbol.iterator](): IterableIterator<number> {
+            return array[Symbol.iterator]();
         },
     } as const satisfies TypedBuffer<number,TypedArray>;
     return typedBuffer;

@@ -19,3 +19,10 @@ typescript
 - Use `const` and `let` instead of `var`.
 - Use `??` instead of `||` for nullish coalescing.
 
+# Testing
+
+- Use pnpm test [filename]
+- BEFORE FIXING, pause and verify test and implementation and describe which one is in error.
+
+
+

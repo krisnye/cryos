@@ -15,7 +15,7 @@ export const deleteRow = <C>(table: Table<C>, rowIndex: RowIndex): boolean => {
 
     for (const name in table.columns) {
         const column = table.columns[name];
-        column.move(lastRowIndex, rowIndex);
+        column.copyWithin(rowIndex, lastRowIndex, lastRowIndex + 1);
     }
     return true;
 }

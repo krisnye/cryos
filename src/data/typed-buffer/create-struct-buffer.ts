@@ -42,8 +42,25 @@ export const createStructBuffer = <S extends Schema, ArrayType extends keyof Dat
         },
         get: (index: number) => read(dataView, index),
         set: (index: number, value: InferType<S>) => write(dataView, index, value),
-        move: (fromIndex: number, toIndex: number) => {
-            dataView[arrayType].copyWithin(toIndex * sizeInQuads, fromIndex * sizeInQuads, (fromIndex + 1) * sizeInQuads);
+        copyWithin: (target: number, start: number, end: number) => {
+            dataView[arrayType].copyWithin(target * sizeInQuads, start * sizeInQuads, end * sizeInQuads);
+        },
+        [Symbol.iterator](): IterableIterator<InferType<S>> {
+            let index = 0;
+            const length = buffer.length;
+            return {
+                next(): IteratorResult<InferType<S>> {
+                    if (index < length) {
+                        const value = read(dataView, index);
+                        index++;
+                        return { value, done: false };
+                    }
+                    return { value: undefined, done: true };
+                },
+                [Symbol.iterator]() {
+                    return this;
+                }
+            };
         },
     };
     return buffer;

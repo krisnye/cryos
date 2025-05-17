@@ -7,12 +7,19 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
     base: './',
+    clearScreen: false,
     plugins: [
         tsconfigPaths(),
         vitePluginString({ compress: false })
     ],
     test: {
+        api: {
+            strictPort: false,
+        },
         browser: {
+            api: {
+                strictPort: false,
+            },
             enabled: true,
             name: 'chromium',
             provider: 'playwright',

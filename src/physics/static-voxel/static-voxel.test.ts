@@ -1,11 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
-    getVisible,
     getBond,
     getDamage,
     getTemp,
     getType,
-    setVisible,
     setBond,
     setDamage,
     setTemp,
@@ -17,25 +15,6 @@ import {
 } from './static-voxel';
 
 describe('StaticVoxel', () => {
-    describe('visibility', () => {
-        it('should read and write visibility correctly', () => {
-            let voxel = 0;
-            
-            // Test setting to visible
-            voxel = setVisible(voxel, true);
-            expect(getVisible(voxel)).toBe(true);
-            
-            // Test setting to invisible
-            voxel = setVisible(voxel, false);
-            expect(getVisible(voxel)).toBe(false);
-            
-            // Test that visibility doesn't affect other fields
-            voxel = setType(voxel, 123);
-            voxel = setVisible(voxel, true);
-            expect(getType(voxel)).toBe(123);
-        });
-    });
-
     describe('bonds', () => {
         it('should read and write X bond correctly', () => {
             let voxel = 0;
@@ -145,14 +124,12 @@ describe('StaticVoxel', () => {
             let voxel = 0;
             
             // Set all fields to non-zero values
-            voxel = setVisible(voxel, true);
             voxel = setBond(voxel, StaticVoxelUnbondX, true);
             voxel = setDamage(voxel, 7);
             voxel = setTemp(voxel, 4095);
             voxel = setType(voxel, 1023);
             
             // Verify all fields
-            expect(getVisible(voxel)).toBe(true);
             expect(getBond(voxel, StaticVoxelUnbondX)).toBe(true);
             expect(getDamage(voxel)).toBe(7);
             expect(getTemp(voxel)).toBe(4095);
@@ -160,7 +137,6 @@ describe('StaticVoxel', () => {
             
             // Modify one field and verify others remain unchanged
             voxel = setDamage(voxel, 3);
-            expect(getVisible(voxel)).toBe(true);
             expect(getBond(voxel, StaticVoxelUnbondX)).toBe(true);
             expect(getDamage(voxel)).toBe(3);
             expect(getTemp(voxel)).toBe(4095);
@@ -173,7 +149,6 @@ describe('StaticVoxel', () => {
             let voxel = 0;
             
             // Set all fields
-            voxel = setVisible(voxel, true);
             voxel = setBond(voxel, StaticVoxelUnbondX, true);
             voxel = setDamage(voxel, 7);
             voxel = setTemp(voxel, 4095);
@@ -181,7 +156,6 @@ describe('StaticVoxel', () => {
             
             const debug = toDebugStaticVoxel(voxel);
             expect(debug).toEqual({
-                visible: true,
                 bond: true,
                 damage: 7,
                 temp: 4095,
@@ -194,14 +168,12 @@ describe('StaticVoxel', () => {
         let voxel = 0;
         
         // Set all fields to non-zero values
-        voxel = setVisible(voxel, true);
         voxel = setBond(voxel, StaticVoxelUnbondX, true);
         voxel = setDamage(voxel, 7);
         voxel = setTemp(voxel, 4095);
         voxel = setType(voxel, 1023);
         
         // Verify all fields
-        expect(getVisible(voxel)).toBe(true);
         expect(getBond(voxel, StaticVoxelUnbondX)).toBe(true);
         expect(getDamage(voxel)).toBe(7);
         expect(getTemp(voxel)).toBe(4095);
@@ -209,7 +181,6 @@ describe('StaticVoxel', () => {
         
         // Verify debug representation
         expect(toDebugStaticVoxel(voxel)).toEqual({
-            visible: true,
             bond: true,
             damage: 7,
             temp: 4095,
@@ -221,7 +192,6 @@ describe('StaticVoxel', () => {
         let voxel = 0;
         
         // Set initial state
-        voxel = setVisible(voxel, true);
         voxel = setDamage(voxel, 7);
         voxel = setType(voxel, 1023);
         
@@ -229,7 +199,6 @@ describe('StaticVoxel', () => {
         voxel = setDamage(voxel, 3);
         
         // Verify other fields remain unchanged
-        expect(getVisible(voxel)).toBe(true);
         expect(getType(voxel)).toBe(1023);
         expect(getDamage(voxel)).toBe(3);
     });

@@ -21,8 +21,11 @@ export const createArrayBuffer = <T>(args: {
         set(index: number, value: T): void {
             array[index] = value;
         },
-        move(fromIndex: number, toIndex: number): void {
-            array[toIndex] = array[fromIndex];
+        copyWithin(target: number, start: number, end: number): void {
+            array.copyWithin(target, start, end);
+        },
+        [Symbol.iterator](): IterableIterator<T> {
+            return array[Symbol.iterator]();
         },
     } as const satisfies TypedBuffer<T,T[]>;
     return typedBuffer;
