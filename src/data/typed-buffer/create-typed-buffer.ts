@@ -17,7 +17,7 @@ export const createTypedBuffer = <S extends Schema, T = InferType<S>>(
     args.maxLength ??= 10_0000_000;
 
     if (isNumberSchema(schema)) {
-        return createNumberBuffer(args) as TypedBuffer<InferType<S>,TypedArray>;
+        return createNumberBuffer(args) as TypedBuffer<InferType<S>>;
     }
 
     const structLayout = getStructLayout(schema, false);

@@ -2,13 +2,15 @@ import { TypedBuffer } from "./typed-buffer";
 
 export const createArrayBuffer = <T>(args: {
     length?: number,
-}): TypedBuffer<T,T[]> => {
+}): TypedBuffer<T> => {
     const {
         length = 16,
     } = args;
     const array = new Array<T>(length);
     const typedBuffer = {
-        array,
+        getTypedArray() {
+            throw new Error("Typed array not supported");
+        },
         get length(): number {
             return array.length;
         },
@@ -27,6 +29,6 @@ export const createArrayBuffer = <T>(args: {
         [Symbol.iterator](): IterableIterator<T> {
             return array[Symbol.iterator]();
         },
-    } as const satisfies TypedBuffer<T,T[]>;
+    } as const satisfies TypedBuffer<T>;
     return typedBuffer;
 }

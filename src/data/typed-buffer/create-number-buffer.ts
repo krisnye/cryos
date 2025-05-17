@@ -30,7 +30,7 @@ export const createNumberBuffer = (args: {
     length?: number,
     maxLength?: number,
     arrayBuffer?: ArrayBufferLike,
-}): TypedBuffer<number,TypedArray> => {
+}): TypedBuffer<number> => {
     const {
         schema,
         length = 16,
@@ -41,9 +41,11 @@ export const createNumberBuffer = (args: {
     const {
         arrayBuffer = new ArrayBuffer(stride * length, { maxByteLength: stride * maxLength }),
     } = args;
-    const array = new typedArrayConstructor(arrayBuffer);
+    let array = new typedArrayConstructor(arrayBuffer);
     const typedBuffer = {
-        array,
+        getTypedArray() {
+            return array;
+        },
         get length(): number {
             return array.length;
         },
@@ -62,6 +64,6 @@ export const createNumberBuffer = (args: {
         [Symbol.iterator](): IterableIterator<number> {
             return array[Symbol.iterator]();
         },
-    } as const satisfies TypedBuffer<number,TypedArray>;
+    } as const satisfies TypedBuffer<number>;
     return typedBuffer;
 }

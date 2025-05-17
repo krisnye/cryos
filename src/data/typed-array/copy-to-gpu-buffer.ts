@@ -2,14 +2,16 @@
 import { TypedBuffer } from "../typed-buffer";
 import { TypedArray } from ".";
 
-export const copyToGPUBuffer = <T,A extends TypedArray>(
-    typedBuffer: TypedBuffer<T,A>,
+export const copyToGPUBuffer = <T>(
+    typedBuffer: TypedBuffer<T>,
     device: GPUDevice,
     gpuBuffer: GPUBuffer,
-    byteLength = typedBuffer.array.byteLength,
-    offset = 0,
+    byteLength?: number,
+    offset?: number,
 ): GPUBuffer => {
-    const { array } = typedBuffer;
+    const array = typedBuffer.getTypedArray();
+    byteLength ??= array.byteLength;
+    offset ??= 0;
     if (gpuBuffer.size < byteLength) {
         gpuBuffer.destroy();
         gpuBuffer = device.createBuffer({

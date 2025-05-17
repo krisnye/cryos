@@ -6,6 +6,7 @@ import { createReadStruct } from "./structs/create-read-struct";
 import { createWriteStruct } from "./structs/create-write-struct";
 import { getStructLayout } from "./structs/get-struct-layout";
 import { TypedBuffer } from "./typed-buffer";
+import { TypedArray } from "data/typed-array";
 
 export const createStructBuffer = <S extends Schema, ArrayType extends keyof DataView32 = "f32">(
     args: {
@@ -15,7 +16,7 @@ export const createStructBuffer = <S extends Schema, ArrayType extends keyof Dat
         arrayBuffer?: ArrayBufferLike,
         arrayType?: ArrayType
     }
-): TypedBuffer<InferType<S>, DataView32[ArrayType]> => {
+): TypedBuffer<InferType<S>> => {
     const { schema } = args;
     const layout = getStructLayout(schema);
     if (!layout) {
@@ -29,8 +30,12 @@ export const createStructBuffer = <S extends Schema, ArrayType extends keyof Dat
     let dataView = createDataView32(arrayBuffer);
     const sizeInQuads = layout.size / 4;
 
-    const buffer: TypedBuffer<InferType<S>, DataView32[ArrayType]> = {
-        array: dataView[arrayType] as DataView32[ArrayType],
+    let typedArray: TypedArray = dataView[arrayType];
+
+    const buffer: TypedBuffer<InferType<S>> = {
+        getTypedArray() {
+            return typedArray;
+        },
         get length() {
             return arrayBuffer.byteLength / layout.size;
         },
@@ -38,7 +43,7 @@ export const createStructBuffer = <S extends Schema, ArrayType extends keyof Dat
             // attempts to grow the array buffer in place, throws if it can't
             arrayBuffer = grow(arrayBuffer, length * layout.size, true);
             dataView = createDataView32(arrayBuffer);
-            buffer.array = dataView[arrayType] as DataView32[ArrayType];
+            typedArray = dataView[arrayType] as DataView32[ArrayType];
         },
         get: (index: number) => read(dataView, index),
         set: (index: number, value: InferType<S>) => write(dataView, index, value),

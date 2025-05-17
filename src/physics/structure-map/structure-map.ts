@@ -1,4 +1,4 @@
-import { Indexed } from "data/indexed/indexed";
+import { TypedBuffer } from "data";
 
 /**
  * Metadata for a single X × Y “tile” in a {@link StructureMap}.
@@ -50,9 +50,9 @@ export type StructureMapTile = {
     readonly size: number;
 
     /** Row-major list of column descriptors. Length = `size * size`. */
-    readonly tiles: Indexed<T>;
+    readonly tiles: TypedBuffer<T>;
 
     /** Packed backing store of blocks / voxels. */
-    readonly blocks: Indexed<B>;
+    readonly blocks: TypedBuffer<B>;
   }
   
