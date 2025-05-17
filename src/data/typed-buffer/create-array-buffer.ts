@@ -11,10 +11,10 @@ export const createArrayBuffer = <T>(args: {
         getTypedArray() {
             throw new Error("Typed array not supported");
         },
-        get length(): number {
+        get size(): number {
             return array.length;
         },
-        set length(value: number) {
+        set size(value: number) {
             array.length = value;
         },
         get(index: number): T {

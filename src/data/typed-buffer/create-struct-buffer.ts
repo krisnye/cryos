@@ -36,10 +36,10 @@ export const createStructBuffer = <S extends Schema, ArrayType extends keyof Dat
         getTypedArray() {
             return typedArray;
         },
-        get length() {
+        get size() {
             return arrayBuffer.byteLength / layout.size;
         },
-        set length(length: number) {
+        set size(length: number) {
             // attempts to grow the array buffer in place, throws if it can't
             arrayBuffer = grow(arrayBuffer, length * layout.size, true);
             dataView = createDataView32(arrayBuffer);
@@ -52,7 +52,7 @@ export const createStructBuffer = <S extends Schema, ArrayType extends keyof Dat
         },
         [Symbol.iterator](): IterableIterator<InferType<S>> {
             let index = 0;
-            const length = buffer.length;
+            const length = buffer.size;
             return {
                 next(): IteratorResult<InferType<S>> {
                     if (index < length) {

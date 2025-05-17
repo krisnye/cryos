@@ -27,6 +27,7 @@ export default defineConfig({
             options: {
                 args: ['--enable-unsafe-webgpu']
             },
+            screenshotFailures: false,
             screenshot: false
         },
         include: ['src/**/*.test.ts'],

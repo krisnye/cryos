@@ -38,7 +38,7 @@ describe('TypedBuffer copyWithin', () => {
             }
             
             // Copy last 2 elements to start (from index -2 to end of array)
-            buffer.copyWithin(0, -2, buffer.length);
+            buffer.copyWithin(0, -2, buffer.size);
             expect(buffer.get(0)).toBe(4);
             expect(buffer.get(1)).toBe(5);
             expect(buffer.get(2)).toBe(3);
@@ -94,7 +94,7 @@ describe('TypedBuffer copyWithin', () => {
             }
             
             // Copy last 2 elements to start (from index -2 to end of array)
-            buffer.copyWithin(0, -2, buffer.length);
+            buffer.copyWithin(0, -2, buffer.size);
             expect(buffer.get(0)).toBe('value4');
             expect(buffer.get(1)).toBe('value5');
             expect(buffer.get(2)).toBe('value3');
@@ -161,7 +161,7 @@ describe('TypedBuffer copyWithin', () => {
             }
             
             // Copy last 2 elements to start (from index -2 to end of array)
-            buffer.copyWithin(0, -2, buffer.length);
+            buffer.copyWithin(0, -2, buffer.size);
             expect(buffer.get(0)).toEqual({ x: 4, y: 5 });
             expect(buffer.get(1)).toEqual({ x: 5, y: 6 });
             expect(buffer.get(2)).toEqual({ x: 3, y: 4 });

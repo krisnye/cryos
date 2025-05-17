@@ -46,10 +46,10 @@ export const createNumberBuffer = (args: {
         getTypedArray() {
             return array;
         },
-        get length(): number {
+        get size(): number {
             return array.length;
         },
-        set length(value: number) {
+        set size(value: number) {
             grow(arrayBuffer, value * stride);
         },
         get(index: number): number {
