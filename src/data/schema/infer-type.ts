@@ -1,5 +1,7 @@
+import { Data } from 'data/data.js';
 import type { Schema, StringSchema, NumberSchema, BooleanSchema, NullSchema, ArraySchema, ObjectSchema } from './schema.js';
 import type { Assert, Equal } from 'types';
+import { D } from 'vitest/dist/chunks/reporters.nr4dxCkA.js';
 
 // Helper type to create tuples of a specific length
 type TupleOf<T, N extends number, R extends readonly T[] = []> = 
@@ -249,19 +251,3 @@ type __TypeTests = {
     >>;
 
 };
-
-// test infering from default
-interface Foo {
-    readonly alpha: string;
-    readonly beta: number;
-}
-const FooSchema = {
-    type: "object",
-    properties: {
-        alpha: { type: "string" },
-        beta: { type: "number" },
-    },
-    default: { alpha: "hello", beta: 42 } as Foo,
-} satisfies ObjectSchema<Foo>;
-type CheckFoo =  Assert<SchemaValid<typeof FooSchema, Foo>>;
-

@@ -22,6 +22,11 @@ const samples: Record<string, SampleDefinition> = {
         name: "Twixt",
         load: () => import("./twixt"),
         render: () => html`<twixt-game></twixt-game>`
+    },
+    "graphics-tutorials": {
+        name: "Graphics Tutorials",
+        load: () => import("./graphics-tutorials"),
+        render: () => html`<graphics-tutorials></graphics-tutorials>`
     }
 } as const;
 
@@ -98,6 +103,10 @@ export class SampleContainer extends LitElement {
             `;
         }
 
-        return samples[values.sample].render();
+        const { load, render } = samples[values.sample];
+        // we don't await the load, it just ensures the module is loaded
+        load();
+
+        return render();
     }
 }
