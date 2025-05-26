@@ -1,7 +1,7 @@
 import { grow } from "../array-buffer-like/grow";
 import { DataView32 } from "../data-view-32/data-view-32";
 import { createDataView32 } from "data/data-view-32/create-data-view-32";
-import { InferType, Schema } from "../schema";
+import { FromSchema, Schema } from "../schema";
 import { createReadStruct } from "./structs/create-read-struct";
 import { createWriteStruct } from "./structs/create-write-struct";
 import { getStructLayout } from "./structs/get-struct-layout";
@@ -16,7 +16,7 @@ export const createStructBuffer = <S extends Schema, ArrayType extends keyof Dat
         arrayBuffer?: ArrayBufferLike,
         arrayType?: ArrayType
     }
-): TypedBuffer<InferType<S>> => {
+): TypedBuffer<FromSchema<S>> => {
     const { schema } = args;
     const layout = getStructLayout(schema);
     if (!layout) {
@@ -24,15 +24,15 @@ export const createStructBuffer = <S extends Schema, ArrayType extends keyof Dat
     }
     const { length = 16, arrayType = 'f32' } = args;
     let arrayBuffer = args.arrayBuffer ?? new ArrayBuffer(length * layout.size);
-    const read = createReadStruct<InferType<S>>(layout);
-    const write = createWriteStruct<InferType<S>>(layout);
+    const read = createReadStruct<FromSchema<S>>(layout);
+    const write = createWriteStruct<FromSchema<S>>(layout);
 
     let dataView = createDataView32(arrayBuffer);
     const sizeInQuads = layout.size / 4;
 
     let typedArray: TypedArray = dataView[arrayType];
 
-    const buffer: TypedBuffer<InferType<S>> = {
+    const buffer: TypedBuffer<FromSchema<S>> = {
         getTypedArray() {
             return typedArray;
         },
@@ -46,15 +46,15 @@ export const createStructBuffer = <S extends Schema, ArrayType extends keyof Dat
             typedArray = dataView[arrayType] as DataView32[ArrayType];
         },
         get: (index: number) => read(dataView, index),
-        set: (index: number, value: InferType<S>) => write(dataView, index, value),
+        set: (index: number, value: FromSchema<S>) => write(dataView, index, value),
         copyWithin: (target: number, start: number, end: number) => {
             dataView[arrayType].copyWithin(target * sizeInQuads, start * sizeInQuads, end * sizeInQuads);
         },
-        [Symbol.iterator](): IterableIterator<InferType<S>> {
+        [Symbol.iterator](): IterableIterator<FromSchema<S>> {
             let index = 0;
             const length = buffer.size;
             return {
-                next(): IteratorResult<InferType<S>> {
+                next(): IteratorResult<FromSchema<S>> {
                     if (index < length) {
                         const value = read(dataView, index);
                         index++;

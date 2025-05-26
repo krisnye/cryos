@@ -53,6 +53,37 @@ describe("createDatabase", () => {
         });
     });
 
+    describe("withArchetypes", () => {
+        it("should provide strongly typed access to archetypes", () => {
+            const db = createDatabase();
+            const newComponents = {
+                position: { type: "object", properties: { x: { type: "number" }, y: { type: "number" } }, default: { x: 0, y: 0 } as { x: number, y: number } } as const satisfies Schema,
+                velocity: { type: "object", properties: { vx: { type: "number" }, vy: { type: "number" } }, default: { vx: 0, vy: 0 } as { vx: number, vy: number } } as const satisfies Schema,
+            };
+            
+            const extendedDb = db.withComponents(newComponents);
+
+            const extendedDbWithArchetypes = extendedDb.withArchetypes({
+                particle: ["id", "position", "velocity"],
+            });
+
+            const particleArchetype = extendedDbWithArchetypes.archetypes.particle;
+
+            const entity = particleArchetype.create({
+                position: { x: 1, y: 2 },
+                velocity: { vx: 3, vy: 4 },
+            });
+
+            const entityData = extendedDbWithArchetypes.selectEntity(entity);
+
+            expect(entityData).toEqual({
+                id: entity,
+                position: { x: 1, y: 2 },
+                velocity: { vx: 3, vy: 4 },
+            });
+        });
+    });
+
     describe("getArchetype", () => {
         it("should require id component", () => {
             const db = createTestDatabase();

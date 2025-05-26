@@ -1,5 +1,5 @@
 export type { DataView32 } from "./data-view-32";
-export type { Schema, InferType } from "./schema";
+export type { Schema, FromSchema as FromSchema } from "./schema";
 export type { TypedBuffer } from "./typed-buffer";
 export type { Table } from "./table";
 export type { TypedArray } from "./typed-array";

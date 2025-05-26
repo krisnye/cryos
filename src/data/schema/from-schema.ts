@@ -14,22 +14,22 @@ type InferArrayType<T extends ArraySchema> =
     T['minItems'] extends number 
         ? T['maxItems'] extends T['minItems']
             ? T['items'] extends Schema
-                ? TupleOf<InferType<T['items']>, T['minItems']>
+                ? TupleOf<FromSchema<T['items']>, T['minItems']>
                 : unknown[]
             : T['items'] extends Schema
-                ? readonly InferType<T['items']>[]
+                ? readonly FromSchema<T['items']>[]
                 : unknown[]
         : T['items'] extends Schema
-            ? readonly InferType<T['items']>[]
+            ? readonly FromSchema<T['items']>[]
             : unknown[];
 
 // Helper type to handle object properties
 type InferProperties<T> = T extends Record<string, Schema> ? {
-    readonly[K in keyof T]: InferType<T[K]>;
+    readonly[K in keyof T]: FromSchema<T[K]>;
 } : never;
 
 // Utility type to infer TypeScript type from Schema
-export type InferType<T> = T extends { default: infer D } ? D
+export type FromSchema<T> = T extends { default: infer D } ? D
     : T extends { const: infer C } ? C
     : T extends { enum: readonly (infer E)[] } ? E
     : T extends StringSchema ? string
@@ -44,52 +44,52 @@ export type InferType<T> = T extends { default: infer D } ? D
     )
     : unknown;
 
-type SchemaValid<S extends Schema, T> = Equal<InferType<Omit<S, 'default'>>, T>;
+type SchemaValid<S extends Schema, T> = Equal<FromSchema<Omit<S, 'default'>>, T>;
 
 // Type inference tests
 type __TypeTests = {
     // Primitive types
-    string: Assert<Equal<InferType<{ type: 'string' }>, string>>;
-    number: Assert<Equal<InferType<{ type: 'number' }>, number>>;
-    integer: Assert<Equal<InferType<{ type: 'integer' }>, number>>;
-    boolean: Assert<Equal<InferType<{ type: 'boolean' }>, boolean>>;
-    null: Assert<Equal<InferType<{ type: 'null' }>, null>>;
+    string: Assert<Equal<FromSchema<{ type: 'string' }>, string>>;
+    number: Assert<Equal<FromSchema<{ type: 'number' }>, number>>;
+    integer: Assert<Equal<FromSchema<{ type: 'integer' }>, number>>;
+    boolean: Assert<Equal<FromSchema<{ type: 'boolean' }>, boolean>>;
+    null: Assert<Equal<FromSchema<{ type: 'null' }>, null>>;
 
     // Const values
-    constString: Assert<Equal<InferType<{ const: "foo" }>, "foo">>;
-    constNumber: Assert<Equal<InferType<{ const: 42 }>, 42>>;
+    constString: Assert<Equal<FromSchema<{ const: "foo" }>, "foo">>;
+    constNumber: Assert<Equal<FromSchema<{ const: 42 }>, 42>>;
     constObject: Assert<Equal<
-        InferType<{ const: { x: 1, y: "hello" } }>,
+        FromSchema<{ const: { x: 1, y: "hello" } }>,
         { x: 1; y: "hello" }
     >>;
 
     // Enum values
     enumString: Assert<Equal<
-        InferType<{ enum: ["red", "green", "blue"] }>,
+        FromSchema<{ enum: ["red", "green", "blue"] }>,
         "red" | "green" | "blue"
     >>;
     enumMixed: Assert<Equal<
-        InferType<{ enum: [1, "two", true] }>,
+        FromSchema<{ enum: [1, "two", true] }>,
         1 | "two" | true
     >>;
 
     // Arrays
     simpleArray: Assert<Equal<
-        InferType<{ type: 'array'; items: { type: 'string' } }>,
+        FromSchema<{ type: 'array'; items: { type: 'string' } }>,
         readonly string[]
     >>;
     arrayWithConst: Assert<Equal<
-        InferType<{ type: 'array'; items: { const: 42 } }>,
+        FromSchema<{ type: 'array'; items: { const: 42 } }>,
         readonly 42[]
     >>;
     arrayWithEnum: Assert<Equal<
-        InferType<{ type: 'array'; items: { enum: ["a", "b"] } }>,
+        FromSchema<{ type: 'array'; items: { enum: ["a", "b"] } }>,
         readonly ("a" | "b")[]
     >>;
 
     // Objects
     simpleObject: Assert<Equal<
-        InferType<{
+        FromSchema<{
             type: 'object';
             properties: {
                 str: { type: 'string' };
@@ -108,7 +108,7 @@ type __TypeTests = {
 
     // Nested structures
     nested: Assert<Equal<
-        InferType<{
+        FromSchema<{
             type: 'object';
             properties: {
                 name: { const: "config" };
@@ -144,20 +144,20 @@ type __TypeTests = {
 
     // Error cases
     // @ts-expect-error const value should be exact
-    invalidConst: Assert<Equal<InferType<{ const: "foo" }>, string>>;
+    invalidConst: Assert<Equal<FromSchema<{ const: "foo" }>, string>>;
 
     // @ts-expect-error enum should be exact union
-    invalidEnum: Assert<Equal<InferType<{ enum: [1, 2] }>, number>>;
+    invalidEnum: Assert<Equal<FromSchema<{ enum: [1, 2] }>, number>>;
 
     // @ts-expect-error array items should match exactly
     invalidArray: Assert<Equal<
-        InferType<{ type: 'array'; items: { type: 'string' } }>,
+        FromSchema<{ type: 'array'; items: { type: 'string' } }>,
         number[]
     >>;
 
     // @ts-expect-error object properties should match exactly
     invalidObject: Assert<Equal<
-        InferType<{
+        FromSchema<{
             type: 'object';
             properties: { value: { type: 'string' } };
         }>,
@@ -166,7 +166,7 @@ type __TypeTests = {
 
     // Fixed-length array tests up to 16
     fixedArray1: Assert<Equal<
-        InferType<{
+        FromSchema<{
             type: 'array';
             items: { type: 'number' };
             minItems: 1;
@@ -176,7 +176,7 @@ type __TypeTests = {
     >>;
 
     fixedArray2: Assert<Equal<
-        InferType<{
+        FromSchema<{
             type: 'array';
             items: { type: 'number' };
             minItems: 2;
@@ -186,7 +186,7 @@ type __TypeTests = {
     >>;
 
     fixedArray3: Assert<Equal<
-        InferType<{
+        FromSchema<{
             type: 'array';
             items: { type: 'number' };
             minItems: 3;
@@ -196,7 +196,7 @@ type __TypeTests = {
     >>;
 
     fixedArray4: Assert<Equal<
-        InferType<{
+        FromSchema<{
             type: 'array';
             items: { type: 'number' };
             minItems: 4;
@@ -206,7 +206,7 @@ type __TypeTests = {
     >>;
 
     fixedArray8: Assert<Equal<
-        InferType<{
+        FromSchema<{
             type: 'array';
             items: { type: 'number' };
             minItems: 8;
@@ -216,7 +216,7 @@ type __TypeTests = {
     >>;
 
     fixedArray16: Assert<Equal<
-        InferType<{
+        FromSchema<{
             type: 'array';
             items: { type: 'number' };
             minItems: 16;
@@ -232,7 +232,7 @@ type __TypeTests = {
 
     // Should still work with variable length arrays
     variableArray: Assert<Equal<
-        InferType<{
+        FromSchema<{
             type: 'array';
             items: { type: 'number' };
             minItems: 2;
@@ -243,7 +243,7 @@ type __TypeTests = {
 
     // Should work with no length constraints
     unlimitedArray: Assert<Equal<
-        InferType<{
+        FromSchema<{
             type: 'array';
             items: { type: 'boolean' };
         }>,

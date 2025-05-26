@@ -1,4 +1,4 @@
-import { InferType, Schema, I32Schema } from "data";
+import { FromSchema, Schema, I32Schema } from "data";
 
 export const EntityLocationSchema = {
     type: "object",
@@ -8,4 +8,4 @@ export const EntityLocationSchema = {
     }
 } as const satisfies Schema;
 
-export type EntityLocation = InferType<typeof EntityLocationSchema>;
+export type EntityLocation = FromSchema<typeof EntityLocationSchema>;

@@ -1,4 +1,4 @@
-import { F32Schema, InferType, Schema, U32Schema } from "data";
+import { F32Schema, FromSchema, Schema, U32Schema } from "data";
 
 export const VoxelColumnSchema = {
     type: "object",
@@ -10,4 +10,4 @@ export const VoxelColumnSchema = {
     },
 } as const satisfies Schema;
 
-export type VoxelColumn = InferType<typeof VoxelColumnSchema>;
+export type VoxelColumn = FromSchema<typeof VoxelColumnSchema>;

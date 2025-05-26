@@ -1,5 +1,5 @@
 import { F32Schema } from "../../data/f32";
-import type { InferType } from "../../data/schema/infer-type";
+import type { FromSchema } from "../../data/schema/from-schema";
 import type { Schema } from "../../data/schema/schema";
 
 export const Mat4x4Schema = {
@@ -9,6 +9,6 @@ export const Mat4x4Schema = {
     maxItems: 16,
 } as const satisfies Schema;
 
-export type Mat4x4 = InferType<typeof Mat4x4Schema>;
+export type Mat4x4 = FromSchema<typeof Mat4x4Schema>;
 
 export type Mat4x4Index = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15;

@@ -1,5 +1,7 @@
-import { Archetype, EntityLocationTable, CoreComponents } from "ecs";
 import * as TABLE from "data/table";
+import { Archetype } from "./archetype";
+import { CoreComponents } from "ecs/database/core-components";
+import { EntityLocationTable } from "ecs/entity-location-table";
 
 /**
  * Deletes a row from the archetype and updates the entity location table for any row which may have been moved into it's position.

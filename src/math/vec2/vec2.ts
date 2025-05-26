@@ -1,6 +1,6 @@
 
 import { F32Schema } from "../../data/f32";
-import type { InferType } from "../../data/schema/infer-type";
+import type { FromSchema } from "../../data/schema/from-schema";
 import type { Schema } from "../../data/schema/schema";
 
 export const Vec2Schema = {
@@ -11,5 +11,5 @@ export const Vec2Schema = {
     default: [0, 0] as [number, number],
 } as const satisfies Schema;
 
-export type Vec2 = InferType<typeof Vec2Schema>;
+export type Vec2 = FromSchema<typeof Vec2Schema>;
 

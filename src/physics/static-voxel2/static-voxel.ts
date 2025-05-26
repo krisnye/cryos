@@ -1,4 +1,4 @@
-import { F32Schema, InferType, Schema, U32Schema } from "data";
+import { F32Schema, FromSchema, Schema, U32Schema } from "data";
 
 export const StaticVoxelSchema = {
     type: "object",
@@ -10,4 +10,4 @@ export const StaticVoxelSchema = {
     },
 } as const satisfies Schema;
 
-export type StaticVoxel = InferType<typeof StaticVoxelSchema>;
+export type StaticVoxel = FromSchema<typeof StaticVoxelSchema>;

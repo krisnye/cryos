@@ -1,18 +1,17 @@
-import { Schema } from "data";
-import { deepAssign } from "data/object";
-import { Archetype, Entity, EntitySchema, CoreComponents, Extensions, Database } from "ecs";
-import { createEntityLocationTable } from "ecs/entity-location-table";
+import { Data, Schema } from "data";
+import { Archetype, Entity, EntitySchema } from "ecs";
+import { createEntityLocationTable } from "../entity-location-table";
 import * as ARCHETYPE from "ecs/archetype";
 import * as TABLE from "data/table";
+import { Database } from "./database";
+import { CoreComponents } from "./core-components";
 
-export function createDatabase(): Database<CoreComponents> {
+export function createDatabase(): Database {
 
     const components: { [K in keyof CoreComponents]: Schema } = { id: EntitySchema };
     const entityLocationTable = createEntityLocationTable();
     const archetypes: Archetype<CoreComponents>[] = [];
-    const actions = {};
-    const resources = {};
-    const observe = {};
+    const resources: { [name: string]: Data } = {};
 
     const getArchetypes = function* <Include extends keyof CoreComponents, Exclude extends keyof CoreComponents = never>(
         components: Include[],
@@ -128,46 +127,40 @@ export function createDatabase(): Database<CoreComponents> {
     const withArchetypes = <A extends { [name: string]: (keyof CoreComponents)[] }>(
         newArchetypes: A
     ) => {
-        deepAssign(
-            archetypes,
-            Object.fromEntries(
-                Object.entries(newArchetypes).map(([name, components]) => {
-                    return [name, database.getArchetype(components as any)];
-                })
-            )
-        );
+        for (const [name, components] of Object.entries(newArchetypes)) {
+            Object.defineProperty(archetypes, name, {
+                value: database.getArchetype(components as (keyof CoreComponents)[]),
+            });
+        }
         return database as any;
     }
 
-    const withActions = <NA extends Record<string, (this: Database<CoreComponents, Extensions>, ...args: unknown[]) => void>>(
-        newActions: NA
+    const withResources = <R extends { [name: string]: Data }>(
+        newResources: R
     ) => {
-        deepAssign(
-            actions,
-            Object.fromEntries(
-                Object.entries(newActions).map(
-                    ([name, action]) => [name, action.bind(database)]
-                ) as any
-            )
-        );
+        // for each resource we need to create a component, create an archetype with id and that component
+        // then add the resource as the only entity in that archetype
+        // finally, we will extend resources with a getter/setter for each resource
+        for (const [name, resource] of Object.entries(newResources)) {
+            const resourceId = `resource-${name}` as keyof CoreComponents;
+            database.withComponents({ [resourceId]: {} });
+            const archetype = getArchetype(["id", resourceId]);
+            archetype.create({ [resourceId]: resource });
+            const row = 0;
+            Object.defineProperty(resources, name, {
+                get: () => archetype.columns[resourceId]!.get(row),
+                set: (value) => {
+                    archetype.columns[resourceId]!.set(row, value);
+                }
+            });
+        }
         return database as any;
     }
 
-    const withExtension = <NT extends Database<CoreComponents, Extensions>>(extension: (db: Database<CoreComponents, Extensions>) => NT) => {
-        return extension(database);
-    }
-
-    const simplifyTypes = () => {
-        return database as any;
-    }
-
-    const database: Database<CoreComponents, Extensions> = {
-        __brand: "Database",
+    const database: Database<CoreComponents> = {
         components,
         archetypes,
         resources,
-        actions,
-        observe,
         getArchetype,
         getArchetypes,
         locateEntity,
@@ -176,9 +169,7 @@ export function createDatabase(): Database<CoreComponents> {
         updateEntity,
         withComponents,
         withArchetypes,
-        withActions,
-        withExtension,
-        simplifyTypes,
+        withResources,
     };
     return database;
 }

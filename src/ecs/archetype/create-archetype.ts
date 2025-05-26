@@ -1,14 +1,16 @@
-import { InferType } from "data";
-import { CoreComponents, Entity, EntitySchema, EntityLocationTable, Archetype } from "ecs";
+import { FromSchema } from "data";
+import { Entity, EntitySchema, Archetype } from "ecs";
 import * as TABLE from "data/table";
+import { EntityLocationTable } from "ecs/entity-location-table";
+import { CoreComponents } from "ecs/database/core-components";
 
 export const createArchetype = <C extends { id: typeof EntitySchema }>(
     components: C,
     id: number,
     entityLocationTable: EntityLocationTable,
-): Archetype<CoreComponents & { [K in keyof C]: InferType<C[K]> }> => {
+): Archetype<CoreComponents & { [K in keyof C]: FromSchema<C[K]> }> => {
     const table = TABLE.createTable(components);
-    const createEntity = (rowData: Omit<{ [K in keyof C]: InferType<C[K]> }, "id">): Entity => {
+    const createEntity = (rowData: Omit<{ [K in keyof C]: FromSchema<C[K]> }, "id">): Entity => {
         // add the row (excluding entity id)
         const row = TABLE.addRow(archetype as any, rowData);
         // create the entity lookup record
@@ -19,11 +21,10 @@ export const createArchetype = <C extends { id: typeof EntitySchema }>(
     }
 
     const archetype = {
-        __brand: "Archetype",
         id,
         ...table,
         components: new Set(Object.keys(components)),
         create: createEntity,
-    } as const satisfies Archetype<{ [K in keyof C]: InferType<C[K]> }> as Archetype<CoreComponents & { [K in keyof C]: InferType<C[K]> }>;
+    } as const satisfies Archetype<{ [K in keyof C]: FromSchema<C[K]> }> as Archetype<CoreComponents & { [K in keyof C]: FromSchema<C[K]> }>;
     return archetype;
 }

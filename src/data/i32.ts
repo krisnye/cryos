@@ -1,4 +1,4 @@
-import type { InferType } from "./schema/infer-type";
+import type { FromSchema } from "./schema/from-schema";
 import type { Schema } from "./schema/schema";
 
 export const I32Schema = {
@@ -8,4 +8,4 @@ export const I32Schema = {
     default: 0 as number,
 } as const satisfies Schema;
 
-export type I32 = InferType<typeof I32Schema>;
+export type I32 = FromSchema<typeof I32Schema>;

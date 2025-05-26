@@ -1,5 +1,6 @@
 import { grow } from "data/array-buffer-like/grow";
-import { Entity, EntityLocation, EntityLocationTable } from "ecs";
+import { Entity, EntityLocation } from "ecs";
+import { EntityLocationTable } from "./entity-location-table";
 
 export const createEntityLocationTable = (initialCapacity: number = 16): EntityLocationTable => {
 

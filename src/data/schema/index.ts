@@ -1,2 +1,2 @@
-export * from './infer-type.js';
+export * from './from-schema.js';
 export * from './schema.js';

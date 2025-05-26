@@ -1,11 +1,11 @@
-import { InferType, Schema } from "data";
+import { FromSchema, Schema } from "data";
 import { createStructBuffer, getStructLayout } from "data/typed-buffer";
 
 export const createStructGPUBuffer = <S extends Schema>(
     args: {
         device: GPUDevice,
         schema: S,
-        elements: InferType<S>[],
+        elements: FromSchema<S>[],
         usage: GPUBufferUsageFlags,
     }
 ): GPUBuffer => {
