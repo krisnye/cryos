@@ -1,6 +1,6 @@
 import { TypedArray } from "data/typed-array";
 
-interface ReadonlyTypedBuffer<T> {
+export interface ReadonlyTypedBuffer<T> {
     readonly size: number;
     get(index: number): T;
     [Symbol.iterator](): IterableIterator<T>;

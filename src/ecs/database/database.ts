@@ -1,17 +1,41 @@
-import { Data, FromSchema, Schema, TypedBuffer } from "data";
+import { FromSchema, Schema, TypedBuffer } from "data";
 import { Archetype, Entity, EntityLocation } from "ecs";
 import { Equal, Simplify } from "types";
 import { Assert } from "types";
 import { CoreComponents } from "./core-components";
+import { ArchetypeComponents } from "./archetype-components";
+import { ResourceComponents } from "./resource-components";
+import { ReadonlyArchetype } from "ecs/archetype";
+
+export type EntityValues<C> = CoreComponents & { [K in keyof C]?: C[K] | undefined }
+export type EntityUpdateValues<C> = Omit<{ [K in keyof C]?: C[K] | undefined }, "id">;
+
+export interface ReadonlyDatabase<
+    C extends CoreComponents = CoreComponents,
+    A extends ArchetypeComponents<CoreComponents> = {},
+    R extends ResourceComponents = {}
+> {
+    readonly components: { readonly [K in keyof C]: Schema };
+    readonly archetypes: ReadonlyArchetype<CoreComponents & Partial<C>>[] & { readonly [K in keyof A]: ReadonlyArchetype<CoreComponents & Pick<C, A[K][number]>> }
+    readonly resources: R;
+
+    getArchetypes: <Include extends keyof C, Exclude extends keyof C = never>(
+        components: Include[],
+        options?: {
+            exclude?: Exclude[]
+        }
+    ) => IterableIterator<ReadonlyArchetype<{ [K in Include]: C[K]}>>;
+    getArchetype: <CC extends keyof C>(components: CC[]) => ReadonlyArchetype<{ [K in CC]: C[K]}>;
+    locateEntity: (entity: Entity) => EntityLocation;
+    selectEntity: (entity: Entity) => EntityValues<C> | null;
+}
 
 export interface Database<
     C extends CoreComponents = CoreComponents,
-    A extends { [name: string]: (keyof C)[] } = {},
-    R extends { [name: string]: unknown } = {}
-> {
-    readonly components: { [K in keyof C]: Schema };
-    readonly archetypes: Archetype<CoreComponents & Partial<C>>[] & { [K in keyof A]: Archetype<CoreComponents & Pick<C, A[K][number]>> }
-    readonly resources: R;
+    A extends ArchetypeComponents<CoreComponents> = {},
+    R extends ResourceComponents = {}
+> extends ReadonlyDatabase<C, A, R> {
+    readonly archetypes: Archetype<CoreComponents & Partial<C>>[] & { readonly [K in keyof A]: Archetype<CoreComponents & Pick<C, A[K][number]>> }
 
     withComponents: <NC extends { [name: string]: Schema }>(
         addComponents: NC,
@@ -19,7 +43,7 @@ export interface Database<
     withArchetypes: <NA extends { [name: string]: (keyof C)[] }>(
         namedArchetypes: NA
     ) => Database<C, Simplify<A & NA>, R>;
-    withResources: <NR extends { [name: string]: Data }>(
+    withResources: <NR extends { [name: string]: unknown }>(
         newResources: NR
     ) => Database<C, A, Simplify<R & NR>>;
     getArchetypes: <Include extends keyof C, Exclude extends keyof C = never>(
@@ -29,10 +53,8 @@ export interface Database<
         }
     ) => IterableIterator<Archetype<{ [K in Include]: C[K]}>>;
     getArchetype: <CC extends keyof C>(components: CC[]) => Archetype<{ [K in CC]: C[K]}>;
-    locateEntity: (entity: Entity) => EntityLocation;
-    selectEntity: (entity: Entity) => CoreComponents & Partial<C> | null;
     deleteEntity: (entity: Entity) => void;
-    updateEntity: (entity: Entity, values: { [K in keyof C]?: C[K] | undefined }) => void;
+    updateEntity: (entity: Entity, values: EntityUpdateValues<C>) => void;
 }
 
 

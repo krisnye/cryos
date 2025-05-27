@@ -426,7 +426,7 @@ describe("createDatabase", () => {
 
             // Cannot remove required id component
             expect(() => {
-                db.updateEntity(entity, { id: undefined });
+                db.updateEntity(entity, { id: undefined } as any);
             }).toThrow();
         });
 

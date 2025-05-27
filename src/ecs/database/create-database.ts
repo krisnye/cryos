@@ -5,6 +5,7 @@ import * as ARCHETYPE from "ecs/archetype";
 import * as TABLE from "data/table";
 import { Database } from "./database";
 import { CoreComponents } from "./core-components";
+import { createGetArchetypes } from "./create-get-archetypes";
 
 export function createDatabase(): Database {
 
@@ -13,20 +14,7 @@ export function createDatabase(): Database {
     const archetypes: Archetype<CoreComponents>[] = [];
     const resources: { [name: string]: Data } = {};
 
-    const getArchetypes = function* <Include extends keyof CoreComponents, Exclude extends keyof CoreComponents = never>(
-        components: Include[],
-        options?: {
-            exclude?: Exclude[]
-        }
-    ): Generator<Archetype<CoreComponents & { [K in Include]: CoreComponents[K] }>> {
-        for (const archetype of archetypes) {
-            const hasAllRequired = components.every(comp => archetype.columns[comp] !== undefined);
-            const hasNoExcluded = !options?.exclude || options.exclude.every(comp => archetype.columns[comp] === undefined);
-            if (hasAllRequired && hasNoExcluded) {
-                yield archetype;
-            }
-        }
-    }
+    const getArchetypes = createGetArchetypes(archetypes);
 
     const getArchetype = <CC extends keyof CoreComponents>(componentNames: CC[]): Archetype<CoreComponents & { [K in CC]: CoreComponents[K] }> => {
         for (const archetype of getArchetypes(componentNames)) {
@@ -135,7 +123,7 @@ export function createDatabase(): Database {
         return database as any;
     }
 
-    const withResources = <R extends { [name: string]: Data }>(
+    const withResources = <R extends { [name: string]: unknown }>(
         newResources: R
     ) => {
         // for each resource we need to create a component, create an archetype with id and that component

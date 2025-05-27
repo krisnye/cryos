@@ -1,9 +1,8 @@
 import { useState } from "./use-state.js";
 import { useEffect } from "./use-effect.js";
 import { Observe } from "data/observe";
-import { Data } from "data/data.js";
 
-export function useObservable<T extends Data>(observable: Observe<T>): T | undefined {
+export function useObservable<T>(observable: Observe<T>): T | undefined {
     let [value, setValue] = useState<T | undefined>(undefined);
     useEffect(() => {
         return observable(newValue => {
