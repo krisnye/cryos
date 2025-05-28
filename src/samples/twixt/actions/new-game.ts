@@ -3,6 +3,8 @@ import { getBoardSize } from "../dependent-state/board-size";
 
 export const newGame = (service: MainService): void => {
     const size = getBoardSize(service.state.resources.board);
-    service.state.resources.board = new Array(size * size).fill(null);
-    service.state.resources.links = [];
+    service.state.execute((db) => {
+        db.resources.board = new Array(size * size).fill(null);
+        db.resources.links = [];
+    });
 }; 

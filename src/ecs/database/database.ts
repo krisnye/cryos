@@ -18,7 +18,7 @@ export interface ReadonlyDatabase<
 > {
     readonly components: { readonly [K in keyof C]: Schema };
     readonly archetypes: ReadonlyArchetype<CoreComponents & Partial<C>>[] & { readonly [K in keyof A]: ReadonlyArchetype<CoreComponents & Pick<C, A[K][number]>> }
-    readonly resources: R;
+    readonly resources: { readonly [K in keyof R]: R[K] };
 
     getArchetypes: <Include extends keyof C, Exclude extends keyof C = never>(
         components: Include[],
@@ -37,6 +37,7 @@ export interface Database<
     R extends ResourceComponents = {}
 > extends ReadonlyDatabase<C, A, R> {
     readonly archetypes: Archetype<CoreComponents & Partial<C>>[] & { readonly [K in keyof A]: Archetype<CoreComponents & Pick<C, A[K][number]>> }
+    readonly resources: R;
 
     withComponents: <NC extends { [name: string]: Schema }>(
         addComponents: NC,

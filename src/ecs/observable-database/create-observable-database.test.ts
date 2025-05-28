@@ -239,31 +239,29 @@ describe("createObservableDatabase", () => {
             db.resources.gravity = 10.0;
         });
 
-        // NOTE FOR FIXING: NOT BEING CALLED BECAUSE TRANSACTION DATABASE IS NOT OVERRIDING THE RESOURCES
-
         // Only gravity observer should be notified
         expect(gravityObserver).toHaveBeenCalledWith(10.0);
-        // expect(maxSpeedObserver).toHaveBeenCalledTimes(1); // Still only the initial call
+        expect(maxSpeedObserver).toHaveBeenCalledTimes(1); // Still only the initial call
 
-        // // Update maxSpeed resource
-        // db.execute((db) => {
-        //     db.resources.maxSpeed = 150;
-        // });
+        // Update maxSpeed resource
+        db.execute((db) => {
+            db.resources.maxSpeed = 150;
+        });
 
-        // // Only maxSpeed observer should be notified
-        // expect(maxSpeedObserver).toHaveBeenCalledWith(150);
-        // expect(gravityObserver).toHaveBeenCalledTimes(2); // Initial + one update
+        // Only maxSpeed observer should be notified
+        expect(maxSpeedObserver).toHaveBeenCalledWith(150);
+        expect(gravityObserver).toHaveBeenCalledTimes(2); // Initial + one update
 
-        // // Unsubscribe and verify no more notifications
-        // unsubscribeGravity();
-        // unsubscribeMaxSpeed();
+        // Unsubscribe and verify no more notifications
+        unsubscribeGravity();
+        unsubscribeMaxSpeed();
 
-        // db.execute((db) => {
-        //     db.resources.gravity = 11.0;
-        //     db.resources.maxSpeed = 200;
-        // });
+        db.execute((db) => {
+            db.resources.gravity = 11.0;
+            db.resources.maxSpeed = 200;
+        });
 
-        // expect(gravityObserver).toHaveBeenCalledTimes(2); // No more calls after unsubscribe
-        // expect(maxSpeedObserver).toHaveBeenCalledTimes(2); // No more calls after unsubscribe
+        expect(gravityObserver).toHaveBeenCalledTimes(2); // No more calls after unsubscribe
+        expect(maxSpeedObserver).toHaveBeenCalledTimes(2); // No more calls after unsubscribe
     });
 }); 

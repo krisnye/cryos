@@ -31,7 +31,7 @@ export function createObservableDatabase<
     };
     const observeArchetype = (archetype: ArchetypeId) => addToMapSet(archetype, archetypeObservers);
     const observeComponent = mapEntries(db.components, ([component]) => addToMapSet(component, componentObservers));
-    const observeResource = mapEntries(db.resources, ([resource]) => {
+    const observeResource = mapEntries(db.resources as any, ([resource]) => {
         const archetype = db.getArchetype(["id", resource as keyof C]);
         const resourceId = archetype.columns.id.get(0);
         return withMap(observeEntity(resourceId), (values) => values![resource as keyof C]);

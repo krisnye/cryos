@@ -16,9 +16,10 @@ export function createTransactionDatabase<
     db: Database<C, A, R>
 ): TransactionDatabase<C, A, R> {
     const {
+        archetypes: databaseArchetypes,
+        resources: databaseResources,
         updateEntity: databaseUpdateEntity,
         deleteEntity: databaseDeleteEntity,
-        archetypes: databaseArchetypes,
         getArchetype: databaseGetArchetype,
         getArchetypes: databaseGetArchetypes,
         ...rest
@@ -32,6 +33,19 @@ export function createTransactionDatabase<
         archetypes: new Set<ArchetypeId>(),
     };
 
+    const resources = {} as { [K in keyof R]: R[K] };
+    for (const name of Object.keys(db.resources)) {
+        const resourceId = name as keyof C;
+        const archetype = db.getArchetype(["id", resourceId]);
+        const entityId = archetype.columns.id.get(0);
+        Object.defineProperty(resources, name, {
+            get: () => archetype.columns[resourceId]!.get(0),
+            set: (newValue) => {
+                updateEntity(entityId, { [resourceId]: newValue } as any);
+            },
+            enumerable: true,
+        });
+    }
     const wrapArchetype = (archetype: Archetype<CoreComponents & Pick<C, A[string][number]>>) => {
         const { id } = archetype;
         return {
@@ -148,6 +162,7 @@ export function createTransactionDatabase<
 
     const transactionDatabase: Database<C, A, R> & TransactionDatabase<C, A, R> = {
         ...rest,
+        resources,
         archetypes,
         getArchetype,
         getArchetypes,

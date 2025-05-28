@@ -14,9 +14,11 @@ export const clickPoint = async (
     // Only place a piece if the point is empty
     if (board[index] === null) {
         board[index] = player;
-        service.state.resources.board = board;
-        const links = service.state.resources.links;
-        const newLinks = calculateNewLinks(service, player, index);
-        service.state.resources.links = [...links, ...newLinks];
+        service.state.execute((db) => {
+            db.resources.board = board;
+            const links = db.resources.links;
+            const newLinks = calculateNewLinks(service, player, index);
+            db.resources.links = [...links, ...newLinks];
+        });
     }
 };
