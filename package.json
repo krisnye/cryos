@@ -13,7 +13,7 @@
     "test": "vitest run",
     "clean": "rm -rf lib dist",
     "deploy": "npm run clean && npm run build && npm publish --access public",
-    "test:debug": "node --inspect-brk ./node_modules/vitest/vitest.mjs run --no-browser",
+    "test:debug": "node --inspect ./node_modules/vitest/vitest.mjs run --no-browser",
     "typecheck": "tsc --build --noEmit"
   },
   "exports": {

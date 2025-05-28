@@ -6,6 +6,7 @@ import { CoreComponents } from "./core-components";
 import { ArchetypeComponents } from "./archetype-components";
 import { ResourceComponents } from "./resource-components";
 import { ReadonlyArchetype } from "ecs/archetype";
+import { ObservableDatabase } from "ecs/observable-database/observable-datatabase";
 
 export type EntityValues<C> = CoreComponents & { [K in keyof C]?: C[K] | undefined }
 export type EntityUpdateValues<C> = Omit<{ [K in keyof C]?: C[K] | undefined }, "id">;
@@ -55,6 +56,8 @@ export interface Database<
     getArchetype: <CC extends keyof C>(components: CC[]) => Archetype<{ [K in CC]: C[K]}>;
     deleteEntity: (entity: Entity) => void;
     updateEntity: (entity: Entity, values: EntityUpdateValues<C>) => void;
+
+    toObservable: () => ObservableDatabase<C, A, R>;
 }
 
 

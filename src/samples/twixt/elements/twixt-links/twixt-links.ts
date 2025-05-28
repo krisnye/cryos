@@ -25,7 +25,7 @@ export class TwixtLinks extends TwixtElement {
 
     protected override render() {
         const values = useObservableValues(() => ({
-            hoverIndex: this.service.state.observe.hoverIndex,
+            hoverIndex: this.service.state.observe.resource.hoverIndex,
             currentPlayer: currentPlayer(this.service),
         }));
 

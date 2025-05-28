@@ -6,12 +6,14 @@ import * as TABLE from "data/table";
 import { Database } from "./database";
 import { CoreComponents } from "./core-components";
 import { createGetArchetypes } from "./create-get-archetypes";
-
-export function createDatabase(): Database {
+import { createObservableDatabase } from "ecs/observable-database/create-observable-database";
+import { createTransactionDatabase } from "ecs/transaction-database/create-transaction-database";
+import { ArchetypeComponents } from "./archetype-components";
+export function createDatabase(): Database<CoreComponents, ArchetypeComponents<CoreComponents>, {}> {
 
     const components: { [K in keyof CoreComponents]: Schema } = { id: EntitySchema };
     const entityLocationTable = createEntityLocationTable();
-    const archetypes: Archetype<CoreComponents>[] = [];
+    const archetypes = [] as unknown as Archetype<CoreComponents & Partial<CoreComponents>>[] & { readonly [x: string]: Archetype<CoreComponents & Pick<CoreComponents, "id">>; };
     const resources: { [name: string]: Data } = {};
 
     const getArchetypes = createGetArchetypes(archetypes);
@@ -23,8 +25,8 @@ export function createDatabase(): Database {
             }
         }
         const id = archetypes.length;
-        let hasId = false;
         const componentSchemas: { [K in CC]: Schema } = {} as { [K in CC]: Schema };
+        let hasId = false;
         for (const comp of componentNames) {
             if (comp === "id") {
                 hasId = true;
@@ -66,14 +68,12 @@ export function createDatabase(): Database {
         let removeComponents: null | (keyof CoreComponents)[] = null;
         for (const key in components) {
             if (components[key as keyof CoreComponents] === undefined) {
-                removeComponents ||= [];
-                removeComponents.push(key as keyof CoreComponents);
+                (removeComponents ??= []).push(key as keyof CoreComponents);
                 // we remove the delete components so we can use this object for the new row data
                 delete components[key as keyof CoreComponents];
             }
             else if (!currentArchetype.components.has(key as keyof CoreComponents)) {
-                addComponents ||= [];
-                addComponents.push(key as keyof CoreComponents);
+                (addComponents ??= []).push(key as keyof CoreComponents);
             }
         }
         if (addComponents || removeComponents) {
@@ -116,9 +116,7 @@ export function createDatabase(): Database {
         newArchetypes: A
     ) => {
         for (const [name, components] of Object.entries(newArchetypes)) {
-            Object.defineProperty(archetypes, name, {
-                value: database.getArchetype(components as (keyof CoreComponents)[]),
-            });
+            (archetypes as any)[name] = database.getArchetype(components as (keyof CoreComponents)[]);
         }
         return database as any;
     }
@@ -130,7 +128,7 @@ export function createDatabase(): Database {
         // then add the resource as the only entity in that archetype
         // finally, we will extend resources with a getter/setter for each resource
         for (const [name, resource] of Object.entries(newResources)) {
-            const resourceId = `resource-${name}` as keyof CoreComponents;
+            const resourceId = name as keyof CoreComponents;
             database.withComponents({ [resourceId]: {} });
             const archetype = getArchetype(["id", resourceId]);
             archetype.create({ [resourceId]: resource });
@@ -139,13 +137,18 @@ export function createDatabase(): Database {
                 get: () => archetype.columns[resourceId]!.get(row),
                 set: (value) => {
                     archetype.columns[resourceId]!.set(row, value);
-                }
+                },
+                enumerable: true,
             });
         }
         return database as any;
     }
 
-    const database: Database<CoreComponents> = {
+    const toObservable = () => {
+        return createObservableDatabase(createTransactionDatabase(database as any) as any);
+    }
+
+    const database = {
         components,
         archetypes,
         resources,
@@ -158,6 +161,7 @@ export function createDatabase(): Database {
         withComponents,
         withArchetypes,
         withResources,
-    };
+        toObservable,
+    } as unknown as Database<CoreComponents, ArchetypeComponents<CoreComponents>, { }>;
     return database;
 }

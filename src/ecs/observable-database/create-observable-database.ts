@@ -16,8 +16,19 @@ export function createObservableDatabase<
     R extends ResourceComponents
 >(db: TransactionDatabase<C, A, R>): ObservableDatabase<C, A, R> {
 
+    //  variables to track the observers
+    const componentObservers = new Map<keyof C, Set<() => void>>();
+    const archetypeObservers = new Map<ArchetypeId, Set<() => void>>();    
+    const entityObservers = new Map<Entity, Set<(values: EntityValues<C> | null) => void>>();
+    const transactionObservers = new Set<(transaction: TransactionResult<C>) => void>();
+    
     //  observation interface
-    const observeEntity = (entity: Entity) => addToMapSet(entity, entityObservers);
+    const observeEntity = (entity: Entity) => (observer: (values: EntityValues<C> | null) => void) => {
+        // Call immediately with current values
+        observer(db.selectEntity(entity));
+        // Add to observers for future changes
+        return addToMapSet(entity, entityObservers)(observer);
+    };
     const observeArchetype = (archetype: ArchetypeId) => addToMapSet(archetype, archetypeObservers);
     const observeComponent = mapEntries(db.components, ([component]) => addToMapSet(component, componentObservers));
     const observeResource = mapEntries(db.resources, ([resource]) => {
@@ -39,12 +50,6 @@ export function createObservableDatabase<
     };
 
     const { execute: transactionDatabaseExecute, ...rest } = db;
-
-    //  variables to track the observers
-    const componentObservers = new Map<keyof C, Set<() => void>>();
-    const archetypeObservers = new Map<ArchetypeId, Set<() => void>>();    
-    const entityObservers = new Map<Entity, Set<(values: EntityValues<C> | null) => void>>();
-    const transactionObservers = new Set<(transaction: TransactionResult<C>) => void>();
 
     const execute = (handler: (db: Database<C, A, R>) => void) => {
         const result = transactionDatabaseExecute(handler);

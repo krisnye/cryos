@@ -4,7 +4,7 @@ import { MainService } from "../services/main-service/main-service";
 
 export const currentPlayer = (
     service: MainService
-): Observe<Player> => withMap(service.state.observe.board,
+): Observe<Player> => withMap(service.state.observe.resource.board,
     (board) => {
         const redCount = board.filter(point => point === "red").length;
         const blackCount = board.filter(point => point === "black").length;
