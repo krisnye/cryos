@@ -6,6 +6,6 @@ export const boardPointValue = (
     service: MainService,
     index: number
 ): Observe<BoardPoint> => withMap(
-    service.state.observe.board,
+    service.state.observe.resource.board,
     (board) => board[index]
 );

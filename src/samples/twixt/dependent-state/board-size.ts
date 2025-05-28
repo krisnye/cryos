@@ -6,4 +6,4 @@ export const getBoardSize = (board: BoardPoint[]) => {
     return Math.round(Math.sqrt(board.length));
 };
 
-export const boardSize = (service: MainService) => withMap(service.state.observe.board, getBoardSize);
+export const boardSize = (service: MainService) => withMap(service.state.observe.resource.board, getBoardSize);

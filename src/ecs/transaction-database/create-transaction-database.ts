@@ -3,10 +3,10 @@ import { ArchetypeComponents } from "ecs/database/archetype-components";
 import { CoreComponents } from "ecs/database/core-components";
 import { ResourceComponents } from "ecs/database/resource-components";
 import { DELETE, TransactionDatabase, TransactionResult, TransactionUpdateOperation, TransactionWriteOperation } from "./transaction-database";
-import { ArchetypeId, EntityCreateValues } from "ecs/archetype";
+import { Archetype, ArchetypeId, EntityCreateValues } from "ecs/archetype";
 import { createGetArchetypes } from "ecs/database/create-get-archetypes";
 import { Entity } from "ecs";
-import { Notify, Observe } from "data/observe";
+import { applyWriteOperations } from "./apply-write-operations";
 
 export function createTransactionDatabase<
     C extends CoreComponents,
@@ -16,9 +16,10 @@ export function createTransactionDatabase<
     db: Database<C, A, R>
 ): TransactionDatabase<C, A, R> {
     const {
+        archetypes: databaseArchetypes,
+        resources: databaseResources,
         updateEntity: databaseUpdateEntity,
         deleteEntity: databaseDeleteEntity,
-        archetypes: databaseArchetypes,
         getArchetype: databaseGetArchetype,
         getArchetypes: databaseGetArchetypes,
         ...rest
@@ -32,45 +33,66 @@ export function createTransactionDatabase<
         archetypes: new Set<ArchetypeId>(),
     };
 
-    const archetypes = Object.fromEntries(
+    const resources = {} as { [K in keyof R]: R[K] };
+    for (const name of Object.keys(db.resources)) {
+        const resourceId = name as keyof C;
+        const archetype = db.getArchetype(["id", resourceId]);
+        const entityId = archetype.columns.id.get(0);
+        Object.defineProperty(resources, name, {
+            get: () => archetype.columns[resourceId]!.get(0),
+            set: (newValue) => {
+                updateEntity(entityId, { [resourceId]: newValue } as any);
+            },
+            enumerable: true,
+        });
+    }
+    const wrapArchetype = (archetype: Archetype<CoreComponents & Pick<C, A[string][number]>>) => {
+        const { id } = archetype;
+        return {
+            ...archetype,
+            create: (values: EntityCreateValues<C>) => {
+                const entity = archetype.create(values);
+                redoOperations.push({
+                    type: "create",
+                    values: values,
+                });
+                undoOperationsInReverseOrder.push({ type: "delete", entity });
+                changed.entities.add(entity);
+                changed.archetypes.add(id);
+                for (const key in values) {
+                    changed.components.add(key as keyof C);
+                }
+                return entity;
+            },
+        };
+    };
+
+    const archetypesLookup = Object.fromEntries(
         Object.entries(databaseArchetypes).map(([name, archetype]) => {
-            const { id, create, ...rest } = archetype;
-            const transactionArchetype = {
-                id,
-                ...rest,
-                create: (values: EntityCreateValues<C>) => {
-                    const entity = archetype.create(values);
-                    redoOperations.push({
-                        type: "create",
-                        values: values,
-                    });
-                    undoOperationsInReverseOrder.push({ type: "delete", entity });
-                    changed.entities.add(entity);
-                    changed.archetypes.add(id);
-                    for (const key in values) {
-                        changed.components.add(key as keyof C);
-                    }
-                    return entity;
-                },
-            };
             return [
                 name,
-                transactionArchetype
+                wrapArchetype(archetype)
             ]
         })
     ) as any;
+    const archetypes = Object.assign(Object.values(archetypesLookup), archetypesLookup);
 
     const getArchetypes = createGetArchetypes(archetypes) as any;
     const getArchetype = (componentNames: (keyof C)[]) => {
         // create the archetype in the underlying database.
         const archetype = databaseGetArchetype(componentNames);
+        const newlyAdded = db.archetypes.length > archetypes.length;
+        if (newlyAdded) {
+            const newArchetype = wrapArchetype(archetype as any);
+            archetypes.push(newArchetype);
+        }
         // now we retrieve the version from the transaction database which has the create wrapper function.
         for (const archetype of getArchetypes(componentNames)) {
             if (archetype.components.size === componentNames.length) {
                 return archetype;
             }
         }
-        throw new Error();
+        throw new Error(`Archetype not found: ${componentNames.join(", ")}`);
     };
 
     const updateEntity = (entity: Entity, values: EntityUpdateValues<C>) => {
@@ -97,7 +119,7 @@ export function createTransactionDatabase<
         //  archetype may have changed after update so we need to add new one.
         changed.archetypes.add(db.locateEntity(entity).archetype);
 
-        maybeCombineUpdateOperations(undoOperationsInReverseOrder, redoOperations, entity, values, replacedValues);
+        addUpdateOperationsMaybeCombineLast(undoOperationsInReverseOrder, redoOperations, entity, values, replacedValues);
     };
 
     const deleteEntity = (entity: Entity) => {
@@ -114,13 +136,13 @@ export function createTransactionDatabase<
 
     const execute = (handler: (database: Database<C, A, R>) => void): TransactionResult<C> => {
         try {
-            handler(db);
+            handler(transactionDatabase);
             const operations = {
                 redo: [...redoOperations],
                 undo: [...undoOperationsInReverseOrder.reverse()],
-                changedEntities: changed.entities,
-                changedComponents: changed.components,
-                changedArchetypes: changed.archetypes,
+                changedEntities: new Set(changed.entities),
+                changedComponents: new Set(changed.components),
+                changedArchetypes: new Set(changed.archetypes),
             };
             return operations;
         }
@@ -140,6 +162,7 @@ export function createTransactionDatabase<
 
     const transactionDatabase: Database<C, A, R> & TransactionDatabase<C, A, R> = {
         ...rest,
+        resources,
         archetypes,
         getArchetype,
         getArchetypes,
@@ -151,29 +174,7 @@ export function createTransactionDatabase<
     return transactionDatabase;
 }
 
-function applyWriteOperations<
-    C extends CoreComponents,
-    A extends ArchetypeComponents<CoreComponents>,
-    R extends ResourceComponents
->(database: Database<C, A, R>, operations: TransactionWriteOperation<C>[]): void {
-    for (const operation of operations) {
-        switch (operation.type) {
-            case "create": {
-                const archetype = database.getArchetype(["id", ...(Object.keys(operation.values) as (keyof C)[])]);
-                archetype.create(operation.values);
-                break;
-            }
-            case "update":
-                database.updateEntity(operation.entity, operation.values);
-                break;
-            case "delete":
-                database.deleteEntity(operation.entity);
-                break;
-        }
-    }
-}
-
-function maybeCombineUpdateOperations<C>(
+function addUpdateOperationsMaybeCombineLast<C>(
     undoOperationsInReverseOrder: TransactionWriteOperation<C>[],
     redoOperations: TransactionWriteOperation<C>[],
     entity: Entity,

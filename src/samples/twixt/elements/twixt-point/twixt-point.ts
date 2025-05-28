@@ -112,8 +112,14 @@ export class TwixtPoint extends TwixtElement {
             <div class=${"point" + (validMove ? " enabled" : "")}
                 style=${borderStyle}
                 @click=${validMove ? (() => clickPoint(this.service, this.index)) : undefined}
-                @mouseenter=${validMove ? (() => this.service.state.resources.hoverIndex = this.index) : undefined}
-                @mouseleave=${() => this.service.state.resources.hoverIndex = null}
+                @mouseenter=${validMove ? (() => {
+                    this.service.state.execute((db) => {
+                        db.resources.hoverIndex = this.index;
+                    });
+                }) : undefined}
+                @mouseleave=${() => this.service.state.execute((db) => {
+                    db.resources.hoverIndex = null;
+                })}
             >
                 <span class=${isHover ? "content-hover" : ""}>
                 ${displayValue === null 

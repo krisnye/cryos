@@ -8,7 +8,7 @@ export const boardPointHover = (
     index: number
 ): Observe<Player | null> => withMap(
     fromProperties({
-        hoverIndex: service.state.observe.hoverIndex,
+        hoverIndex: service.state.observe.resource.hoverIndex,
         player: currentPlayer(service),
     }),
     (props) => props.hoverIndex === index ? props.player : null

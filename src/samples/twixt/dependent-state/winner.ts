@@ -7,8 +7,8 @@ import { Player } from "../services/state-service/create-state-service";
 export const winner = (
     service: MainService
 ): Observe<Player | null> => withMap(fromProperties({
-    board: service.state.observe.board,
-    links: service.state.observe.links,
+    board: service.state.observe.resource.board,
+    links: service.state.observe.resource.links,
 }),
     ({ board, links }) => {
         return calculateWinner(board, links);
