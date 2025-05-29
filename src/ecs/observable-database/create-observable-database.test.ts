@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, Mock } from "vitest";
 import { createDatabase, Database } from "ecs/database";
-import { F32Schema, Schema, U32Schema } from "data";
+import { F32Schema, FromSchema, Schema, U32Schema } from "data";
 import { Entity } from "ecs/entity";
+import { ObservableDatabase } from "./observable-datatabase";
 
 const Vec3Schema = {
     type: 'array',
@@ -10,6 +11,7 @@ const Vec3Schema = {
     maxItems: 3,
     default: [0, 0, 0] as [number, number, number],
 } as const satisfies Schema;
+type Vec3 = FromSchema<typeof Vec3Schema>;
 
 type TestComponents = {
     id: number;
@@ -34,15 +36,13 @@ const testSchemas = {
     age: U32Schema,
 } as const;
 
-type TestBaseDatabase = Database<TestComponents, TestArchetypes, {}>;
-
 function createTestObservableDatabase() {
     return createDatabase()
         .withComponents(testSchemas)
         .withArchetypes({
             particle: ["id", "position", "name", "velocity", "age"],
             particleWithoutName: ["id", "position", "velocity", "age"],
-        }).toObservable();
+        } as const).toObservable();
 }
 
 describe("createObservableDatabase", () => {
@@ -263,5 +263,65 @@ describe("createObservableDatabase", () => {
 
         expect(gravityObserver).toHaveBeenCalledTimes(2); // No more calls after unsubscribe
         expect(maxSpeedObserver).toHaveBeenCalledTimes(2); // No more calls after unsubscribe
+    });
+
+    it("should support transactions and notify observers", () => {
+        const db = createTestObservableDatabase().withTransactions({
+            createParticle(db, args: { position: Vec3, name: string, velocity: Vec3, age: number }) {
+                db.archetypes.particle.create(args);
+            },
+            moveParticle(db, { entity, time }: { entity: Entity, time: number }) {
+                const entityValues = db.selectEntity(entity);
+                if (entityValues) {
+                    const position = entityValues.position;
+                    const velocity = entityValues.velocity;
+                    if (position && velocity) {
+                        const newPosition: Vec3 = [
+                            position[0] + velocity[0] * time,
+                            position[1] + velocity[1] * time,
+                            position[2] + velocity[2] * time
+                        ];
+                        db.updateEntity(entity, { position: newPosition });
+                    }
+                }
+            }
+        });
+
+        // Set up observers
+        const positionObserver = vi.fn();
+        const transactionObserver = vi.fn();
+        
+        const unsubscribePosition = db.observe.component.position(positionObserver);
+        const unsubscribeTransaction = db.observe.transactions(transactionObserver);
+
+        // Execute a transaction
+        db.transactions.createParticle({
+            position: [1, 2, 3],
+            name: "Test Particle",
+            velocity: [1, 1, 1],
+            age: 0
+        });
+
+        // Verify observers were notified of creation
+        expect(positionObserver).toHaveBeenCalledTimes(1);
+        expect(transactionObserver).toHaveBeenCalledTimes(1);
+        expect(transactionObserver.mock.calls[0][0].changedComponents.has("position")).toBe(true);
+        expect(transactionObserver.mock.calls[0][0].changedEntities.size).toBe(1);
+
+        const entity = db.archetypes.particle.columns.id.get(0);
+        // Execute another transaction
+        db.transactions.moveParticle({ entity, time: 2 });
+
+        // Verify observers were notified of movement
+        expect(positionObserver).toHaveBeenCalledTimes(2);
+        expect(transactionObserver).toHaveBeenCalledTimes(2);
+        expect(transactionObserver.mock.calls[1][0].changedComponents.has("position")).toBe(true);
+        expect(transactionObserver.mock.calls[1][0].changedEntities.size).toBe(1);
+
+        // Verify the final state
+        expect(db.selectEntity(entity)?.position).toEqual([3, 4, 5]); // [1,2,3] + [1,1,1] * 2
+
+        unsubscribePosition();
+        unsubscribeTransaction();
     });
 }); 

@@ -2,11 +2,14 @@ import { Database, EntityUpdateValues } from "ecs/database";
 import { ArchetypeComponents } from "ecs/database/archetype-components";
 import { CoreComponents } from "ecs/database/core-components";
 import { ResourceComponents } from "ecs/database/resource-components";
-import { DELETE, TransactionDatabase, TransactionResult, TransactionUpdateOperation, TransactionWriteOperation } from "./transaction-database";
+import { TransactionDatabase, TransactionResult, TransactionUpdateOperation, TransactionWriteOperation } from "./transaction-database";
 import { Archetype, ArchetypeId, EntityCreateValues } from "ecs/archetype";
 import { createGetArchetypes } from "ecs/database/create-get-archetypes";
 import { Entity } from "ecs";
 import { applyWriteOperations } from "./apply-write-operations";
+
+//  This is a sentinel value used to indicate a component should be deleted.
+const DELETE: unknown = "_$_DELETE_$_";
 
 export function createTransactionDatabase<
     C extends CoreComponents,
@@ -159,7 +162,6 @@ export function createTransactionDatabase<
         }
     };
 
-
     const transactionDatabase: Database<C, A, R> & TransactionDatabase<C, A, R> = {
         ...rest,
         resources,
@@ -168,7 +170,7 @@ export function createTransactionDatabase<
         getArchetypes,
         updateEntity,
         deleteEntity,
-        execute
+        execute,
     }
 
     return transactionDatabase;

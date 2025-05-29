@@ -112,8 +112,8 @@ export function createDatabase(): Database<CoreComponents, ArchetypeComponents<C
         return database as any;
     }
 
-    const withArchetypes = <A extends { [name: string]: (keyof CoreComponents)[] }>(
-        newArchetypes: A
+    const withArchetypes = <NA extends { [name: string]: (keyof CoreComponents)[] }>(
+        newArchetypes: NA
     ) => {
         for (const [name, components] of Object.entries(newArchetypes)) {
             (archetypes as any)[name] = database.getArchetype(components as (keyof CoreComponents)[]);
@@ -144,8 +144,12 @@ export function createDatabase(): Database<CoreComponents, ArchetypeComponents<C
         return database as any;
     }
 
+    const toTransactional = () => {
+        return createTransactionDatabase(database as any);
+    }
+    
     const toObservable = () => {
-        return createObservableDatabase(createTransactionDatabase(database as any) as any);
+        return createObservableDatabase(database.toTransactional() as any);
     }
 
     const database = {
@@ -161,6 +165,7 @@ export function createDatabase(): Database<CoreComponents, ArchetypeComponents<C
         withComponents,
         withArchetypes,
         withResources,
+        toTransactional,
         toObservable,
     } as unknown as Database<CoreComponents, ArchetypeComponents<CoreComponents>, { }>;
     return database;

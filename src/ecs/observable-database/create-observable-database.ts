@@ -3,7 +3,7 @@ import { ArchetypeComponents } from "ecs/database/archetype-components";
 import { CoreComponents } from "ecs/database/core-components";
 import { ResourceComponents } from "ecs/database/resource-components";
 import { ObservableDatabase } from "./observable-datatabase";
-import { TransactionDatabase } from "ecs/transaction-database/transaction-database";
+import { TransactionDatabase, TransactionDeclarations, TransactionFunctions } from "ecs/transaction-database/transaction-database";
 import { Observe, withMap } from "data/observe";
 import { mapEntries } from "data/object";
 import { EntityValues } from "ecs/database/database";
@@ -13,8 +13,9 @@ import { ArchetypeId } from "ecs/archetype";
 export function createObservableDatabase<
     C extends CoreComponents,
     A extends ArchetypeComponents<CoreComponents>,
-    R extends ResourceComponents
->(db: TransactionDatabase<C, A, R>): ObservableDatabase<C, A, R> {
+    R extends ResourceComponents,
+    T extends TransactionFunctions
+>(db: TransactionDatabase<C, A, R>): ObservableDatabase<C, A, R, T> {
 
     //  variables to track the observers
     const componentObservers = new Map<keyof C, Set<() => void>>();
@@ -86,11 +87,31 @@ export function createObservableDatabase<
         return result;
     }
 
-    return {
-        ...rest,
-        observe,
-        execute
+    const transactions = {} as T;
+
+    const withTransactions = <NT extends TransactionDeclarations<C, A, R>>(newTransactions: NT): any => {
+        for (const [name, transaction] of Object.entries(newTransactions)) {
+            Object.defineProperty(transactions, name, {
+                value: (args: unknown) => {
+                    execute((db) => transaction(db, args as any));
+                },
+                writable: false,
+                enumerable: true,
+                configurable: false
+            });
+        }
+        return observableDatabase;
     }
+
+    const observableDatabase: ObservableDatabase<C, A, R, T> = {
+        ...rest,
+        transactions,
+        observe,
+        execute,
+        withTransactions
+    };
+
+    return observableDatabase;
 }
 
 const emptySet: ReadonlySet<() => void> = new Set();

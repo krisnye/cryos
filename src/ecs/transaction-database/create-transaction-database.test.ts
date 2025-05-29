@@ -1,11 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { createDatabase, Database } from "ecs/database";
-import { createTransactionDatabase } from "./create-transaction-database";
-import { DELETE, TransactionDatabase } from "./transaction-database";
-import { F32Schema, Schema, U32Schema } from "data";
+import { createDatabase } from "ecs/database";
+import { F32Schema, FromSchema, Schema, U32Schema } from "data";
 import { Archetype } from "ecs/archetype";
-import { CoreComponents } from "ecs/database/core-components";
-import { ArchetypeComponents } from "ecs/database/archetype-components";
 import { Entity } from "ecs/entity";
 import { applyWriteOperations } from "./apply-write-operations";
 
@@ -16,11 +12,12 @@ const Vec3Schema = {
     maxItems: 3,
     default: [0, 0, 0] as [number, number, number],
 } as const satisfies Schema;
+type Vec3 = FromSchema<typeof Vec3Schema>;
 
 type TestComponents = {
     id: number;
-    position: [number, number, number];
-    velocity: [number, number, number];
+    position: Vec3;
+    velocity: Vec3;
     name: string;
     age: number;
 };
@@ -38,7 +35,7 @@ function createTestTransactionDatabase() {
     return createDatabase().withComponents(testSchemas).withArchetypes({
         particle: ["id", "position", "name", "velocity", "age"],
         particleWithoutName: ["id", "position", "velocity", "age"],
-    }).toObservable();
+    }).toTransactional();
 }
 
 describe("createTransactionDatabase", () => {
@@ -123,8 +120,8 @@ describe("createTransactionDatabase", () => {
                     velocity: [0, 0, 0]
                 });
                 db.updateEntity(entity, {
-                    name: DELETE as unknown as string,
-                    age: DELETE as unknown as number
+                    name: undefined,
+                    age: undefined
                 });
             });
 
@@ -309,4 +306,65 @@ describe("createTransactionDatabase", () => {
             }
         });
     });
+
+    // describe("withTransactions", () => {
+    //     it("should add transactions to the database", () => {
+    //         const db = createTestTransactionDatabase().withTransactions({
+    //             createParticle(db, args: { position: Vec3, name: string, velocity: Vec3, age: number }) {
+    //                 db.archetypes.particle.create(args);
+    //             },
+    //             moveParticle(db, { entity, time }: { entity: Entity, time: number }) {
+    //                 const entityValues = db.selectEntity(entity);
+    //                 if (entityValues) {
+    //                     const position = entityValues.position;
+    //                     const velocity = entityValues.velocity;
+    //                     if (position && velocity) {
+    //                         const newPosition: Vec3 = [
+    //                             position[0] + velocity[0] * time,
+    //                             position[1] + velocity[1] * time,
+    //                             position[2] + velocity[2] * time
+    //                         ];
+    //                         db.updateEntity(entity, { position: newPosition });
+    //                     }
+    //                 }
+    //             }
+    //         });
+
+    //         // Test that transactions are added and can be called
+    //         db.transactions.createParticle({
+    //             position: [1, 2, 3],
+    //             name: "Test Particle",
+    //             velocity: [1, 1, 1],
+    //             age: 0
+    //         });
+
+    //         const entity = db.archetypes.particle.columns.id.get(0);
+
+    //         // Verify the entity was created
+    //         expect(db.selectEntity(entity)).toEqual({
+    //             id: entity,
+    //             position: [1, 2, 3],
+    //             name: "Test Particle",
+    //             velocity: [1, 1, 1],
+    //             age: 0
+    //         });
+
+    //         // Test that moveParticle transaction works
+    //         db.transactions.moveParticle({ entity, time: 2 });
+
+    //         // Verify the entity was moved correctly
+    //         expect(db.selectEntity(entity)?.position).toEqual([3, 4, 5]); // [1,2,3] + [1,1,1] * 2
+
+    //         // Test that transactions are atomic (rollback on error)
+    //         expect(() => {
+    //             db.transactions.createParticle({
+    //                 position: [0, 0, 0],
+    //                 name: "Should Rollback",
+    //                 velocity: [0, 0, 0],
+    //                 age: 0
+    //             });
+    //             throw new Error("Transaction failed");
+    //         }).toThrow("Transaction failed");
+    //     });
+    // });
 }); 
