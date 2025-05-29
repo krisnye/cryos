@@ -6,8 +6,7 @@ import { BoardLink, BoardPoint, Player } from "../services/state-service/create-
  * The game is won when any player connects a complete unbroken line of their own color from one edge to the opposite edge.
  */
 export const calculateWinner = (
-    board: BoardPoint[],
-    links: BoardLink[],
+    {board, links}: {board: BoardPoint[], links: BoardLink[]},
 ): Player | null => {
     const size = getBoardSize(board);
     

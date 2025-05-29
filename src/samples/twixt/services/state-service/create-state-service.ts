@@ -62,7 +62,7 @@ export function createStateService() {
             ["isHoverValidMove", "hoverIndex"],
             ({isHoverValidMove, hoverIndex}) => isHoverValidMove ? hoverIndex : null
         )
-        .withComputedResource("winner", ["board", "links"], ({board, links}) => calculateWinner(board, links))
+        .withComputedResource("winner", ["board", "links"], calculateWinner)
         .withTransactions({
             clickPoint: (db) => {
                 const index = db.resources.validHoverIndex;
