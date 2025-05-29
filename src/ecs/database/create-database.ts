@@ -11,11 +11,7 @@ import { createTransactionDatabase } from "ecs/transaction-database/create-trans
 import { ArchetypeComponents } from "./archetype-components";
 import { ResourceComponents } from "./resource-components";
 
-export function createDatabase<
-    C extends CoreComponents,
-    A extends ArchetypeComponents<CoreComponents>,
-    R extends ResourceComponents
->(): Database<C, A, R> {
+export function createDatabase(): Database<CoreComponents, {}, {}> {
 
     const components: { [K in keyof CoreComponents]: Schema } = { id: EntitySchema };
     const entityLocationTable = createEntityLocationTable();
@@ -173,6 +169,6 @@ export function createDatabase<
         withResources,
         toTransactional,
         toObservable,
-    } as unknown as Database<C, A, R>;
+    } as unknown as Database<CoreComponents, {}, {}>;
     return database;
 }

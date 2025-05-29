@@ -16,7 +16,7 @@ export function createTransactionDatabase<
     A extends ArchetypeComponents<CoreComponents>,
     R extends ResourceComponents
 >(
-    db: Database<C, A, R> = createDatabase<C, A, R>()
+    db: Database<C, A, R>
 ): TransactionDatabase<C, A, R> {
     const {
         archetypes: databaseArchetypes,

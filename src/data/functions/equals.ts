@@ -1,6 +1,6 @@
 import { Data } from "data/data";
 
-export function equals(a: Data, b: Data): boolean {
+export function equals(a: unknown, b: unknown): boolean {
   if (a === b) return true;                            // same ref / primitive
   if (a === null || b === null) return false;
   if (typeof a !== 'object' || typeof b !== 'object') return false;

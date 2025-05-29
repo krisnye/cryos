@@ -4,19 +4,18 @@ import { CoreComponents } from "ecs/database/core-components";
 import { ResourceComponents } from "ecs/database/resource-components";
 import { ObservableDatabase } from "./observable-datatabase";
 import { TransactionDatabase, TransactionDeclarations, TransactionFunctions } from "ecs/transaction-database/transaction-database";
-import { fromArray, Observe, withMap } from "data/observe";
+import { fromArray, Observe, withDeduplicate, withMap } from "data/observe";
 import { mapEntries } from "data/object";
 import { EntityValues } from "ecs/database/database";
 import { TransactionResult } from "ecs/transaction-database/transaction-database";
 import { ArchetypeId } from "ecs/archetype";
-import { createTransactionDatabase } from "ecs/transaction-database/create-transaction-database";
 
 export function createObservableDatabase<
     C extends CoreComponents,
     A extends ArchetypeComponents<CoreComponents>,
     R extends ResourceComponents,
     T extends TransactionFunctions
->(db: TransactionDatabase<C, A, R> = createTransactionDatabase<C, A, R>()): ObservableDatabase<C, A, R, T> {
+>(db: TransactionDatabase<C, A, R>): ObservableDatabase<C, A, R, T> {
 
     //  variables to track the observers
     const componentObservers = new Map<keyof C, Set<() => void>>();
@@ -113,7 +112,7 @@ export function createObservableDatabase<
             configurable: false,
         });
         Object.defineProperty(observe.resource, name, {
-            value: withMap(fromArray(dependencies.map((resource) => observe.resource[resource])), (values) => compute(...values as any)),
+            value: withDeduplicate(withMap(fromArray(dependencies.map((resource) => observe.resource[resource])), (values) => compute(...values as any))),
             enumerable: true,
             configurable: false,
         });

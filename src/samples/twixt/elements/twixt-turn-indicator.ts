@@ -4,7 +4,6 @@ import { customElement } from "lit/decorators.js";
 import { useObservableValues } from "ui/hooks/use-observable-values";
 import { currentPlayer } from "../dependent-state/current-player";
 import { winner } from "../dependent-state/winner";
-import { newGame } from "../actions/new-game";
 import redCircle from "../assets/red-circle.svg";
 import blackCircle from "../assets/black-circle.svg";
 
@@ -82,7 +81,7 @@ export class TwixtTurnIndicator extends TwixtElement {
                     </div>
                     <button 
                         class="reset-button"
-                        @click=${() => newGame(this.service)}
+                        @click=${() => this.service.state.transactions.newGame()}
                     >
                         New Game
                     </button>
