@@ -9,7 +9,13 @@ import { createGetArchetypes } from "./create-get-archetypes";
 import { createObservableDatabase } from "ecs/observable-database/create-observable-database";
 import { createTransactionDatabase } from "ecs/transaction-database/create-transaction-database";
 import { ArchetypeComponents } from "./archetype-components";
-export function createDatabase(): Database<CoreComponents, ArchetypeComponents<CoreComponents>, {}> {
+import { ResourceComponents } from "./resource-components";
+
+export function createDatabase<
+    C extends CoreComponents,
+    A extends ArchetypeComponents<CoreComponents>,
+    R extends ResourceComponents
+>(): Database<C, A, R> {
 
     const components: { [K in keyof CoreComponents]: Schema } = { id: EntitySchema };
     const entityLocationTable = createEntityLocationTable();
@@ -167,6 +173,6 @@ export function createDatabase(): Database<CoreComponents, ArchetypeComponents<C
         withResources,
         toTransactional,
         toObservable,
-    } as unknown as Database<CoreComponents, ArchetypeComponents<CoreComponents>, { }>;
+    } as unknown as Database<C, A, R>;
     return database;
 }

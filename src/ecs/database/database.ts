@@ -14,7 +14,7 @@ export type EntityUpdateValues<C> = Omit<{ [K in keyof C]?: C[K] | undefined }, 
 
 export interface ReadonlyDatabase<
     C extends CoreComponents = CoreComponents,
-    A extends ArchetypeComponents<CoreComponents> = {},
+    A extends ArchetypeComponents<C> = {},
     R extends ResourceComponents = {}
 > {
     readonly components: { readonly [K in keyof C]: Schema };
@@ -36,9 +36,9 @@ export interface Database<
     C extends CoreComponents = CoreComponents,
     A extends ArchetypeComponents<CoreComponents> = {},
     R extends ResourceComponents = {}
-> extends ReadonlyDatabase<C, A, R> {
+> extends Omit<ReadonlyDatabase<C, A, R>, "resources"> {
     readonly archetypes: Archetype<CoreComponents & Partial<C>>[] & { readonly [K in keyof A]: Archetype<CoreComponents & Pick<C, A[K][number]>> }
-    readonly resources: R;
+    readonly resources: { -readonly [K in keyof R]: R[K] };
 
     withComponents: <NC extends { [name: string]: Schema }>(
         addComponents: NC,

@@ -1,4 +1,4 @@
-import { Database, EntityUpdateValues } from "ecs/database";
+import { createDatabase, Database, EntityUpdateValues } from "ecs/database";
 import { ArchetypeComponents } from "ecs/database/archetype-components";
 import { CoreComponents } from "ecs/database/core-components";
 import { ResourceComponents } from "ecs/database/resource-components";
@@ -16,7 +16,7 @@ export function createTransactionDatabase<
     A extends ArchetypeComponents<CoreComponents>,
     R extends ResourceComponents
 >(
-    db: Database<C, A, R>
+    db: Database<C, A, R> = createDatabase<C, A, R>()
 ): TransactionDatabase<C, A, R> {
     const {
         archetypes: databaseArchetypes,

@@ -3,6 +3,7 @@ import { createDatabase, Database } from "ecs/database";
 import { F32Schema, FromSchema, Schema, U32Schema } from "data";
 import { Entity } from "ecs/entity";
 import { ObservableDatabase } from "./observable-datatabase";
+import { createObservableDatabase } from "./create-observable-database";
 
 const Vec3Schema = {
     type: 'array',
@@ -323,5 +324,32 @@ describe("createObservableDatabase", () => {
 
         unsubscribePosition();
         unsubscribeTransaction();
+    });
+
+    it("should support computed resources immediately and observed", () => {
+        const db = createDatabase().withResources({
+            gravity: 9.8,
+            gravityMultiplier: 100,
+        }).toObservable()
+        .withComputedResource("effectiveGravity", ["gravity", "gravityMultiplier"], (gravity, gravityMultiplier) => gravity * gravityMultiplier);
+
+        expect(db.resources.effectiveGravity).toBeCloseTo(9.8 * 100);
+
+        db.execute(db => db.resources.gravity = 10.0);
+
+        expect(db.resources.effectiveGravity).toBeCloseTo(10.0 * 100);
+
+        // now check observers
+        const effectiveGravityObserver = vi.fn();
+        const unsubscribeEffectiveGravity = db.observe.resource.effectiveGravity(effectiveGravityObserver);
+
+        expect(effectiveGravityObserver).toHaveBeenCalledWith(10.0 * 100);
+
+        db.execute(db => db.resources.gravity = 11.0);
+
+        expect(effectiveGravityObserver).toHaveBeenCalledWith(11.0 * 100);
+
+        unsubscribeEffectiveGravity();        
+        
     });
 }); 

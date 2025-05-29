@@ -17,7 +17,7 @@ export const clickPoint = async (
         service.state.execute((db) => {
             db.resources.board = board;
             const links = db.resources.links;
-            const newLinks = calculateNewLinks(service, player, index);
+            const newLinks = calculateNewLinks(player, index, board, links);
             db.resources.links = [...links, ...newLinks];
         });
     }

@@ -1,5 +1,4 @@
-import { MainService } from "../services/main-service/main-service";
-import { Player, BoardLink } from "../services/state-service/create-state-service";
+import { Player, BoardLink, BoardPoint } from "../services/state-service/create-state-service";
 import { Line2, subLine } from "math/line2";
 import { intersects } from "math/line2/intersects";
 import { getBoardSize } from "../dependent-state/board-size";
@@ -30,15 +29,11 @@ const linkToLine2 = (link: BoardLink, size: number): Line2 => {
 };
 
 export const calculateNewLinks = (
-    service: MainService,
     player: Player,
     newIndex: number,
-    dependencies = {
-        board: service.state.resources.board,
-        links: service.state.resources.links,
-    }
+    board: BoardPoint[],
+    links: BoardLink[]
 ): BoardLink[] => {
-    const { board, links } = dependencies;
     const size = getBoardSize(board);
 
     // If the point is already occupied by the opponent, return no potential links

@@ -1,7 +1,7 @@
 import { Data } from "data/data";
 import { Observe } from "./observe";
 
-export function fromProperties<T extends Record<string, Observe<Data>>>(properties: T): Observe<{
+export function fromProperties<T extends Record<string, Observe<unknown>>>(properties: T): Observe<{
     [K in keyof T]: T[K] extends Observe<infer U> ? U : never;
 }> {
     type Result = { [K in keyof T]: T[K] extends Observe<infer U> ? U : never };

@@ -33,9 +33,10 @@ export class TwixtLinks extends TwixtElement {
 
         const potentialLinks = values.hoverIndex !== null && values.currentPlayer
             ? calculateNewLinks(
-                this.service,
                 values.currentPlayer,
-                values.hoverIndex
+                values.hoverIndex,
+                this.service.state.resources.board,
+                this.links
             )
             : [];
 

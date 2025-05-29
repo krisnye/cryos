@@ -4,18 +4,19 @@ import { CoreComponents } from "ecs/database/core-components";
 import { ResourceComponents } from "ecs/database/resource-components";
 import { ObservableDatabase } from "./observable-datatabase";
 import { TransactionDatabase, TransactionDeclarations, TransactionFunctions } from "ecs/transaction-database/transaction-database";
-import { Observe, withMap } from "data/observe";
+import { fromArray, Observe, withMap } from "data/observe";
 import { mapEntries } from "data/object";
 import { EntityValues } from "ecs/database/database";
 import { TransactionResult } from "ecs/transaction-database/transaction-database";
 import { ArchetypeId } from "ecs/archetype";
+import { createTransactionDatabase } from "ecs/transaction-database/create-transaction-database";
 
 export function createObservableDatabase<
     C extends CoreComponents,
     A extends ArchetypeComponents<CoreComponents>,
     R extends ResourceComponents,
     T extends TransactionFunctions
->(db: TransactionDatabase<C, A, R>): ObservableDatabase<C, A, R, T> {
+>(db: TransactionDatabase<C, A, R> = createTransactionDatabase<C, A, R>()): ObservableDatabase<C, A, R, T> {
 
     //  variables to track the observers
     const componentObservers = new Map<keyof C, Set<() => void>>();
@@ -50,7 +51,7 @@ export function createObservableDatabase<
         archetype: observeArchetype,
     };
 
-    const { execute: transactionDatabaseExecute, ...rest } = db;
+    const { execute: transactionDatabaseExecute, resources, ...rest } = db;
 
     const execute = (handler: (db: Database<C, A, R>) => void) => {
         const result = transactionDatabaseExecute(handler);
@@ -103,18 +104,34 @@ export function createObservableDatabase<
         return observableDatabase;
     }
 
+    const withComputedResource = <N extends string, const D extends readonly (keyof R)[], CT>(name: N, dependencies: D, compute: (...resources: { [I in keyof D]: R[D[I]] }) => CT): any => {
+        Object.defineProperty(resources, name, {
+            get: () => {
+                return compute(...dependencies.map((resource) => db.resources[resource]) as any);
+            },
+            enumerable: true,
+            configurable: false,
+        });
+        Object.defineProperty(observe.resource, name, {
+            value: withMap(fromArray(dependencies.map((resource) => observe.resource[resource])), (values) => compute(...values as any)),
+            enumerable: true,
+            configurable: false,
+        });
+        return observableDatabase;
+    }
+
     const observableDatabase: ObservableDatabase<C, A, R, T> = {
         ...rest,
+        resources,
         transactions,
         observe,
         execute,
-        withTransactions
+        withTransactions,
+        withComputedResource,
     };
 
     return observableDatabase;
 }
-
-const emptySet: ReadonlySet<() => void> = new Set();
 
 const addToMapSet = <K, T>(key: K, map: Map<K, Set<T>>) => (value: T) => {
     let set = map.get(key);

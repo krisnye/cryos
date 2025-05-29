@@ -5,8 +5,10 @@ import { ResourceComponents } from "ecs/database/resource-components";
 import { ArchetypeId } from "ecs/archetype";
 import { Observe } from "data/observe";
 import { TransactionResult, TransactionDatabase, TransactionDeclarations, ToTransactionFunctions, TransactionFunctions } from "ecs/transaction-database/transaction-database";
-import { EntityValues } from "ecs/database/database";
+import { Database, EntityValues } from "ecs/database/database";
 import { Simplify } from "types";
+
+export type ToWritableDatabase<T extends ObservableDatabase> = T extends ObservableDatabase<infer C, infer A, infer R, infer T> ? Database<C, A, R> : never;
 
 export interface ObservableDatabase<
     C extends CoreComponents = CoreComponents,
@@ -23,5 +25,24 @@ export interface ObservableDatabase<
         archetype(id: ArchetypeId): Observe<void>;
     }
     withTransactions: <NT extends TransactionDeclarations<C, A, R>>(transactions: NT)
-        => ObservableDatabase<C, A, R, Simplify<T & ToTransactionFunctions<NT> & { a: number}>>;
+        => ObservableDatabase<C, A, R, Simplify<T & ToTransactionFunctions<NT>>>;
+    withComputedResource: <N extends string, const D extends readonly (keyof R)[], CT>(name: N, resources: D, compute: (...resources: { [I in keyof D]: R[D[I]] }) => CT)
+        => ObservableDatabase<C, A, Simplify<R & { [K in N]: CT }>>;
 }
+
+export type ComputedResource<
+  R extends ResourceComponents,
+  D extends readonly [...(keyof R)[]],
+  T
+> = {
+  resources: D;
+  compute: (...resources: { [I in keyof D]: R[D[I]] }) => T;
+};
+
+export type ComputedResources<R extends ResourceComponents> = {
+  [name: string]: ComputedResource<R, readonly (keyof R)[], unknown>;
+};
+
+declare const db: ObservableDatabase<{ id: number }, {}, { a: number, b: string }, {}>;
+
+const db2 = db.withComputedResource("foo", ["a", "b"], (a, b) => false);
