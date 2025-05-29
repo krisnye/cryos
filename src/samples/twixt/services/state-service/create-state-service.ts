@@ -20,7 +20,7 @@ export function createStateService() {
         .toObservable()
         .withComputedResource(
             "currentPlayer",
-            ["board"], (board) => {
+            ["board"], ({board}) => {
                 const redCount = board.filter(point => point === "red").length;
                 const blackCount = board.filter(point => point === "black").length;
                 return redCount > blackCount ? "black" : "red";
@@ -29,12 +29,12 @@ export function createStateService() {
         .withComputedResource(
             "boardSize",
             ["board"],
-            (board) => Math.round(Math.sqrt(board.length))
+            ({board}) => Math.round(Math.sqrt(board.length))
         )
         .withComputedResource(
             "isHoverValidMove",
             ["hoverIndex", "board", "currentPlayer", "boardSize"],
-            (hoverIndex, board, currentPlayer, boardSize) => {
+            ({hoverIndex, board, currentPlayer, boardSize}) => {
                 if (hoverIndex === null) {
                     return false;
                 }
@@ -60,9 +60,9 @@ export function createStateService() {
         .withComputedResource(
             "validHoverIndex",
             ["isHoverValidMove", "hoverIndex"],
-            (isHoverValidMove, hoverIndex) => isHoverValidMove ? hoverIndex : null
+            ({isHoverValidMove, hoverIndex}) => isHoverValidMove ? hoverIndex : null
         )
-        .withComputedResource("winner", ["board", "links"], calculateWinner)
+        .withComputedResource("winner", ["board", "links"], ({board, links}) => calculateWinner(board, links))
         .withTransactions({
             clickPoint: (db) => {
                 const index = db.resources.validHoverIndex;

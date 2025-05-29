@@ -26,17 +26,24 @@ export interface ObservableDatabase<
     }
     withTransactions: <NT extends TransactionDeclarations<C, A, R>>(transactions: NT)
         => ObservableDatabase<C, A, R, Simplify<T & ToTransactionFunctions<NT>>>;
-    withComputedResource: <N extends string, const D extends readonly (keyof R)[], CT>(name: N, resources: D, compute: (...resources: { [I in keyof D]: R[D[I]] }) => CT)
-        => ObservableDatabase<C, A, Simplify<R & { [K in N]: CT }>>;
+    withComputedResource<
+        N extends string,
+        const D extends readonly (keyof R)[],
+        CT
+      >(
+        name: N,
+        resources: D,
+        compute: (resources: { [K in D[number]]: R[K] }) => CT
+      ): ObservableDatabase<C, A, Simplify<R & { [K in N]: CT }>>;
 }
-
 export type ComputedResource<
   R extends ResourceComponents,
-  D extends readonly [...(keyof R)[]],
+  D extends readonly (keyof R)[],
   T
 > = {
   resources: D;
-  compute: (...resources: { [I in keyof D]: R[D[I]] }) => T;
+  // ⬇ one object parameter whose keys come from the tuple D
+  compute: (resources: { [K in D[number]]: R[K] }) => T;
 };
 
 export type ComputedResources<R extends ResourceComponents> = {
@@ -45,4 +52,4 @@ export type ComputedResources<R extends ResourceComponents> = {
 
 declare const db: ObservableDatabase<{ id: number }, {}, { a: number, b: string }, {}>;
 
-const db2 = db.withComputedResource("foo", ["a", "b"], (a, b) => false);
+const db2 = db.withComputedResource("foo", ["a", "b"], ({a, b}) => false);

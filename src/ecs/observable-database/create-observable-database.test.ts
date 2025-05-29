@@ -331,7 +331,7 @@ describe("createObservableDatabase", () => {
             gravity: 9.8,
             gravityMultiplier: 100,
         }).toObservable()
-        .withComputedResource("effectiveGravity", ["gravity", "gravityMultiplier"], (gravity, gravityMultiplier) => gravity * gravityMultiplier);
+        .withComputedResource("effectiveGravity", ["gravity", "gravityMultiplier"], ({gravity, gravityMultiplier}) => gravity * gravityMultiplier);
 
         expect(db.resources.effectiveGravity).toBeCloseTo(9.8 * 100);
 

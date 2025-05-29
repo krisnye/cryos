@@ -4,7 +4,7 @@ import { CoreComponents } from "ecs/database/core-components";
 import { ResourceComponents } from "ecs/database/resource-components";
 import { ObservableDatabase } from "./observable-datatabase";
 import { TransactionDatabase, TransactionDeclarations, TransactionFunctions } from "ecs/transaction-database/transaction-database";
-import { fromArray, Observe, withDeduplicate, withMap } from "data/observe";
+import { fromArray, fromProperties, Observe, withDeduplicate, withMap } from "data/observe";
 import { mapEntries } from "data/object";
 import { EntityValues } from "ecs/database/database";
 import { TransactionResult } from "ecs/transaction-database/transaction-database";
@@ -103,16 +103,25 @@ export function createObservableDatabase<
         return observableDatabase;
     }
 
-    const withComputedResource = <N extends string, const D extends readonly (keyof R)[], CT>(name: N, dependencies: D, compute: (...resources: { [I in keyof D]: R[D[I]] }) => CT): any => {
+    const withComputedResource = <N extends string, const D extends readonly (keyof R)[], CT>(name: N, dependencies: D, compute: (resources: { [K in D[number]]: R[K] }) => CT): any => {
         Object.defineProperty(resources, name, {
             get: () => {
-                return compute(...dependencies.map((resource) => db.resources[resource]) as any);
+                return compute(Object.fromEntries(dependencies.map((resource) => [resource, db.resources[resource]])) as any);
             },
             enumerable: true,
             configurable: false,
         });
         Object.defineProperty(observe.resource, name, {
-            value: withDeduplicate(withMap(fromArray(dependencies.map((resource) => observe.resource[resource])), (values) => compute(...values as any))),
+            value: withDeduplicate(
+                withMap(
+                    fromProperties(
+                        Object.fromEntries(
+                            dependencies.map((resource) => [resource, observe.resource[resource]])
+                        ),
+                    ) as any,
+                    compute
+                )
+            ),
             enumerable: true,
             configurable: false,
         });
