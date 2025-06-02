@@ -6,7 +6,7 @@ import { CoreComponents } from "./core-components";
 import { ArchetypeComponents } from "./archetype-components";
 import { ResourceComponents } from "./resource-components";
 import { ReadonlyArchetype } from "ecs/archetype";
-import { ObservableDatabase } from "ecs/observable-database/observable-datatabase";
+import { Database } from "ecs/database/database";
 import { TransactionDatabase } from "ecs/transaction-database/transaction-database";
 
 export type EntityValues<C> = CoreComponents & { [K in keyof C]?: C[K] | undefined }
@@ -59,7 +59,10 @@ export interface Datastore<
     deleteEntity: (entity: Entity) => void;
     updateEntity: (entity: Entity, values: EntityUpdateValues<C>) => void;
 
-    toObservable: () => ObservableDatabase<C, A, R>;
+    /**
+     * Convert the datastore to an observable database.
+     */
+    toDatabase: () => Database<C, A, R>;
     /**
      * @internal
      * Internal function to convert a datastore to a transaction database.

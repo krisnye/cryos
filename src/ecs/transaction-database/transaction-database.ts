@@ -1,18 +1,18 @@
-import { Database, Entity } from "ecs";
+import { Datastore, Entity } from "ecs";
 import { CoreComponents } from "ecs/datastore/core-components";
 import { ArchetypeComponents } from "ecs/datastore/archetype-components";
 import { ResourceComponents } from "ecs/datastore/resource-components";
 import { EntityUpdateValues, ReadonlyDatastore } from "ecs/datastore";
 import { ArchetypeId, EntityCreateValues } from "ecs/archetype";
 import { Simplify } from "types";
-import { ObservableDatabase } from "ecs/observable-database/observable-datatabase";
+import { Database } from "ecs/database/database";
 
 export type TransactionDeclaration<
     C extends CoreComponents = CoreComponents,
     A extends ArchetypeComponents<CoreComponents> = {},
     R extends ResourceComponents = {},
     Input extends any | void = any
-> = (db: Database<C, A, R>, input: Input) => void
+> = (db: Datastore<C, A, R>, input: Input) => void
 
 /**
  * Converts from TransactionDeclarations to TransactionFunctions by removing the initial database argument.
@@ -40,7 +40,7 @@ export interface TransactionDatabase<
     A extends ArchetypeComponents<CoreComponents> = {},
     R extends ResourceComponents = {}
 > extends ReadonlyDatastore<C, A, R> {
-    execute(transaction: (db: Database<C, A, R>) => void): TransactionResult<C>;
+    execute(transaction: (db: Datastore<C, A, R>) => void): TransactionResult<C>;
 }
 
 export type TransactionCreateOperation<C> = {

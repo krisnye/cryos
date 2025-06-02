@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, Mock } from "vitest";
-import { createDatastore, Datastore } from "ecs/datastore";
+import { createDatastore } from "ecs/datastore";
 import { F32Schema, FromSchema, Schema, U32Schema } from "data";
 import { Entity } from "ecs/entity";
-import { ObservableDatabase } from "./observable-datatabase";
-import { createObservableDatabase } from "./create-observable-database";
 
 const Vec3Schema = {
     type: 'array',
@@ -14,20 +12,6 @@ const Vec3Schema = {
 } as const satisfies Schema;
 type Vec3 = FromSchema<typeof Vec3Schema>;
 
-type TestComponents = {
-    id: number;
-    position: [number, number, number];
-    velocity: [number, number, number];
-    name: string;
-    age: number;
-};
-
-type TestArchetypes = {
-    [K in "particle" | "particleWithoutName"]: K extends "particle" 
-        ? ["id", "position", "name", "velocity", "age"]
-        : ["id", "position", "velocity", "age"];
-} & { [K: string]: ["id"] };
-
 const testSchemas = {
     position: Vec3Schema,
     velocity: Vec3Schema,
@@ -37,18 +21,18 @@ const testSchemas = {
     age: U32Schema,
 } as const;
 
-function createTestObservableDatabase() {
+function createTestDatabase() {
     return createDatastore()
         .withComponents(testSchemas)
         .withArchetypes({
             particle: ["id", "position", "name", "velocity", "age"],
             particleWithoutName: ["id", "position", "velocity", "age"],
-        } as const).toObservable();
+        } as const).toDatabase();
 }
 
 describe("createObservableDatabase", () => {
     it("should notify component observers when components change", () => {
-        const db = createTestObservableDatabase();
+        const db = createTestDatabase();
         const positionObserver = vi.fn();
         const nameObserver = vi.fn();
         
@@ -93,7 +77,7 @@ describe("createObservableDatabase", () => {
     });
 
     it("should notify entity observers with correct values", () => {
-        const db = createTestObservableDatabase();
+        const db = createTestDatabase();
         const entityObservers = new Map<Entity, Mock>();
         let testEntity!: Entity;
 
@@ -148,7 +132,7 @@ describe("createObservableDatabase", () => {
     });
 
     it("should notify transaction observers with full transaction results", () => {
-        const db = createTestObservableDatabase();
+        const db = createTestDatabase();
         const transactionObserver = vi.fn();
         
         const unsubscribe = db.observe.transactions(transactionObserver);
@@ -176,7 +160,7 @@ describe("createObservableDatabase", () => {
     });
 
     it("should notify archetype observers when entities change archetypes", () => {
-        const db = createTestObservableDatabase();
+        const db = createTestDatabase();
         const particleObserver = vi.fn();
         const particleWithoutNameObserver = vi.fn();
         
@@ -222,7 +206,7 @@ describe("createObservableDatabase", () => {
                 gravity: 9.8,
                 maxSpeed: 100
             })
-            .toObservable();
+            .toDatabase();
 
         const gravityObserver = vi.fn();
         const maxSpeedObserver = vi.fn();
@@ -267,7 +251,7 @@ describe("createObservableDatabase", () => {
     });
 
     it("should support transactions and notify observers", () => {
-        const db = createTestObservableDatabase().withTransactions({
+        const db = createTestDatabase().withTransactions({
             createParticle(db, args: { position: Vec3, name: string, velocity: Vec3, age: number }) {
                 db.archetypes.particle.create(args);
             },
@@ -330,7 +314,7 @@ describe("createObservableDatabase", () => {
         const db = createDatastore().withResources({
             gravity: 9.8,
             gravityMultiplier: 100,
-        }).toObservable()
+        }).toDatabase()
         .withComputedResource("effectiveGravity", ["gravity", "gravityMultiplier"], ({gravity, gravityMultiplier}) => gravity * gravityMultiplier);
 
         expect(db.resources.effectiveGravity).toBeCloseTo(9.8 * 100);

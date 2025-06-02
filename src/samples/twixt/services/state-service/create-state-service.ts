@@ -1,5 +1,5 @@
 import { mutableClone } from "data/functions/mutable-clone";
-import { createDatabase } from "ecs";
+import { createDatastore } from "ecs";
 import { calculateNewLinks } from "samples/twixt/functions/calculate-new-links";
 import { calculateWinner } from "samples/twixt/functions/calculate-winner";
 
@@ -8,7 +8,7 @@ export type BoardPoint = Player | null;
 export type BoardLink = [number, number]; // [fromIndex, toIndex]
 
 function createCoreDatabase() {
-    return createDatabase().withResources({
+    return createDatastore().withResources({
         board: new Array<BoardPoint>(24 ** 2).fill(null),
         links: new Array<BoardLink>(0),
         hoverIndex: null as number | null,
@@ -17,7 +17,7 @@ function createCoreDatabase() {
 
 export function createStateService() {
     return createCoreDatabase()
-        .toObservable()
+        .toDatabase()
         .withComputedResource(
             "currentPlayer",
             ["board"],

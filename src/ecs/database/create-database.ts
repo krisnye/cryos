@@ -1,8 +1,8 @@
-import { Database, Entity } from "ecs";
+import { Datastore, Entity } from "ecs";
 import { ArchetypeComponents } from "ecs/datastore/archetype-components";
 import { CoreComponents } from "ecs/datastore/core-components";
 import { ResourceComponents } from "ecs/datastore/resource-components";
-import { ObservableDatabase } from "./observable-datatabase";
+import { Database } from "./database";
 import { TransactionDatabase, TransactionDeclarations, TransactionFunctions } from "ecs/transaction-database/transaction-database";
 import { fromProperties, Observe, withDeduplicate, withMap } from "data/observe";
 import { mapEntries } from "data/object";
@@ -10,12 +10,12 @@ import { EntityValues } from "ecs/datastore/datastore";
 import { TransactionResult } from "ecs/transaction-database/transaction-database";
 import { ArchetypeId } from "ecs/archetype";
 
-export function createObservableDatabase<
+export function createDatabase<
     C extends CoreComponents,
     A extends ArchetypeComponents<CoreComponents>,
     R extends ResourceComponents,
     T extends TransactionFunctions,
->(db: TransactionDatabase<C, A, R>): ObservableDatabase<C, A, R, T> {
+>(db: TransactionDatabase<C, A, R>): Database<C, A, R, T> {
 
     //  variables to track the observers
     const componentObservers = new Map<keyof C, Set<() => void>>();
@@ -37,7 +37,7 @@ export function createObservableDatabase<
         const resourceId = archetype.columns.id.get(0);
         return withMap(observeEntity(resourceId), (values) => values![resource as keyof C]);
     }) as unknown as { [K in keyof R]: Observe<R[K]>; };
-    const observe: ObservableDatabase<C, A, R>["observe"] = {
+    const observe: Database<C, A, R>["observe"] = {
         component: observeComponent,
         resource: observeResource,
         transactions: (notify) => {
@@ -52,7 +52,7 @@ export function createObservableDatabase<
 
     const { execute: transactionDatabaseExecute, resources, ...rest } = db;
 
-    const execute = (handler: (db: Database<C, A, R>) => void) => {
+    const execute = (handler: (db: Datastore<C, A, R>) => void) => {
         const result = transactionDatabaseExecute(handler);
         for (const transactionObserver of transactionObservers) {
             transactionObserver(result);
@@ -128,7 +128,7 @@ export function createObservableDatabase<
         return observableDatabase;
     }
 
-    const observableDatabase: ObservableDatabase<C, A, R, T> = {
+    const observableDatabase: Database<C, A, R, T> = {
         ...rest,
         resources,
         transactions,

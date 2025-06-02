@@ -6,7 +6,7 @@ import * as TABLE from "data/table";
 import { Datastore } from "./datastore";
 import { CoreComponents } from "./core-components";
 import { createGetArchetypes } from "./create-get-archetypes";
-import { createObservableDatabase } from "ecs/observable-database/create-observable-database";
+import { createDatabase } from "ecs/database/create-database";
 import { createTransactionDatabase } from "ecs/transaction-database/create-transaction-database";
 
 export function createDatastore(): Datastore<CoreComponents, {}, {}> {
@@ -148,8 +148,8 @@ export function createDatastore(): Datastore<CoreComponents, {}, {}> {
         return createTransactionDatabase(datastore as any);
     }
     
-    const toObservable = () => {
-        return createObservableDatabase(datastore.toTransactional() as any);
+    const toDatabase = () => {
+        return createDatabase(datastore.toTransactional() as any);
     }
 
     const datastore = {
@@ -166,7 +166,7 @@ export function createDatastore(): Datastore<CoreComponents, {}, {}> {
         withArchetypes,
         withResources,
         toTransactional,
-        toObservable,
+        toDatabase,
     } as unknown as Datastore<CoreComponents, {}, {}>;
     return datastore;
 }
