@@ -7,7 +7,7 @@ import { Datastore } from "./datastore";
 import { CoreComponents } from "./core-components";
 import { createGetArchetypes } from "./create-get-archetypes";
 import { createDatabase } from "ecs/database/create-database";
-import { createTransactionDatabase } from "ecs/transaction-database/create-transaction-database";
+import { createTransactionDatastore } from "ecs/datastore/transaction/create-transaction-datastore";
 
 export function createDatastore(): Datastore<CoreComponents, {}, {}> {
 
@@ -145,7 +145,7 @@ export function createDatastore(): Datastore<CoreComponents, {}, {}> {
     }
 
     const toTransactional = () => {
-        return createTransactionDatabase(datastore as any);
+        return createTransactionDatastore(datastore as any);
     }
     
     const toDatabase = () => {

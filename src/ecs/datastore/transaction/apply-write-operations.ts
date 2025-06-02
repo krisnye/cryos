@@ -2,7 +2,7 @@ import { Datastore } from "ecs/datastore";
 import { ArchetypeComponents } from "ecs/datastore/archetype-components";
 import { CoreComponents } from "ecs/datastore/core-components";
 import { ResourceComponents } from "ecs/datastore/resource-components";
-import { TransactionWriteOperation } from "./transaction-database";
+import { TransactionWriteOperation } from "./transaction-datastore";
 
 export function applyWriteOperations<
     C extends CoreComponents,

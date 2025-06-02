@@ -3,11 +3,11 @@ import { ArchetypeComponents } from "ecs/datastore/archetype-components";
 import { CoreComponents } from "ecs/datastore/core-components";
 import { ResourceComponents } from "ecs/datastore/resource-components";
 import { Database } from "./database";
-import { TransactionDatabase, TransactionDeclarations, TransactionFunctions } from "ecs/transaction-database/transaction-database";
+import { TransactionDatastore, TransactionDeclarations, TransactionFunctions } from "ecs/datastore/transaction/transaction-datastore";
 import { fromProperties, Observe, withDeduplicate, withMap } from "data/observe";
 import { mapEntries } from "data/object";
 import { EntityValues } from "ecs/datastore/datastore";
-import { TransactionResult } from "ecs/transaction-database/transaction-database";
+import { TransactionResult } from "ecs/datastore/transaction/transaction-datastore";
 import { ArchetypeId } from "ecs/archetype";
 
 export function createDatabase<
@@ -15,7 +15,7 @@ export function createDatabase<
     A extends ArchetypeComponents<CoreComponents>,
     R extends ResourceComponents,
     T extends TransactionFunctions,
->(db: TransactionDatabase<C, A, R>): Database<C, A, R, T> {
+>(db: TransactionDatastore<C, A, R>): Database<C, A, R, T> {
 
     //  variables to track the observers
     const componentObservers = new Map<keyof C, Set<() => void>>();

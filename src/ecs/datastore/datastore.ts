@@ -7,7 +7,7 @@ import { ArchetypeComponents } from "./archetype-components";
 import { ResourceComponents } from "./resource-components";
 import { ReadonlyArchetype } from "ecs/archetype";
 import { Database } from "ecs/database/database";
-import { TransactionDatabase } from "ecs/transaction-database/transaction-database";
+import { TransactionDatastore } from "ecs/datastore/transaction/transaction-datastore";
 
 export type EntityValues<C> = CoreComponents & { [K in keyof C]?: C[K] | undefined }
 export type EntityUpdateValues<C> = Omit<{ [K in keyof C]?: C[K] | undefined }, "id">;
@@ -68,7 +68,7 @@ export interface Datastore<
      * Internal function to convert a datastore to a transaction database.
      * This is an implementation detail and should not be used directly.
      */
-    toTransactional: () => TransactionDatabase<C, A, R>;
+    toTransactional: () => TransactionDatastore<C, A, R>;
 }
 
 

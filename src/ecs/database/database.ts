@@ -4,7 +4,7 @@ import { ArchetypeComponents } from "ecs/datastore/archetype-components";
 import { ResourceComponents } from "ecs/datastore/resource-components";
 import { ArchetypeId } from "ecs/archetype";
 import { Observe } from "data/observe";
-import { TransactionResult, TransactionDatabase, TransactionDeclarations, ToTransactionFunctions, TransactionFunctions } from "ecs/transaction-database/transaction-database";
+import { TransactionResult, TransactionDatastore, TransactionDeclarations, ToTransactionFunctions, TransactionFunctions } from "ecs/datastore/transaction/transaction-datastore";
 import { EntityValues } from "ecs/datastore/datastore";
 import { Simplify } from "types";
 
@@ -13,7 +13,7 @@ export interface Database<
     A extends ArchetypeComponents<CoreComponents> = {},
     R extends ResourceComponents = {},
     T extends TransactionFunctions = {},
-> extends TransactionDatabase<C, A, R> {
+> extends TransactionDatastore<C, A, R> {
     readonly transactions: T;
     readonly observe: {
         readonly component: { [K in keyof C]: Observe<void> };

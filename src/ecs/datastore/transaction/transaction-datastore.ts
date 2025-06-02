@@ -4,8 +4,6 @@ import { ArchetypeComponents } from "ecs/datastore/archetype-components";
 import { ResourceComponents } from "ecs/datastore/resource-components";
 import { EntityUpdateValues, ReadonlyDatastore } from "ecs/datastore";
 import { ArchetypeId, EntityCreateValues } from "ecs/archetype";
-import { Simplify } from "types";
-import { Database } from "ecs/database/database";
 
 export type TransactionDeclaration<
     C extends CoreComponents = CoreComponents,
@@ -35,7 +33,7 @@ export type TransactionFunctions = { [K: string]: (...args: any | void) => void 
  * 
  * This type is generally not used directly, instead an ObservableDatabase is used which is built on this.
  */
-export interface TransactionDatabase<
+export interface TransactionDatastore<
     C extends CoreComponents = CoreComponents,
     A extends ArchetypeComponents<CoreComponents> = {},
     R extends ResourceComponents = {}
