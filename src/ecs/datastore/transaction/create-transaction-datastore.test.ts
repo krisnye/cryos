@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createDatabase } from "ecs/database";
+import { createDatastore } from "ecs/datastore";
 import { F32Schema, FromSchema, Schema, U32Schema } from "data";
 import { Archetype } from "ecs/archetype";
 import { Entity } from "ecs/entity";
@@ -31,8 +31,8 @@ const testSchemas = {
     age: U32Schema,
 } as const;
 
-function createTestTransactionDatabase() {
-    return createDatabase().withComponents(testSchemas).withArchetypes({
+function createTestTransactionDatastore() {
+    return createDatastore().withComponents(testSchemas).withArchetypes({
         particle: ["id", "position", "name", "velocity", "age"],
         particleWithoutName: ["id", "position", "velocity", "age"],
     }).toTransactional();
@@ -41,7 +41,7 @@ function createTestTransactionDatabase() {
 describe("createTransactionDatabase", () => {
     describe("transaction execution", () => {
         it("should track changes in a successful transaction", () => {
-            const db = createTestTransactionDatabase();
+            const db = createTestTransactionDatastore();
             const archetype = db.getArchetype(["id", "position", "name", "velocity", "age"]) as Archetype<TestComponents>;
 
             const result = db.execute((db) => {
@@ -62,7 +62,7 @@ describe("createTransactionDatabase", () => {
         });
 
         it("should rollback changes on transaction failure", () => {
-            const db = createTestTransactionDatabase();
+            const db = createTestTransactionDatastore();
 
             let entity!: Entity;
             db.execute(db => {
@@ -87,7 +87,7 @@ describe("createTransactionDatabase", () => {
         });
 
         it("should combine consecutive updates to the same entity", () => {
-            const db = createTestTransactionDatabase();
+            const db = createTestTransactionDatastore();
 
             const result = db.execute((db) => {
                 const entity = db.archetypes.particle.create({
@@ -110,7 +110,7 @@ describe("createTransactionDatabase", () => {
         });
 
         it("should handle component deletion in transactions", () => {
-            const db = createTestTransactionDatabase();
+            const db = createTestTransactionDatastore();
 
             const result = db.execute((db) => {
                 const entity = db.archetypes.particle.create({
@@ -136,7 +136,7 @@ describe("createTransactionDatabase", () => {
         });
 
         it("should track archetype changes during component updates", () => {
-            const db = createTestTransactionDatabase();
+            const db = createTestTransactionDatastore();
 
             const result = db.execute((db) => {
                 const entity = db.archetypes.particleWithoutName.create({
@@ -158,7 +158,7 @@ describe("createTransactionDatabase", () => {
         });
 
         it("should handle multiple operations in a single transaction", () => {
-            const db = createTestTransactionDatabase();
+            const db = createTestTransactionDatastore();
 
             const result = db.execute((db) => {
                 // Create first entity
@@ -189,7 +189,7 @@ describe("createTransactionDatabase", () => {
         });
 
         it("should clear change tracking after transaction completion", () => {
-            const db = createTestTransactionDatabase();
+            const db = createTestTransactionDatastore();
 
             // First transaction
             db.execute((db) => {
@@ -218,7 +218,7 @@ describe("createTransactionDatabase", () => {
         });
 
         it("should correctly revert state when applying undo operations and preserve entity IDs on redo", () => {
-            const db = createTestTransactionDatabase();
+            const db = createTestTransactionDatastore();
             const initialEntities = new Map<Entity, Partial<TestComponents>>();
 
             // Create initial state

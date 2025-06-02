@@ -1,18 +1,16 @@
-import { Database, Entity } from "ecs";
-import { CoreComponents } from "ecs/database/core-components";
-import { ArchetypeComponents } from "ecs/database/archetype-components";
-import { ResourceComponents } from "ecs/database/resource-components";
-import { EntityUpdateValues, ReadonlyDatabase } from "ecs/database";
+import { Datastore, Entity } from "ecs";
+import { CoreComponents } from "ecs/datastore/core-components";
+import { ArchetypeComponents } from "ecs/datastore/archetype-components";
+import { ResourceComponents } from "ecs/datastore/resource-components";
+import { EntityUpdateValues, ReadonlyDatastore } from "ecs/datastore";
 import { ArchetypeId, EntityCreateValues } from "ecs/archetype";
-import { Simplify } from "types";
-import { ObservableDatabase } from "ecs/observable-database/observable-datatabase";
 
 export type TransactionDeclaration<
     C extends CoreComponents = CoreComponents,
     A extends ArchetypeComponents<CoreComponents> = {},
     R extends ResourceComponents = {},
     Input extends any | void = any
-> = (db: Database<C, A, R>, input: Input) => void
+> = (db: Datastore<C, A, R>, input: Input) => void
 
 /**
  * Converts from TransactionDeclarations to TransactionFunctions by removing the initial database argument.
@@ -35,12 +33,12 @@ export type TransactionFunctions = { [K: string]: (...args: any | void) => void 
  * 
  * This type is generally not used directly, instead an ObservableDatabase is used which is built on this.
  */
-export interface TransactionDatabase<
+export interface TransactionDatastore<
     C extends CoreComponents = CoreComponents,
     A extends ArchetypeComponents<CoreComponents> = {},
     R extends ResourceComponents = {}
-> extends ReadonlyDatabase<C, A, R> {
-    execute(transaction: (db: Database<C, A, R>) => void): TransactionResult<C>;
+> extends ReadonlyDatastore<C, A, R> {
+    execute(transaction: (db: Datastore<C, A, R>) => void): TransactionResult<C>;
 }
 
 export type TransactionCreateOperation<C> = {

@@ -1,6 +1,6 @@
 import * as TABLE from "data/table";
 import { Archetype } from "./archetype";
-import { CoreComponents } from "ecs/database/core-components";
+import { CoreComponents } from "ecs/datastore/core-components";
 import { EntityLocationTable } from "ecs/entity-location-table";
 
 /**

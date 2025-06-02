@@ -1,7 +1,7 @@
 import { Table } from "data";
 import { ReadonlyTable } from "data/table";
 import { Entity } from "ecs";
-import { CoreComponents } from "ecs/database/core-components";
+import { CoreComponents } from "ecs/datastore/core-components";
 
 export type EntityCreateValues<C> = Omit<C, "id">;
 

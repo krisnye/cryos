@@ -1,81 +1,56 @@
-import { FromSchema, Schema, TypedBuffer } from "data";
-import { Archetype, Entity, EntityLocation } from "ecs";
-import { Equal, Simplify } from "types";
-import { Assert } from "types";
-import { CoreComponents } from "./core-components";
-import { ArchetypeComponents } from "./archetype-components";
-import { ResourceComponents } from "./resource-components";
-import { ReadonlyArchetype } from "ecs/archetype";
-import { ObservableDatabase } from "ecs/observable-database/observable-datatabase";
-import { TransactionDatabase } from "ecs/transaction-database/transaction-database";
-import { EntityLocationTable } from "ecs/entity-location-table";
-
-export type EntityValues<C> = CoreComponents & { [K in keyof C]?: C[K] | undefined }
-export type EntityUpdateValues<C> = Omit<{ [K in keyof C]?: C[K] | undefined }, "id">;
-
-export interface ReadonlyDatabase<
-    C extends CoreComponents = CoreComponents,
-    A extends ArchetypeComponents<C> = {},
-    R extends ResourceComponents = {}
-> {
-    readonly components: { readonly [K in keyof C]: Schema };
-    readonly archetypes: ReadonlyArchetype<CoreComponents & Partial<C>>[] & { readonly [K in keyof A]: ReadonlyArchetype<CoreComponents & Pick<C, A[K][number]>> };
-    readonly resources: { readonly [K in keyof R]: R[K] };
-
-    getArchetypes: <Include extends keyof C, Exclude extends keyof C = never>(
-        components: Include[],
-        options?: {
-            exclude?: Exclude[]
-        }
-    ) => IterableIterator<ReadonlyArchetype<{ [K in Include]: C[K]}>>;
-    getArchetype: <CC extends keyof C>(components: CC[]) => ReadonlyArchetype<{ [K in CC]: C[K]}>;
-    locateEntity: (entity: Entity) => EntityLocation;
-    selectEntity: (entity: Entity) => EntityValues<C> | null;
-}
+import { Entity } from "ecs";
+import { CoreComponents } from "ecs/datastore/core-components";
+import { ArchetypeComponents } from "ecs/datastore/archetype-components";
+import { ResourceComponents } from "ecs/datastore/resource-components";
+import { ArchetypeId } from "ecs/archetype";
+import { Observe } from "data/observe";
+import { TransactionResult, TransactionDatastore, TransactionDeclarations, ToTransactionFunctions, TransactionFunctions } from "ecs/datastore/transaction/transaction-datastore";
+import { EntityValues } from "ecs/datastore/datastore";
+import { Simplify } from "types";
 
 export interface Database<
     C extends CoreComponents = CoreComponents,
     A extends ArchetypeComponents<CoreComponents> = {},
-    R extends ResourceComponents = {}
-> extends Omit<ReadonlyDatabase<C, A, R>, "resources"> {
-    readonly archetypes: Archetype<CoreComponents & Partial<C>>[] & { readonly [K in keyof A]: Archetype<CoreComponents & Pick<C, A[K][number]>> }
-    readonly resources: { -readonly [K in keyof R]: R[K] };
-
-    withComponents: <NC extends { [name: string]: Schema }>(
-        addComponents: NC,
-    ) => Database<Simplify<C & { -readonly [K in keyof NC]: FromSchema<NC[K]> }>, A, R>;
-    withArchetypes: <NA extends { [name: string]: (keyof C)[] }>(
-        namedArchetypes: NA
-    ) => Database<C, Simplify<A & NA>, R>;
-    withResources: <NR extends { [name: string]: unknown }>(
-        newResources: NR
-    ) => Database<C, A, Simplify<R & NR>>;
-    getArchetypes: <Include extends keyof C, Exclude extends keyof C = never>(
-        components: Include[],
-        options?: {
-            exclude?: Exclude[]
-        }
-    ) => IterableIterator<Archetype<{ [K in Include]: C[K]}>>;
-    getArchetype: <CC extends keyof C>(components: CC[]) => Archetype<{ [K in CC]: C[K]}>;
-    deleteEntity: (entity: Entity) => void;
-    updateEntity: (entity: Entity, values: EntityUpdateValues<C>) => void;
-
-    toObservable: () => ObservableDatabase<C, A, R>;
-    toTransactional: () => TransactionDatabase<C, A, R>;
+    R extends ResourceComponents = {},
+    T extends TransactionFunctions = {},
+> extends TransactionDatastore<C, A, R> {
+    readonly transactions: T;
+    readonly observe: {
+        readonly component: { [K in keyof C]: Observe<void> };
+        readonly resource: { [K in keyof R]: Observe<R[K]> };
+        readonly transactions: Observe<TransactionResult<C>>;
+        entity(id: Entity): Observe<EntityValues<C> | null>;
+        archetype(id: ArchetypeId): Observe<void>;
+    }
+    withTransactions: <NT extends TransactionDeclarations<C, A, R>>(transactions: NT)
+        => Database<C, A, R, Simplify<T & ToTransactionFunctions<NT>>>;
+    withComputedResource<
+        N extends string,
+        const D extends readonly (keyof R)[],
+        CT
+      >(
+        name: N,
+        resources: D,
+        compute: (resources: { [K in D[number]]: R[K] }) => CT
+      ): Database<C, A, Simplify<R & { [K in N]: CT }>>;
 }
 
+export type ComputedResource<
+  R extends ResourceComponents,
+  D extends readonly (keyof R)[],
+  T
+> = {
+  resources: D;
+  // ⬇ one object parameter whose keys come from the tuple D
+  compute: (resources: { [K in D[number]]: R[K] }) => T;
+};
 
+export type ComputedResources<R extends ResourceComponents> = {
+  [name: string]: ComputedResource<R, readonly (keyof R)[], unknown>;
+};
+
+declare const db: Database<{ id: number }, {}, { a: number, b: string }, {}>;
 () => {
-    let db!: Database<{ id: number, a: string }>;
-    let db2 = db.withComponents({ c: { type: "number" }, d: { type: "string" } });
-    let db3 = db2.withArchetypes({ a: ["id", "a"] });
-    let db4 = db3.withComponents({ e: { type: "number" }});
-    let db5 = db4.withArchetypes({ b: ["id", "c", "d", "e"] });
-    let db6 = db5.withComponents({ b: { type: "string" }});
-    let db7 = db6.withArchetypes({ alpha: ["id", "a", "b"] });
-    let db8 = db7.withResources({ r: "foo" });
-    type CheckA = Assert<Equal<(typeof db6)["archetypes"]["a"], Archetype<{ id: number, a: string }>>>;
-    type CheckB = Assert<Equal<(typeof db6)["archetypes"]["b"], Archetype<{ id: number, c: number, d: string, e: number }>>>;
-    type CheckC = Assert<Equal<(typeof db7)["archetypes"]["alpha"]["columns"]["a"], TypedBuffer<string>>>;
-    type CheckD = Assert<Equal<(typeof db8)["resources"]["r"], string>>;
-}
+    const db2 = db.withComputedResource("foo", ["a", "b"], ({a, b}) => false);
+};
+
