@@ -8,6 +8,7 @@ import { ResourceComponents } from "./resource-components";
 import { ReadonlyArchetype } from "ecs/archetype";
 import { ObservableDatabase } from "ecs/observable-database/observable-datatabase";
 import { TransactionDatabase } from "ecs/transaction-database/transaction-database";
+import { EntityLocationTable } from "ecs/entity-location-table";
 
 export type EntityValues<C> = CoreComponents & { [K in keyof C]?: C[K] | undefined }
 export type EntityUpdateValues<C> = Omit<{ [K in keyof C]?: C[K] | undefined }, "id">;
@@ -18,7 +19,7 @@ export interface ReadonlyDatabase<
     R extends ResourceComponents = {}
 > {
     readonly components: { readonly [K in keyof C]: Schema };
-    readonly archetypes: ReadonlyArchetype<CoreComponents & Partial<C>>[] & { readonly [K in keyof A]: ReadonlyArchetype<CoreComponents & Pick<C, A[K][number]>> }
+    readonly archetypes: ReadonlyArchetype<CoreComponents & Partial<C>>[] & { readonly [K in keyof A]: ReadonlyArchetype<CoreComponents & Pick<C, A[K][number]>> };
     readonly resources: { readonly [K in keyof R]: R[K] };
 
     getArchetypes: <Include extends keyof C, Exclude extends keyof C = never>(

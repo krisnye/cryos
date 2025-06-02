@@ -20,7 +20,8 @@ export function createStateService() {
         .toObservable()
         .withComputedResource(
             "currentPlayer",
-            ["board"], ({board}) => {
+            ["board"],
+            ({board}) => {
                 const redCount = board.filter(point => point === "red").length;
                 const blackCount = board.filter(point => point === "black").length;
                 return redCount > blackCount ? "black" : "red";

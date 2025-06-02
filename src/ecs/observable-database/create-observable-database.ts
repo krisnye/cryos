@@ -4,7 +4,7 @@ import { CoreComponents } from "ecs/database/core-components";
 import { ResourceComponents } from "ecs/database/resource-components";
 import { ObservableDatabase } from "./observable-datatabase";
 import { TransactionDatabase, TransactionDeclarations, TransactionFunctions } from "ecs/transaction-database/transaction-database";
-import { fromArray, fromProperties, Observe, withDeduplicate, withMap } from "data/observe";
+import { fromProperties, Observe, withDeduplicate, withMap } from "data/observe";
 import { mapEntries } from "data/object";
 import { EntityValues } from "ecs/database/database";
 import { TransactionResult } from "ecs/transaction-database/transaction-database";
@@ -14,7 +14,7 @@ export function createObservableDatabase<
     C extends CoreComponents,
     A extends ArchetypeComponents<CoreComponents>,
     R extends ResourceComponents,
-    T extends TransactionFunctions
+    T extends TransactionFunctions,
 >(db: TransactionDatabase<C, A, R>): ObservableDatabase<C, A, R, T> {
 
     //  variables to track the observers

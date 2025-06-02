@@ -16,7 +16,7 @@ describe('calculateWinner', () => {
         const board = new Array(5 * 5).fill(null);
         const links: [number, number][] = [];
         
-        const result = calculateWinner(board, links);
+        const result = calculateWinner({board, links});
         expect(result).toBe(null);
     });
 
@@ -38,7 +38,7 @@ describe('calculateWinner', () => {
             [21, 24], // middle-right to bottom-right
         ];
 
-        const result = calculateWinner(board, links);
+        const result = calculateWinner({board, links});
         expect(result).toBe('red');
     });
 
@@ -68,7 +68,7 @@ describe('calculateWinner', () => {
             [22, 24], // bottom-middle to bottom-right
         ];
 
-        const result = calculateWinner(board, links);
+        const result = calculateWinner({board, links});
         expect(result).toBe('black');
     });
 
@@ -91,7 +91,7 @@ describe('calculateWinner', () => {
             [8, 15],
         ];
 
-        const result = calculateWinner(board, links);
+        const result = calculateWinner({board, links});
         expect(result).toBe(null);
     });
 
@@ -108,7 +108,7 @@ describe('calculateWinner', () => {
         // No links between pieces
         const links: [number, number][] = [];
 
-        const result = calculateWinner(board, links);
+        const result = calculateWinner({board, links});
         expect(result).toBe(null);
     });
 
@@ -138,7 +138,7 @@ describe('calculateWinner', () => {
             [22, 24],
         ];
 
-        const result = calculateWinner(board, links);
+        const result = calculateWinner({board, links});
         expect(result).toBe('red');
     });
 }); 

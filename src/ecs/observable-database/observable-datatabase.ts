@@ -9,14 +9,20 @@ import { Database, EntityValues } from "ecs/database/database";
 import { Simplify } from "types";
 
 export type ToWritableDatabase<T extends ObservableDatabase> = T extends ObservableDatabase<infer C, infer A, infer R, infer T> ? Database<C, A, R> : never;
+export type IndexedComponents<C extends CoreComponents> = { [name: string]: readonly (keyof C)[] }
+export type Index<C extends CoreComponents, I extends readonly (keyof C)[]>
+    = { first(...args: ArgsOf<C, I>): Entity | null; all(...args: ArgsOf<C, I>): IterableIterator<Entity>; }
+
+export type ArgsOf<C,I extends readonly (keyof C)[]> = { [K in keyof I]: C[I[K]] };
 
 export interface ObservableDatabase<
     C extends CoreComponents = CoreComponents,
     A extends ArchetypeComponents<CoreComponents> = {},
     R extends ResourceComponents = {},
-    T extends TransactionFunctions = {}
+    T extends TransactionFunctions = {},
+    I extends IndexedComponents<CoreComponents> = {}
 > extends TransactionDatabase<C, A, R> {
-    transactions: T;
+    readonly transactions: T;
     readonly observe: {
         readonly component: { [K in keyof C]: Observe<void> };
         readonly resource: { [K in keyof R]: Observe<R[K]> };

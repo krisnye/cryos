@@ -11,7 +11,7 @@ export const winner = (
     links: service.state.observe.resource.links,
 }),
     ({ board, links }) => {
-        return calculateWinner(board, links);
+        return calculateWinner({board, links});
     }
 );
 
