@@ -1,13 +1,13 @@
-import { Database } from "ecs/database";
-import { ArchetypeComponents } from "ecs/database/archetype-components";
-import { CoreComponents } from "ecs/database/core-components";
-import { ResourceComponents } from "ecs/database/resource-components";
+import { Datastore } from "ecs/datastore";
+import { ArchetypeComponents } from "ecs/datastore/archetype-components";
+import { CoreComponents } from "ecs/datastore/core-components";
+import { ResourceComponents } from "ecs/datastore/resource-components";
 import { TransactionWriteOperation } from "./transaction-database";
 
 export function applyWriteOperations<
     C extends CoreComponents,
     A extends ArchetypeComponents<CoreComponents>,
-    R extends ResourceComponents>(database: Database<C, A, R>, operations: TransactionWriteOperation<C>[]): void {
+    R extends ResourceComponents>(database: Datastore<C, A, R>, operations: TransactionWriteOperation<C>[]): void {
     for (const operation of operations) {
         switch (operation.type) {
             case "create": {

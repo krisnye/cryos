@@ -2,7 +2,7 @@ import { FromSchema } from "data";
 import { Entity, EntitySchema, Archetype } from "ecs";
 import * as TABLE from "data/table";
 import { EntityLocationTable } from "ecs/entity-location-table";
-import { CoreComponents } from "ecs/database/core-components";
+import { CoreComponents } from "ecs/datastore/core-components";
 
 export const createArchetype = <C extends { id: typeof EntitySchema }>(
     components: C,

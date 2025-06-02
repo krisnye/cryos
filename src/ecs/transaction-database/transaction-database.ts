@@ -1,8 +1,8 @@
 import { Database, Entity } from "ecs";
-import { CoreComponents } from "ecs/database/core-components";
-import { ArchetypeComponents } from "ecs/database/archetype-components";
-import { ResourceComponents } from "ecs/database/resource-components";
-import { EntityUpdateValues, ReadonlyDatabase } from "ecs/database";
+import { CoreComponents } from "ecs/datastore/core-components";
+import { ArchetypeComponents } from "ecs/datastore/archetype-components";
+import { ResourceComponents } from "ecs/datastore/resource-components";
+import { EntityUpdateValues, ReadonlyDatastore } from "ecs/datastore";
 import { ArchetypeId, EntityCreateValues } from "ecs/archetype";
 import { Simplify } from "types";
 import { ObservableDatabase } from "ecs/observable-database/observable-datatabase";
@@ -39,7 +39,7 @@ export interface TransactionDatabase<
     C extends CoreComponents = CoreComponents,
     A extends ArchetypeComponents<CoreComponents> = {},
     R extends ResourceComponents = {}
-> extends ReadonlyDatabase<C, A, R> {
+> extends ReadonlyDatastore<C, A, R> {
     execute(transaction: (db: Database<C, A, R>) => void): TransactionResult<C>;
 }
 

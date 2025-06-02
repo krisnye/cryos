@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, Mock } from "vitest";
-import { createDatabase, Database } from "ecs/database";
+import { createDatastore, Datastore } from "ecs/datastore";
 import { F32Schema, FromSchema, Schema, U32Schema } from "data";
 import { Entity } from "ecs/entity";
 import { ObservableDatabase } from "./observable-datatabase";
@@ -38,7 +38,7 @@ const testSchemas = {
 } as const;
 
 function createTestObservableDatabase() {
-    return createDatabase()
+    return createDatastore()
         .withComponents(testSchemas)
         .withArchetypes({
             particle: ["id", "position", "name", "velocity", "age"],
@@ -212,7 +212,7 @@ describe("createObservableDatabase", () => {
     });
 
     it("should notify resource observers with immediate and update notifications", () => {
-        const db = createDatabase()
+        const db = createDatastore()
             .withComponents(testSchemas)
             .withArchetypes({
                 particle: ["id", "position", "name", "velocity", "age"],
@@ -327,7 +327,7 @@ describe("createObservableDatabase", () => {
     });
 
     it("should support computed resources immediately and observed", () => {
-        const db = createDatabase().withResources({
+        const db = createDatastore().withResources({
             gravity: 9.8,
             gravityMultiplier: 100,
         }).toObservable()

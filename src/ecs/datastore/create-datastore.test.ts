@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createDatabase } from "./create-database";
+import { createDatastore } from "./create-datastore";
 import { F32Schema, Schema, U32Schema } from "data";
 
 const Vec3Schema = {
@@ -21,16 +21,16 @@ const testSchemas = {
     age: U32Schema,
 } as const;
 
-// Helper to create a test database with standard test components
-function createTestDatabase() {
-    const db = createDatabase();
+// Helper to create a test datastore with standard test components
+function createTestDatastore() {
+    const db = createDatastore();
     return db.withComponents(testSchemas);
 }
 
-describe("createDatabase", () => {
+describe("createDatastore", () => {
     describe("withComponents", () => {
-        it("should merge new component schemas into database schemas", () => {
-            const db = createDatabase();
+        it("should merge new component schemas into datastore schemas", () => {
+            const db = createDatastore();
             const newComponents = {
                 position: { type: "object", properties: { x: { type: "number" }, y: { type: "number" } }, default: { x: 0, y: 0 } as { x: number, y: number } } as const satisfies Schema,
                 velocity: { type: "object", properties: { vx: { type: "number" }, vy: { type: "number" } }, default: { vx: 0, vy: 0 } as { vx: number, vy: number } } as const satisfies Schema,
@@ -45,7 +45,7 @@ describe("createDatabase", () => {
             expect(extendedDb.components.position).toBe(newComponents.position);
             expect(extendedDb.components.velocity).toBe(newComponents.velocity);
             
-            // Check that the returned database is a valid database instance
+            // Check that the returned datastore is a valid datastore instance
             expect(typeof extendedDb.getArchetype).toBe("function");
             expect(typeof extendedDb.selectEntity).toBe("function");
             expect(typeof extendedDb.updateEntity).toBe("function");
@@ -55,7 +55,7 @@ describe("createDatabase", () => {
 
     describe("withArchetypes", () => {
         it("should provide strongly typed access to archetypes", () => {
-            const db = createDatabase();
+            const db = createDatastore();
             const newComponents = {
                 position: { type: "object", properties: { x: { type: "number" }, y: { type: "number" } }, default: { x: 0, y: 0 } as { x: number, y: number } } as const satisfies Schema,
                 velocity: { type: "object", properties: { vx: { type: "number" }, vy: { type: "number" } }, default: { vx: 0, vy: 0 } as { vx: number, vy: number } } as const satisfies Schema,
@@ -86,12 +86,12 @@ describe("createDatabase", () => {
 
     describe("getArchetype", () => {
         it("should require id component", () => {
-            const db = createTestDatabase();
+            const db = createTestDatastore();
             expect(() => db.getArchetype(["position"])).toThrow("id is required");
         });
 
         it("should create archetypes with correct component combinations", () => {
-            const db = createTestDatabase();
+            const db = createTestDatastore();
 
             // Get archetype with single component plus id
             const positionArchetype = db.getArchetype(["id", "position"]);
@@ -116,7 +116,7 @@ describe("createDatabase", () => {
         });
 
         it("should return same archetype for same component combinations", () => {
-            const db = createTestDatabase();
+            const db = createTestDatastore();
 
             const archetype1 = db.getArchetype(["id", "position", "name"]);
             const archetype2 = db.getArchetype(["id", "position", "name"]);
@@ -130,7 +130,7 @@ describe("createDatabase", () => {
 
     describe("creating entities", () => {
         it("should create entities with correct component data", () => {
-            const db = createTestDatabase();
+            const db = createTestDatastore();
             const archetype = db.getArchetype(["id", "position", "name"]);
 
             // Create first entity
@@ -147,7 +147,7 @@ describe("createDatabase", () => {
             });
             expect(entity2).toBe(1);  // Second entity should have id 1
 
-            // Verify entity data through database queries
+            // Verify entity data through datastore queries
             const entity1Data = db.selectEntity(entity1);
             expect(entity1Data).toEqual({
                 id: 0,
@@ -173,7 +173,7 @@ describe("createDatabase", () => {
 
     describe("deleting entities", () => {
         it("should properly delete entities and their data", () => {
-            const db = createTestDatabase();
+            const db = createTestDatastore();
             const archetype = db.getArchetype(["id", "position", "name"]);
 
             // Create entities to delete
@@ -230,7 +230,7 @@ describe("createDatabase", () => {
 
     describe("locating entities", () => {
         it("should correctly locate entities in their archetypes", () => {
-            const db = createTestDatabase();
+            const db = createTestDatastore();
             
             // Create two different archetypes
             const positionArchetype = db.getArchetype(["id", "position"]);
@@ -273,7 +273,7 @@ describe("createDatabase", () => {
 
     describe("querying archetypes", () => {
         it("should correctly filter archetypes based on component queries", () => {
-            const db = createTestDatabase();
+            const db = createTestDatastore();
             
             // Create various archetypes with different component combinations
             const positionOnly = db.getArchetype(["id", "position"]);
@@ -334,7 +334,7 @@ describe("createDatabase", () => {
 
     describe("updating entities", () => {
         it("should update entity properties within same archetype", () => {
-            const db = createTestDatabase();
+            const db = createTestDatastore();
             const archetype = db.getArchetype(["id", "position", "name"]);
 
             const entity = archetype.create({
@@ -363,7 +363,7 @@ describe("createDatabase", () => {
         });
 
         it("should handle archetype changes when adding or removing components", () => {
-            const db = createTestDatabase();
+            const db = createTestDatastore();
             const basicArchetype = db.getArchetype(["id", "position"]);
             const fullArchetype = db.getArchetype(["id", "position", "name", "age"]);
 
@@ -411,7 +411,7 @@ describe("createDatabase", () => {
         });
 
         it("should handle error cases in updates", () => {
-            const db = createTestDatabase();
+            const db = createTestDatastore();
             const archetype = db.getArchetype(["id", "position", "name"]);
 
             const entity = archetype.create({
@@ -431,7 +431,7 @@ describe("createDatabase", () => {
         });
 
         it("should preserve unmodified component data when removing components", () => {
-            const db = createTestDatabase();
+            const db = createTestDatastore();
             const fullArchetype = db.getArchetype(["id", "position", "velocity", "name", "age"]);
             
             // Create entity with all components
@@ -477,7 +477,7 @@ describe("createDatabase", () => {
 
     describe("integration", () => {
         it("should handle complex sequences of operations correctly", () => {
-            const db = createTestDatabase();
+            const db = createTestDatastore();
             
             // Create different archetypes
             const basicArchetype = db.getArchetype(["id", "position"]);

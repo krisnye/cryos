@@ -1,10 +1,10 @@
-import { createDatabase, Database, EntityUpdateValues } from "ecs/database";
-import { ArchetypeComponents } from "ecs/database/archetype-components";
-import { CoreComponents } from "ecs/database/core-components";
-import { ResourceComponents } from "ecs/database/resource-components";
+import { createDatastore, Datastore, EntityUpdateValues } from "ecs/datastore";
+import { ArchetypeComponents } from "ecs/datastore/archetype-components";
+import { CoreComponents } from "ecs/datastore/core-components";
+import { ResourceComponents } from "ecs/datastore/resource-components";
 import { TransactionDatabase, TransactionResult, TransactionUpdateOperation, TransactionWriteOperation } from "./transaction-database";
 import { Archetype, ArchetypeId, EntityCreateValues } from "ecs/archetype";
-import { createGetArchetypes } from "ecs/database/create-get-archetypes";
+import { createGetArchetypes } from "ecs/datastore/create-get-archetypes";
 import { Entity } from "ecs";
 import { applyWriteOperations } from "./apply-write-operations";
 
@@ -16,7 +16,7 @@ export function createTransactionDatabase<
     A extends ArchetypeComponents<CoreComponents>,
     R extends ResourceComponents
 >(
-    db: Database<C, A, R>
+    db: Datastore<C, A, R>
 ): TransactionDatabase<C, A, R> {
     const {
         archetypes: databaseArchetypes,
@@ -137,7 +137,7 @@ export function createTransactionDatabase<
         undoOperationsInReverseOrder.push({ type: "create", values: oldValues });
     };
 
-    const execute = (handler: (database: Database<C, A, R>) => void): TransactionResult<C> => {
+    const execute = (handler: (database: Datastore<C, A, R>) => void): TransactionResult<C> => {
         try {
             handler(transactionDatabase);
             const operations = {
@@ -162,7 +162,7 @@ export function createTransactionDatabase<
         }
     };
 
-    const transactionDatabase: Database<C, A, R> & TransactionDatabase<C, A, R> = {
+    const transactionDatabase: Datastore<C, A, R> & TransactionDatabase<C, A, R> = {
         ...rest,
         resources,
         archetypes,

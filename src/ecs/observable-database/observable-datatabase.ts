@@ -1,14 +1,14 @@
 import { Entity } from "ecs";
-import { CoreComponents } from "ecs/database/core-components";
-import { ArchetypeComponents } from "ecs/database/archetype-components";
-import { ResourceComponents } from "ecs/database/resource-components";
+import { CoreComponents } from "ecs/datastore/core-components";
+import { ArchetypeComponents } from "ecs/datastore/archetype-components";
+import { ResourceComponents } from "ecs/datastore/resource-components";
 import { ArchetypeId } from "ecs/archetype";
 import { Observe } from "data/observe";
 import { TransactionResult, TransactionDatabase, TransactionDeclarations, ToTransactionFunctions, TransactionFunctions } from "ecs/transaction-database/transaction-database";
-import { Database, EntityValues } from "ecs/database/database";
+import { Datastore, EntityValues } from "ecs/datastore/datastore";
 import { Simplify } from "types";
 
-export type ToWritableDatabase<T extends ObservableDatabase> = T extends ObservableDatabase<infer C, infer A, infer R, infer T> ? Database<C, A, R> : never;
+export type ToWritableDatabase<T extends ObservableDatabase> = T extends ObservableDatabase<infer C, infer A, infer R, infer T> ? Datastore<C, A, R> : never;
 export type IndexedComponents<C extends CoreComponents> = { [name: string]: readonly (keyof C)[] }
 export type Index<C extends CoreComponents, I extends readonly (keyof C)[]>
     = { first(...args: ArgsOf<C, I>): Entity | null; all(...args: ArgsOf<C, I>): IterableIterator<Entity>; }

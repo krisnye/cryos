@@ -1,12 +1,12 @@
 import { Database, Entity } from "ecs";
-import { ArchetypeComponents } from "ecs/database/archetype-components";
-import { CoreComponents } from "ecs/database/core-components";
-import { ResourceComponents } from "ecs/database/resource-components";
+import { ArchetypeComponents } from "ecs/datastore/archetype-components";
+import { CoreComponents } from "ecs/datastore/core-components";
+import { ResourceComponents } from "ecs/datastore/resource-components";
 import { ObservableDatabase } from "./observable-datatabase";
 import { TransactionDatabase, TransactionDeclarations, TransactionFunctions } from "ecs/transaction-database/transaction-database";
 import { fromProperties, Observe, withDeduplicate, withMap } from "data/observe";
 import { mapEntries } from "data/object";
-import { EntityValues } from "ecs/database/database";
+import { EntityValues } from "ecs/datastore/datastore";
 import { TransactionResult } from "ecs/transaction-database/transaction-database";
 import { ArchetypeId } from "ecs/archetype";
 

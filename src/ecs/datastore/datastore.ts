@@ -8,12 +8,11 @@ import { ResourceComponents } from "./resource-components";
 import { ReadonlyArchetype } from "ecs/archetype";
 import { ObservableDatabase } from "ecs/observable-database/observable-datatabase";
 import { TransactionDatabase } from "ecs/transaction-database/transaction-database";
-import { EntityLocationTable } from "ecs/entity-location-table";
 
 export type EntityValues<C> = CoreComponents & { [K in keyof C]?: C[K] | undefined }
 export type EntityUpdateValues<C> = Omit<{ [K in keyof C]?: C[K] | undefined }, "id">;
 
-export interface ReadonlyDatabase<
+export interface ReadonlyDatastore<
     C extends CoreComponents = CoreComponents,
     A extends ArchetypeComponents<C> = {},
     R extends ResourceComponents = {}
@@ -33,23 +32,23 @@ export interface ReadonlyDatabase<
     selectEntity: (entity: Entity) => EntityValues<C> | null;
 }
 
-export interface Database<
+export interface Datastore<
     C extends CoreComponents = CoreComponents,
     A extends ArchetypeComponents<CoreComponents> = {},
     R extends ResourceComponents = {}
-> extends Omit<ReadonlyDatabase<C, A, R>, "resources"> {
+> extends Omit<ReadonlyDatastore<C, A, R>, "resources"> {
     readonly archetypes: Archetype<CoreComponents & Partial<C>>[] & { readonly [K in keyof A]: Archetype<CoreComponents & Pick<C, A[K][number]>> }
     readonly resources: { -readonly [K in keyof R]: R[K] };
 
     withComponents: <NC extends { [name: string]: Schema }>(
         addComponents: NC,
-    ) => Database<Simplify<C & { -readonly [K in keyof NC]: FromSchema<NC[K]> }>, A, R>;
+    ) => Datastore<Simplify<C & { -readonly [K in keyof NC]: FromSchema<NC[K]> }>, A, R>;
     withArchetypes: <NA extends { [name: string]: (keyof C)[] }>(
         namedArchetypes: NA
-    ) => Database<C, Simplify<A & NA>, R>;
+    ) => Datastore<C, Simplify<A & NA>, R>;
     withResources: <NR extends { [name: string]: unknown }>(
         newResources: NR
-    ) => Database<C, A, Simplify<R & NR>>;
+    ) => Datastore<C, A, Simplify<R & NR>>;
     getArchetypes: <Include extends keyof C, Exclude extends keyof C = never>(
         components: Include[],
         options?: {
@@ -61,12 +60,17 @@ export interface Database<
     updateEntity: (entity: Entity, values: EntityUpdateValues<C>) => void;
 
     toObservable: () => ObservableDatabase<C, A, R>;
+    /**
+     * @internal
+     * Internal function to convert a datastore to a transaction database.
+     * This is an implementation detail and should not be used directly.
+     */
     toTransactional: () => TransactionDatabase<C, A, R>;
 }
 
 
 () => {
-    let db!: Database<{ id: number, a: string }>;
+    let db!: Datastore<{ id: number, a: string }>;
     let db2 = db.withComponents({ c: { type: "number" }, d: { type: "string" } });
     let db3 = db2.withArchetypes({ a: ["id", "a"] });
     let db4 = db3.withComponents({ e: { type: "number" }});

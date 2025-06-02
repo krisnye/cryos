@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createDatabase } from "ecs/database";
+import { createDatastore } from "ecs/datastore";
 import { F32Schema, FromSchema, Schema, U32Schema } from "data";
 import { Archetype } from "ecs/archetype";
 import { Entity } from "ecs/entity";
@@ -32,7 +32,7 @@ const testSchemas = {
 } as const;
 
 function createTestTransactionDatabase() {
-    return createDatabase().withComponents(testSchemas).withArchetypes({
+    return createDatastore().withComponents(testSchemas).withArchetypes({
         particle: ["id", "position", "name", "velocity", "age"],
         particleWithoutName: ["id", "position", "velocity", "age"],
     }).toTransactional();

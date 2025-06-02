@@ -3,15 +3,13 @@ import { Archetype, Entity, EntitySchema } from "ecs";
 import { createEntityLocationTable } from "../entity-location-table";
 import * as ARCHETYPE from "ecs/archetype";
 import * as TABLE from "data/table";
-import { Database } from "./database";
+import { Datastore } from "./datastore";
 import { CoreComponents } from "./core-components";
 import { createGetArchetypes } from "./create-get-archetypes";
 import { createObservableDatabase } from "ecs/observable-database/create-observable-database";
 import { createTransactionDatabase } from "ecs/transaction-database/create-transaction-database";
-import { ArchetypeComponents } from "./archetype-components";
-import { ResourceComponents } from "./resource-components";
 
-export function createDatabase(): Database<CoreComponents, {}, {}> {
+export function createDatastore(): Datastore<CoreComponents, {}, {}> {
 
     const components: { [K in keyof CoreComponents]: Schema } = { id: EntitySchema };
     const entityLocationTable = createEntityLocationTable();
@@ -111,16 +109,16 @@ export function createDatabase(): Database<CoreComponents, {}, {}> {
         newComponentSchemas: NC
     ) => {
         Object.assign(components, newComponentSchemas);
-        return database as any;
+        return datastore as any;
     }
 
     const withArchetypes = <NA extends { [name: string]: (keyof CoreComponents)[] }>(
         newArchetypes: NA
     ) => {
         for (const [name, components] of Object.entries(newArchetypes)) {
-            (archetypes as any)[name] = database.getArchetype(components as (keyof CoreComponents)[]);
+            (archetypes as any)[name] = datastore.getArchetype(components as (keyof CoreComponents)[]);
         }
-        return database as any;
+        return datastore as any;
     }
 
     const withResources = <R extends { [name: string]: unknown }>(
@@ -131,7 +129,7 @@ export function createDatabase(): Database<CoreComponents, {}, {}> {
         // finally, we will extend resources with a getter/setter for each resource
         for (const [name, resource] of Object.entries(newResources)) {
             const resourceId = name as keyof CoreComponents;
-            database.withComponents({ [resourceId]: {} });
+            datastore.withComponents({ [resourceId]: {} });
             const archetype = getArchetype(["id", resourceId]);
             archetype.create({ [resourceId]: resource });
             const row = 0;
@@ -143,18 +141,18 @@ export function createDatabase(): Database<CoreComponents, {}, {}> {
                 enumerable: true,
             });
         }
-        return database as any;
+        return datastore as any;
     }
 
     const toTransactional = () => {
-        return createTransactionDatabase(database as any);
+        return createTransactionDatabase(datastore as any);
     }
     
     const toObservable = () => {
-        return createObservableDatabase(database.toTransactional() as any);
+        return createObservableDatabase(datastore.toTransactional() as any);
     }
 
-    const database = {
+    const datastore = {
         components,
         archetypes,
         resources,
@@ -169,6 +167,6 @@ export function createDatabase(): Database<CoreComponents, {}, {}> {
         withResources,
         toTransactional,
         toObservable,
-    } as unknown as Database<CoreComponents, {}, {}>;
-    return database;
+    } as unknown as Datastore<CoreComponents, {}, {}>;
+    return datastore;
 }
