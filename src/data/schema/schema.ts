@@ -5,6 +5,7 @@ interface BaseSchema<T = unknown> {
     default?: T;
     enum?: T[];
     const?: T;
+    persistent?: boolean;
 }
 
 export interface StringSchema extends BaseSchema<string> {

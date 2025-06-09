@@ -2,6 +2,7 @@ import { describe, it, expect, vi, Mock } from "vitest";
 import { createDatastore } from "ecs/datastore";
 import { F32Schema, FromSchema, Schema, U32Schema } from "data";
 import { Entity } from "ecs/entity";
+import { createDatabase } from "./create-database";
 
 const Vec3Schema = {
     type: 'array',
@@ -336,4 +337,34 @@ describe("createObservableDatabase", () => {
         unsubscribeEffectiveGravity();        
         
     });
-}); 
+});
+
+describe("systems", () => {
+    it("should run systems in dependency order", async () => {
+        const db = createTestDatabase();
+        const callOrder: string[] = [];
+        const db2 =db.withSystems({
+            A(db) { callOrder.push("A"); },
+            B(db) { callOrder.push("B"); },
+            C(db) { callOrder.push("C"); }
+        });
+        await db.systems.all();
+        expect(callOrder).toEqual(["A", "B", "C"]);
+        callOrder.length = 0;
+        const db3 = db2.withSystems({
+            AA(db) { callOrder.push("AA"); },
+            async BB(db) { callOrder.push("BB"); },
+            CC(db) { callOrder.push("CC"); }
+        }, { before: ["B", "C"]});
+        await db.systems.all();
+        expect(callOrder).toEqual(['A', 'AA', 'BB', 'CC', 'B', 'C']);
+        callOrder.length = 0;
+
+        db3.systems.A();
+        expect(callOrder).toEqual(['A']);
+        callOrder.length = 0;
+        await db3.systems.BB();
+        expect(callOrder).toEqual(['BB']);
+        callOrder.length = 0;
+    });
+});

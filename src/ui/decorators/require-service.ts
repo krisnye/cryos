@@ -1,7 +1,3 @@
-import { PropertyValues } from "lit";
-import { ServiceElement } from "../elements";
-import { ServiceApplication } from "../elements";
-import { Service } from "services";
 
 export function requireService() {
     return function (

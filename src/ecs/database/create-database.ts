@@ -1,4 +1,4 @@
-import { Datastore, Entity } from "ecs";
+import { createDatastore, Datastore, Entity } from "ecs";
 import { ArchetypeComponents } from "ecs/datastore/archetype-components";
 import { CoreComponents } from "ecs/datastore/core-components";
 import { ResourceComponents } from "ecs/datastore/resource-components";
@@ -9,13 +9,20 @@ import { mapEntries } from "data/object";
 import { EntityValues } from "ecs/datastore/datastore";
 import { TransactionResult } from "ecs/datastore/transaction/transaction-datastore";
 import { ArchetypeId } from "ecs/archetype";
+import { CoreSystems, SystemDeclarations } from "./system";
+import { toposort } from "data/functions/toposort";
 
-export function createDatabase<
+export function createDatabase() {
+    return createDatastore().toDatabase();
+}
+
+export function createDatabaseInternal<
     C extends CoreComponents,
     A extends ArchetypeComponents<CoreComponents>,
     R extends ResourceComponents,
     T extends TransactionFunctions,
->(db: TransactionDatastore<C, A, R>): Database<C, A, R, T> {
+    S extends CoreSystems,
+>(ds: TransactionDatastore<C, A, R>): Database<C, A, R, T, S> {
 
     //  variables to track the observers
     const componentObservers = new Map<keyof C, Set<() => void>>();
@@ -26,14 +33,14 @@ export function createDatabase<
     //  observation interface
     const observeEntity = (entity: Entity) => (observer: (values: EntityValues<C> | null) => void) => {
         // Call immediately with current values
-        observer(db.selectEntity(entity));
+        observer(ds.selectEntity(entity));
         // Add to observers for future changes
         return addToMapSet(entity, entityObservers)(observer);
     };
     const observeArchetype = (archetype: ArchetypeId) => addToMapSet(archetype, archetypeObservers);
-    const observeComponent = mapEntries(db.components, ([component]) => addToMapSet(component, componentObservers));
-    const observeResource = mapEntries(db.resources as any, ([resource]) => {
-        const archetype = db.getArchetype(["id", resource as keyof C]);
+    const observeComponent = mapEntries(ds.components, ([component]) => addToMapSet(component, componentObservers));
+    const observeResource = mapEntries(ds.resources as any, ([resource]) => {
+        const archetype = ds.getArchetype(["id", resource as keyof C]);
         const resourceId = archetype.columns.id.get(0);
         return withMap(observeEntity(resourceId), (values) => values![resource as keyof C]);
     }) as unknown as { [K in keyof R]: Observe<R[K]>; };
@@ -50,7 +57,7 @@ export function createDatabase<
         archetype: observeArchetype,
     };
 
-    const { execute: transactionDatabaseExecute, resources, ...rest } = db;
+    const { execute: transactionDatabaseExecute, resources, ...rest } = ds;
 
     const execute = (handler: (db: Datastore<C, A, R>) => void) => {
         const result = transactionDatabaseExecute(handler);
@@ -76,7 +83,7 @@ export function createDatabase<
         for (const changedEntity of result.changedEntities) {
             const observers = entityObservers.get(changedEntity);
             if (observers) {
-                const values = db.selectEntity(changedEntity);
+                const values = ds.selectEntity(changedEntity);
                 for (const observer of observers) {
                     observer(values);
                 }
@@ -100,13 +107,13 @@ export function createDatabase<
                 configurable: false
             });
         }
-        return observableDatabase;
+        return database;
     }
 
     const withComputedResource = <N extends string, const D extends readonly (keyof R)[], CT>(name: N, dependencies: D, compute: (resources: { [K in D[number]]: R[K] }) => CT): any => {
         Object.defineProperty(resources, name, {
             get: () => {
-                return compute(Object.fromEntries(dependencies.map((resource) => [resource, db.resources[resource]])) as any);
+                return compute(Object.fromEntries(dependencies.map((resource) => [resource, ds.resources[resource]])) as any);
             },
             enumerable: true,
             configurable: false,
@@ -125,20 +132,67 @@ export function createDatabase<
             enumerable: true,
             configurable: false,
         });
-        return observableDatabase;
+        return database;
     }
 
-    const observableDatabase: Database<C, A, R, T> = {
+    const systems: S = {
+        all: async () => {
+            for (const name of systemOrder) {
+                await (systems as any)[name]();
+            }
+        }
+    } as any;
+
+    const systemNames = [] as string[];
+    const systemDependencies: [string, string][] = [];
+    let systemOrder = [] as readonly string[];
+
+    const withSystems = <NS extends SystemDeclarations<C, A, R, T>>(newSystems: NS, options?: { before?: (keyof S)[], after?: (keyof S)[] }): any => {
+        // Check for 'all' dependency first
+        for (const dependency of options?.before ?? []) {
+            if (dependency === "all") {
+                throw new Error("Cannot depend on `all`");
+            }
+        }
+        for (const dependency of options?.after ?? []) {
+            if (dependency === "all") {
+                throw new Error("Cannot depend on `all`");
+            }
+        }
+
+        for (const [name, system] of Object.entries(newSystems)) {
+            if (name in systems) {
+                throw new Error(`System ${name} already exists`);
+            }
+            systemNames.push(name);
+            for (const dependency of options?.before ?? []) {
+                systemDependencies.push([name, dependency as string]);
+            }
+            for (const dependency of options?.after ?? []) {
+                systemDependencies.push([dependency as string, name]);
+            }
+            
+            Object.defineProperty(systems, name, {
+                value: () => system(database as any)
+            });
+        }
+        systemOrder = toposort(new Set(systemNames), systemDependencies);
+        return database;
+    }
+
+    const database: Database<C, A, R, T, S> = {
         ...rest,
         resources,
         transactions,
         observe,
+        systems,
         execute,
         withTransactions,
         withComputedResource,
+        withSystems,
     };
 
-    return observableDatabase;
+    return database;
 }
 
 const addToMapSet = <K, T>(key: K, map: Map<K, Set<T>>) => (value: T) => {

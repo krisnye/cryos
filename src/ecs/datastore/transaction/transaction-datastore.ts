@@ -37,7 +37,7 @@ export interface TransactionDatastore<
     C extends CoreComponents = CoreComponents,
     A extends ArchetypeComponents<CoreComponents> = {},
     R extends ResourceComponents = {}
-> extends ReadonlyDatastore<C, A, R> {
+> extends Datastore<C, A, R> {
     execute(transaction: (db: Datastore<C, A, R>) => void): TransactionResult<C>;
 }
 
