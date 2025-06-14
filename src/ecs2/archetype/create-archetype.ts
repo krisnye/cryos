@@ -15,7 +15,7 @@ export const createArchetype = <C extends { id: typeof EntitySchema }>(
         // add the row (excluding entity id)
         const row = TABLE.addRow(archetype as any, rowData);
         // create the entity lookup record
-        const entity = entityLocationTable.createEntity({ archetype: archetype.id, row });
+        const entity = entityLocationTable.create({ archetype: archetype.id, row });
         // set the entity id for the row (since it wasn't present in the row data)
         archetype.columns.id.set(row, entity as any);
         return entity;

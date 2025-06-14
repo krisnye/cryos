@@ -1,8 +1,9 @@
-import { Entity, EntityLocation } from "../core/core";
+import { Entity } from "../entity";
+import { EntityLocation } from "../entity-location";
 
 export interface EntityLocationTable {
-    createEntity: (location: EntityLocation) => Entity;
-    updateEntity: (entity: Entity, location: EntityLocation) => void;
-    deleteEntity: (entity: Entity) => void;
-    locateEntity: (entity: Entity) => EntityLocation;
+    create: (location: EntityLocation) => Entity;
+    update: (entity: Entity, location: EntityLocation) => void;
+    delete: (entity: Entity) => void;
+    locate: (entity: Entity) => EntityLocation | null;
 }

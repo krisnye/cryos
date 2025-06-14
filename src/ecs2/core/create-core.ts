@@ -58,25 +58,25 @@ export function createCore<NC extends Components>(newComponents: NC): Core<Simpl
         return archetype as unknown as Archetype<CoreComponents & { [K in CC]: C[K] }>;
     }
 
-    const { locateEntity } = entityLocationTable;
+    const { locate: locateEntity } = entityLocationTable;
 
     const selectEntity = (entity: Entity): EntityValues<C> | null => {
         const location = locateEntity(entity);
-        return location.archetype >= 0 ? TABLE.getRowData(archetypes[location.archetype], location.row) : null;
+        return location !== null ? TABLE.getRowData(archetypes[location.archetype], location.row) : null;
     }
 
     const deleteEntity = (entity: Entity) => {
         const location = locateEntity(entity);
-        if (location.archetype >= 0) {
+        if (location !== null) {
             const archetype = archetypes[location.archetype];
             ARCHETYPE.deleteRow(archetype, location.row, entityLocationTable);
-            entityLocationTable.deleteEntity(entity);
+            entityLocationTable.delete(entity);
         }
     }
 
     const updateEntity = (entity: Entity, components: EntityUpdateValues<C>) => {
         const currentLocation = locateEntity(entity);
-        if (currentLocation.archetype < 0) {
+        if (currentLocation === null) {
             throw "Entity not found";
         }
         const currentArchetype = archetypes[currentLocation.archetype];
@@ -116,7 +116,7 @@ export function createCore<NC extends Components>(newComponents: NC): Core<Simpl
             ARCHETYPE.deleteRow(currentArchetype, currentLocation.row, entityLocationTable);
             const newRow = TABLE.addRow(newArchetype, { ...currentData, ...components });
             // update the entity location table for the entity so it points to the new archetype and row
-            entityLocationTable.updateEntity(entity, { archetype: newArchetype.id, row: newRow });
+            entityLocationTable.update(entity, { archetype: newArchetype.id, row: newRow });
         } else {
             TABLE.updateRow(newArchetype, currentLocation.row, components as any);
         }

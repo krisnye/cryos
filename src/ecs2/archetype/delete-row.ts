@@ -11,6 +11,6 @@ export const deleteRow = <C extends CoreComponents>(archetype: Archetype<C>, row
     const movedARowToFillHole = TABLE.deleteRow(archetype, row);
     if (movedARowToFillHole) {
         const movedId = archetype.columns.id.get(row);
-        entityLocationTable.updateEntity(movedId, { archetype: archetype.id, row });
+        entityLocationTable.update(movedId, { archetype: archetype.id, row });
     }
 }
