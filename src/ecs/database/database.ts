@@ -7,14 +7,15 @@ import { Observe } from "data/observe";
 import { TransactionResult, TransactionDatastore, TransactionDeclarations, ToTransactionFunctions, TransactionFunctions } from "ecs/datastore/transaction/transaction-datastore";
 import { EntityValues } from "ecs/datastore/datastore";
 import { Simplify } from "types";
-import { CoreSystems, SystemDeclarations } from "./system";
+import { DefaultPhases, System, SystemNames, SystemPhases, Systems } from "./system";
 
 export interface Database<
     C extends CoreComponents = CoreComponents,
     A extends ArchetypeComponents<CoreComponents> = {},
     R extends ResourceComponents = {},
     T extends TransactionFunctions = {},
-    S extends CoreSystems = CoreSystems,
+    S extends SystemNames = never,
+    P extends SystemPhases = DefaultPhases,
 > extends Omit<TransactionDatastore<C, A, R>, "withArchetypes" | "withComponents" | "withResources" | "toDatabase"> {
     readonly transactions: T;
     readonly observe: {
@@ -24,7 +25,7 @@ export interface Database<
         entity(id: Entity): Observe<EntityValues<C> | null>;
         archetype(id: ArchetypeId): Observe<void>;
     }
-    readonly systems: S;
+    readonly systems: Systems<S, P> & { readonly phases: P, run(phases?: readonly P[number][]): Promise<void> };
     withTransactions: <NT extends TransactionDeclarations<C, A, R>>(transactions: NT)
         => Database<C, A, R, Simplify<T & ToTransactionFunctions<NT>>>;
     withComputedResource<
@@ -36,9 +37,13 @@ export interface Database<
         resources: D,
         compute: (resources: { [K in D[number]]: R[K] }) => CT
       ): Database<C, A, Simplify<R & { [K in N]: CT }>>;
-    withSystems: <NS extends SystemDeclarations<C, A, R, T>>(systems: NS, options?: { before?: (keyof S)[], after?: (keyof S)[] }) => Database<C, A, R, T, Simplify<S & {
-        [K in keyof NS]: NS[K] extends (db: any) => Promise<void> ? () => Promise<void> : () => void;
-    }>>;
+    withPhases: <NP extends SystemPhases>(phases: NP) => Database<C, A, R, T, S, NP>;
+    withSystems:<
+        const NewSystems extends readonly System<P>[],
+        NewNames extends NewSystems[number]["name"]
+      >(
+        ...systems: NewSystems
+      ) => Database<C, A, R, T, S | NewNames, P>;
 }
 
 export type ComputedResource<
@@ -57,18 +62,25 @@ export type ComputedResources<R extends ResourceComponents> = {
 declare const db: Database<{ id: number }, {}, { a: number, b: string }, {}>;
 async () => {
     const db2 = db.withComputedResource("foo", ["a", "b"], ({a, b}) => false);
-    const db3 = db2.withSystems({
-        foo() {
-            console.log("foo");
-        },
-        async bar() {
-            console.log("bar");
+    const db3 = db2.withSystems(
+      {
+        name: "foo",
+        phase: "input",
+        run: () => {
+          console.log("foo");
         }
-    });
-    await db3.systems.all();
-    db3.systems.foo();
-    await db3.systems.bar();
+      },
+      {
+        name: "bar",
+        phase: "input",
+        run: () => {
+          console.log("bar");
+        }
+      }
+    );
+    db3.systems.foo.run();
+    await db3.systems.bar.run();
     // @ts-expect-error
-    db3.systems.baz();
+    db3.systems.baz.run();
 };
 

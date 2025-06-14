@@ -9,8 +9,8 @@ import { mapEntries } from "data/object";
 import { EntityValues } from "ecs/datastore/datastore";
 import { TransactionResult } from "ecs/datastore/transaction/transaction-datastore";
 import { ArchetypeId } from "ecs/archetype";
-import { CoreSystems, SystemDeclarations } from "./system";
-import { toposort } from "data/functions/toposort";
+import { DefaultPhases, DefaultPhasesSchema, System, SystemNames, SystemPhases, Systems } from "./system";
+import { createSystemScheduler } from "./create-system-scheduler";
 
 export function createDatabase() {
     return createDatastore().toDatabase();
@@ -21,8 +21,9 @@ export function createDatabaseInternal<
     A extends ArchetypeComponents<CoreComponents>,
     R extends ResourceComponents,
     T extends TransactionFunctions,
-    S extends CoreSystems,
->(ds: TransactionDatastore<C, A, R>): Database<C, A, R, T, S> {
+    S extends SystemNames = never,
+    P extends SystemPhases = DefaultPhases,
+>(ds: TransactionDatastore<C, A, R>): Database<C, A, R, T, S, P> {
 
     //  variables to track the observers
     const componentObservers = new Map<keyof C, Set<() => void>>();
@@ -135,61 +136,53 @@ export function createDatabaseInternal<
         return database;
     }
 
-    const systems: S = {
-        all: async () => {
-            for (const name of systemOrder) {
-                await (systems as any)[name]();
-            }
+    const systems = {} as Systems<S, P> & { readonly phases: P, run(phases?: readonly P[number][]): Promise<void> };
+    Object.defineProperties(systems, {
+        phases: {
+            get: () => phases
+        },
+        run: {
+            value: (phases?: readonly P[number][]) => systemScheduler.run(phases),
         }
-    } as any;
+    });
 
-    const systemNames = [] as string[];
-    const systemDependencies: [string, string][] = [];
-    let systemOrder = [] as readonly string[];
-
-    const withSystems = <NS extends SystemDeclarations<C, A, R, T>>(newSystems: NS, options?: { before?: (keyof S)[], after?: (keyof S)[] }): any => {
-        // Check for 'all' dependency first
-        for (const dependency of options?.before ?? []) {
-            if (dependency === "all") {
-                throw new Error("Cannot depend on `all`");
+    let phases = DefaultPhasesSchema.const as unknown as P;
+    let systemScheduler = createSystemScheduler<P>(phases, []);
+    const updateSystemScheduler = () => {
+        systemScheduler = createSystemScheduler<P>(phases, Object.values(systems) as any);
+    }
+    const withSystems = <const NewSystems extends readonly System<P>[], NewNames extends NewSystems[number]["name"]>(
+            ...newSystems: NewSystems
+        ): any => {
+            for (const system of newSystems) {
+                Object.defineProperty(systems, system.name, {
+                    value: system,
+                    writable: false,
+                    enumerable: true,
+                    configurable: false,
+                });
             }
+            updateSystemScheduler();
+            return database;
         }
-        for (const dependency of options?.after ?? []) {
-            if (dependency === "all") {
-                throw new Error("Cannot depend on `all`");
-            }
-        }
-
-        for (const [name, system] of Object.entries(newSystems)) {
-            if (name in systems) {
-                throw new Error(`System ${name} already exists`);
-            }
-            systemNames.push(name);
-            for (const dependency of options?.before ?? []) {
-                systemDependencies.push([name, dependency as string]);
-            }
-            for (const dependency of options?.after ?? []) {
-                systemDependencies.push([dependency as string, name]);
-            }
-            
-            Object.defineProperty(systems, name, {
-                value: () => system(database as any)
-            });
-        }
-        systemOrder = toposort(new Set(systemNames), systemDependencies);
+    
+    const withPhases = <NP extends SystemPhases>(newPhases: NP): any => {
+        phases = newPhases as unknown as P;
+        updateSystemScheduler();
         return database;
     }
 
-    const database: Database<C, A, R, T, S> = {
+    const database: Database<C, A, R, T, S, P> = {
         ...rest,
+        systems,
         resources,
         transactions,
         observe,
-        systems,
         execute,
         withTransactions,
         withComputedResource,
         withSystems,
+        withPhases,
     };
 
     return database;

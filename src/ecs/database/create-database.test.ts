@@ -337,34 +337,361 @@ describe("createObservableDatabase", () => {
         unsubscribeEffectiveGravity();        
         
     });
-});
 
-describe("systems", () => {
-    it("should run systems in dependency order", async () => {
-        const db = createTestDatabase();
-        const callOrder: string[] = [];
-        const db2 =db.withSystems({
-            A(db) { callOrder.push("A"); },
-            B(db) { callOrder.push("B"); },
-            C(db) { callOrder.push("C"); }
+    describe("Systems", () => {
+        it("should run systems in correct phase order", () => {
+            const executionOrder: string[] = [];
+            
+            const db = createTestDatabase().withSystems(
+                {
+                    name: "render",
+                    phase: "render",
+                    run: () => {
+                        executionOrder.push("render");
+                    }
+                },
+                {
+                    name: "input",
+                    phase: "input",
+                    run: () => {
+                        executionOrder.push("input");
+                    }
+                },
+                {
+                    name: "update",
+                    phase: "update",
+                    run: () => {
+                        executionOrder.push("update");
+                    }
+                }
+            );
+
+            db.systems.run();
+
+            expect(executionOrder).toEqual(["input", "update", "render"]);
         });
-        await db.systems.all();
-        expect(callOrder).toEqual(["A", "B", "C"]);
-        callOrder.length = 0;
-        const db3 = db2.withSystems({
-            AA(db) { callOrder.push("AA"); },
-            async BB(db) { callOrder.push("BB"); },
-            CC(db) { callOrder.push("CC"); }
-        }, { before: ["B", "C"]});
-        await db.systems.all();
-        expect(callOrder).toEqual(['A', 'AA', 'BB', 'CC', 'B', 'C']);
-        callOrder.length = 0;
 
-        db3.systems.A();
-        expect(callOrder).toEqual(['A']);
-        callOrder.length = 0;
-        await db3.systems.BB();
-        expect(callOrder).toEqual(['BB']);
-        callOrder.length = 0;
+        it("should run systems with dependencies in correct order within phase", () => {
+            const executionOrder: string[] = [];
+            
+            const db = createTestDatabase().withSystems(
+                {
+                    name: "physicsIntegration",
+                    phase: "physics",
+                    run: () => {
+                        executionOrder.push("physicsIntegration");
+                    }
+                },
+                {
+                    name: "collisionDetection",
+                    phase: "physics",
+                    before: ["physicsIntegration"],
+                    run: () => {
+                        executionOrder.push("collisionDetection");
+                    }
+                },
+            );
+
+            db.systems.run();
+
+            expect(executionOrder).toEqual(["collisionDetection", "physicsIntegration"]);
+        });
+
+        it("should handle async systems and wait for completion", async () => {
+            const executionOrder: string[] = [];
+            const system1EndTime = { value: 0 };
+            const system2StartTime = { value: 0 };
+            
+            const db = createTestDatabase().withSystems(
+                {
+                    name: "asyncSystem1",
+                    phase: "update",
+                    run: async () => {
+                        executionOrder.push("asyncSystem1-start");
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                        executionOrder.push("asyncSystem1-end");
+                        system1EndTime.value = Date.now();
+                    }
+                },
+                {
+                    name: "asyncSystem2",
+                    phase: "update",
+                    run: async () => {
+                        system2StartTime.value = Date.now();
+                        executionOrder.push("asyncSystem2-start");
+                        await new Promise(resolve => setTimeout(resolve, 5));
+                        executionOrder.push("asyncSystem2-end");
+                    }
+                }
+            );
+
+            await db.systems.run();
+
+            expect(executionOrder).toEqual([
+                "asyncSystem1-start",
+                "asyncSystem1-end",
+                "asyncSystem2-start",
+                "asyncSystem2-end"
+            ]);
+            expect(system2StartTime.value).toBeGreaterThanOrEqual(system1EndTime.value);
+        });
+
+        it("should run only specified phases", () => {
+            const executionOrder: string[] = [];
+            
+            const db = createTestDatabase().withSystems(
+                {
+                    name: "input",
+                    phase: "input",
+                    run: () => {
+                        executionOrder.push("input");
+                    }
+                },
+                {
+                    name: "update",
+                    phase: "update",
+                    run: () => {
+                        executionOrder.push("update");
+                    }
+                },
+                {
+                    name: "render",
+                    phase: "render",
+                    run: () => {
+                        executionOrder.push("render");
+                    }
+                }
+            );
+
+            db.systems.run(["input", "render"]);
+
+            expect(executionOrder).toEqual(["input", "render"]);
+        });
+
+        it("should handle mixed sync and async systems correctly", async () => {
+            const executionOrder: string[] = [];
+            
+            const db = createTestDatabase().withSystems(
+                {
+                    name: "syncSystem",
+                    phase: "update",
+                    run: () => {
+                        executionOrder.push("syncSystem");
+                    }
+                },
+                {
+                    name: "asyncSystem",
+                    phase: "update",
+                    run: async () => {
+                        executionOrder.push("asyncSystem-start");
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                        executionOrder.push("asyncSystem-end");
+                    }
+                }
+            );
+
+            await db.systems.run();
+
+            expect(executionOrder).toEqual([
+                "syncSystem",
+                "asyncSystem-start",
+                "asyncSystem-end"
+            ]);
+        });
+
+        it("should support custom phases", () => {
+            const executionOrder: string[] = [];
+            
+            const db = createTestDatabase()
+                .withPhases(["custom1", "custom2", "custom3"] as const)
+                .withSystems(
+                    {
+                        name: "system1",
+                        phase: "custom1",
+                        run: () => {
+                            executionOrder.push("system1");
+                        }
+                    },
+                    {
+                        name: "system2",
+                        phase: "custom2",
+                        run: () => {
+                            executionOrder.push("system2");
+                        }
+                    },
+                    {
+                        name: "system3",
+                        phase: "custom3",
+                        run: () => {
+                            executionOrder.push("system3");
+                        }
+                    }
+                );
+
+            db.systems.run();
+
+            expect(executionOrder).toEqual(["system1", "system2", "system3"]);
+        });
+
+        it("should allow individual system execution", async () => {
+            const system1Run = vi.fn();
+            const system2Run = vi.fn();
+            
+            const db = createTestDatabase().withSystems(
+                {
+                    name: "system1",
+                    phase: "update",
+                    run: system1Run
+                },
+                {
+                    name: "system2",
+                    phase: "update",
+                    run: system2Run
+                }
+            );
+
+            // Run individual systems
+            db.systems.system1.run();
+            await db.systems.system2.run();
+
+            expect(system1Run).toHaveBeenCalledTimes(1);
+            expect(system2Run).toHaveBeenCalledTimes(1);
+        });
+
+        it("should handle complex dependency chains", () => {
+            const executionOrder: string[] = [];
+            
+            const db = createTestDatabase().withSystems(
+                {
+                    name: "A",
+                    phase: "update",
+                    run: () => {
+                        executionOrder.push("A");
+                    }
+                },
+                {
+                    name: "B",
+                    phase: "update",
+                    after: ["A"],
+                    run: () => {
+                        executionOrder.push("B");
+                    }
+                },
+                {
+                    name: "C",
+                    phase: "update",
+                    after: ["A"],
+                    run: () => {
+                        executionOrder.push("C");
+                    }
+                },
+                {
+                    name: "D",
+                    phase: "update",
+                    after: ["B", "C"],
+                    run: () => {
+                        executionOrder.push("D");
+                    }
+                }
+            );
+
+            db.systems.run();
+
+            // A must run first, D must run last, B and C can run in either order after A
+            expect(executionOrder[0]).toBe("A");
+            expect(executionOrder[3]).toBe("D");
+            expect(executionOrder).toContain("B");
+            expect(executionOrder).toContain("C");
+        });
+
+        it("should handle async systems with dependencies", async () => {
+            const executionOrder: string[] = [];
+            
+            const db = createTestDatabase().withSystems(
+                {
+                    name: "asyncA",
+                    phase: "update",
+                    run: async () => {
+                        executionOrder.push("asyncA-start");
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                        executionOrder.push("asyncA-end");
+                    }
+                },
+                {
+                    name: "asyncB",
+                    phase: "update",
+                    after: ["asyncA"],
+                    run: async () => {
+                        executionOrder.push("asyncB-start");
+                        await new Promise(resolve => setTimeout(resolve, 5));
+                        executionOrder.push("asyncB-end");
+                    }
+                }
+            );
+
+            await db.systems.run();
+
+            expect(executionOrder).toEqual([
+                "asyncA-start",
+                "asyncA-end",
+                "asyncB-start",
+                "asyncB-end"
+            ]);
+        });
+
+        it("should provide access to phases", () => {
+            const db = createTestDatabase().withSystems(
+                {
+                    name: "test",
+                    phase: "input",
+                    run: () => {}
+                }
+            );
+
+            expect(db.systems.phases).toEqual([
+                "input", "preUpdate", "update", "prePhysics", "physics", 
+                "postPhysics", "postUpdate", "preRender", "render", "postRender"
+            ]);
+        });
+
+        it("should handle empty phases gracefully", () => {
+            const db = createTestDatabase();
+
+            // Should not throw when running with no systems
+            expect(() => db.systems.run()).not.toThrow();
+        });
+
+        it("should handle systems in different phases with dependencies", () => {
+            const executionOrder: string[] = [];
+            
+            const db = createTestDatabase().withSystems(
+                {
+                    name: "inputSystem",
+                    phase: "input",
+                    run: () => {
+                        executionOrder.push("input");
+                    }
+                },
+                {
+                    name: "updateSystem",
+                    phase: "update",
+                    run: () => {
+                        executionOrder.push("update");
+                    }
+                },
+                {
+                    name: "renderSystem",
+                    phase: "render",
+                    run: () => {
+                        executionOrder.push("render");
+                    }
+                }
+            );
+
+            db.systems.run();
+
+            // Systems should run in phase order regardless of dependencies
+            expect(executionOrder).toEqual(["input", "update", "render"]);
+        });
     });
 });
