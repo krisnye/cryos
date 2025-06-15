@@ -1,2 +1,3 @@
+import { EntitySchema } from "./entity";
 
-export type CoreComponents = { readonly id: number };
+export type CoreComponents = { id: number };

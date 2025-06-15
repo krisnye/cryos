@@ -5,7 +5,7 @@ import { EntityLocation } from "../entity-location";
 import { CoreComponents } from "../core-components";
 import { StringKeyOf } from "types/string-key-of";
 
-export type EntityValues<C> = CoreComponents & { [K in StringKeyOf<C>]?: C[K] }
+export type EntityValues<C> = CoreComponents & { readonly [K in StringKeyOf<C>]?: C[K] }
 export type EntityUpdateValues<C> = Partial<Omit<C, "id">>;;
 
 export type QueryOptions<Include, Exclude> =
@@ -16,7 +16,7 @@ export type QueryOptions<Include, Exclude> =
 export interface ReadonlyCore<
     C extends CoreComponents = CoreComponents,
 > {
-    readonly components: { readonly [K in StringKeyOf<C>]: Schema };
+    readonly componentSchemas: { readonly [K in StringKeyOf<C>]: Schema };
 
     queryArchetypes<
         Include extends StringKeyOf<C>,
@@ -31,6 +31,9 @@ export interface ReadonlyCore<
     read: (entity: Entity) => EntityValues<C> | null;
 }
 
+/**
+ * This is the main interface for the low level ECS Core.
+ */
 export interface Core<
     C extends CoreComponents = CoreComponents,
 > extends ReadonlyCore<C> {

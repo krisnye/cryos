@@ -6,14 +6,14 @@ import { Archetype } from "../archetype/archetype";
 import { CoreComponents } from "../core-components";
 import { Entity, EntitySchema } from "../entity";
 import { Core, EntityUpdateValues, EntityValues, QueryOptions } from "./core";
-import { Simplify } from "types";
+import { Assert, Equal, Simplify } from "types";
 import { Components } from "ecs2/components";
 import { StringKeyOf } from "types/string-key-of";
 
-export function createCore<NC extends Components>(newComponents: NC): Core<Simplify<CoreComponents & { [K in StringKeyOf<NC>]: FromSchema<NC[K]> }>> {
+export function createCore<NC extends Components>(newComponentSchemas: NC): Core<Simplify<CoreComponents & { [K in StringKeyOf<NC>]: FromSchema<NC[K]> }>> {
     type C = CoreComponents & { [K in StringKeyOf<NC>]: FromSchema<NC[K]> };
 
-    const components: { readonly [K in StringKeyOf<C>]: Schema } = { id: EntitySchema, ...newComponents };
+    const componentSchemas: { readonly [K in StringKeyOf<C>]: Schema } = { id: EntitySchema, ...newComponentSchemas };
     const entityLocationTable = createEntityLocationTable();
     const archetypes = [] as unknown as Archetype<C>[] & { readonly [x: string]: Archetype<C> };
 
@@ -42,18 +42,18 @@ export function createCore<NC extends Components>(newComponents: NC): Core<Simpl
             }
         }
         const id = archetypes.length;
-        const componentSchemas: { [K in CC]: Schema } = {} as { [K in CC]: Schema };
+        const archetypeComponentSchemas: { [K in CC]: Schema } = {} as { [K in CC]: Schema };
         let hasId = false;
         for (const comp of componentNames) {
             if (comp === "id") {
                 hasId = true;
             }
-            componentSchemas[comp] = components[comp];
+            archetypeComponentSchemas[comp] = componentSchemas[comp];
         }
         if (!hasId) {
             throw new Error("id is required");
         }
-        const archetype = ARCHETYPE.createArchetype(componentSchemas as any, id, entityLocationTable);
+        const archetype = ARCHETYPE.createArchetype(archetypeComponentSchemas as any, id, entityLocationTable);
         archetypes.push(archetype as unknown as Archetype<C>);
         return archetype as unknown as Archetype<CoreComponents & { [K in CC]: C[K] }>;
     }
@@ -123,7 +123,7 @@ export function createCore<NC extends Components>(newComponents: NC): Core<Simpl
     }
 
     const core: Core<C> = {
-        components,
+        componentSchemas: componentSchemas,
         queryArchetypes,
         ensureArchetype,
         locate,
@@ -133,3 +133,16 @@ export function createCore<NC extends Components>(newComponents: NC): Core<Simpl
     };
     return core as any;
 }
+
+type TestType = ReturnType<typeof createCore<{ position: { type: "number"}, health: { type: "string"} }>>
+type CheckTestType = Assert<Equal<TestType, Core<{
+    id: number;
+    position: number;
+    health: string;
+}>>>
+type TestTypeComponents = TestType["componentSchemas"]
+type CheckComponents = Assert<Equal<TestTypeComponents, {
+    readonly id: Schema;
+    readonly position: Schema;
+    readonly health: Schema;
+}>>;
