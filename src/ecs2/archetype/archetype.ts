@@ -10,9 +10,9 @@ interface BaseArchetype<C> {
     readonly components: ReadonlySet<string>;
 }
 
-export interface ReadonlyArchetype<C> extends BaseArchetype<C>, ReadonlyTable<C> {
+export interface ReadonlyArchetype<C extends CoreComponents> extends BaseArchetype<C>, ReadonlyTable<C> {
 }
 
-export interface Archetype<C = CoreComponents> extends BaseArchetype<C>, Table<C> {
+export interface Archetype<C extends CoreComponents = CoreComponents> extends BaseArchetype<C>, Table<C> {
     insert: (rowData: EntityInsertValues<C>) => Entity;
 }

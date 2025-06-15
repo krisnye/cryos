@@ -24,7 +24,7 @@ export interface ReadonlyCore<
     >(
         include: readonly Include[],
         options?: QueryOptions<Include, Exclude>
-    ): readonly ReadonlyArchetype<Pick<C, Include>>[];
+    ): readonly ReadonlyArchetype<CoreComponents & Pick<C, Include>>[];
 
     ensureArchetype: <CC extends StringKeyOf<C>>(components: CC[]) => ReadonlyArchetype<CoreComponents & { [K in CC]: C[K]}>;
     locate: (entity: Entity) => EntityLocation | null;
@@ -43,7 +43,7 @@ export interface Core<
     >(
         include: Include[],
         options?: QueryOptions<Include, Exclude>
-    ): readonly Archetype<Pick<C, Include>>[];
+    ): readonly Archetype<CoreComponents & Pick<C, Include>>[];
     ensureArchetype: <CC extends StringKeyOf<C>>(components: CC[]) => Archetype<CoreComponents & { [K in CC]: C[K]}>;
     delete: (entity: Entity) => void;
     update: (entity: Entity, values: EntityUpdateValues<C>) => void;

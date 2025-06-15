@@ -23,13 +23,13 @@ export function createCore<NC extends Components>(newComponentSchemas: NC): Core
     >(
         include: readonly Include[],
         options?: QueryOptions<Include, Exclude>
-    ): readonly Archetype<Pick<C, Include>>[] =>{
-        const results: Archetype<Pick<C, Include>>[] = [];
+    ): readonly Archetype<CoreComponents & Pick<C, Include>>[] =>{
+        const results: Archetype<CoreComponents & Pick<C, Include>>[] = [];
         for (const archetype of archetypes) {
             const hasAllRequired = include.every(comp => archetype.columns[comp] !== undefined);
             const hasNoExcluded = !options?.exclude || options.exclude.every(comp => archetype.columns[comp] === undefined);
             if (hasAllRequired && hasNoExcluded) {
-                results.push(archetype as unknown as Archetype<Pick<C, Include>>);
+                results.push(archetype as unknown as Archetype<CoreComponents & Pick<C, Include>>);
             }
         }
         return results;

@@ -1,12 +1,23 @@
 import { StringKeyOf } from "types/string-key-of";
 import { CoreComponents } from "../core-components";
 import { ResourceComponents } from "../resource-components";
-import { Core, ReadonlyCore } from "../core/core";
+import { Core, QueryOptions, ReadonlyCore } from "../core/core";
+import { Entity } from "../entity";
+
+interface BaseStore<C extends CoreComponents> {
+    select<
+        Include extends StringKeyOf<C>,
+        Exclude extends StringKeyOf<C> = never
+    >(
+        include: Include[],
+        options?: QueryOptions<Include, Exclude>
+    ): readonly Entity[];
+}
 
 export interface ReadonlyStore<
     C extends CoreComponents = CoreComponents,
     R extends ResourceComponents = never
-> extends ReadonlyCore<C> {
+> extends BaseStore<C>, ReadonlyCore<C> {
     readonly resources: { readonly [K in StringKeyOf<R>]: R[K] };
 }
 
@@ -16,6 +27,6 @@ export interface ReadonlyStore<
 export interface Store<
     C extends CoreComponents = CoreComponents,
     R extends ResourceComponents = never
-> extends Core<C> {
+> extends BaseStore<C>, Core<C> {
     readonly resources: R;
 }

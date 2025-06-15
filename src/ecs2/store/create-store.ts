@@ -6,6 +6,9 @@ import { Simplify } from "types";
 import { Store } from "./store";
 import { FromSchema, Schema } from "data";
 import { createCore } from "ecs2/core/create-core";
+import { ArchetypeId } from "ecs2/archetype";
+import { Entity } from "ecs2/entity";
+import { Core, QueryOptions } from "ecs2/core/core";
 
 export function createStore<NC extends Components, R extends ResourceComponents>(
     newComponentSchemas: NC,
@@ -22,7 +25,7 @@ export function createStore<NC extends Components, R extends ResourceComponents>
         componentAndResourceSchemas[resourceId] = resourceSchema;
     }
 
-    const core = createCore(componentAndResourceSchemas);
+    const core = createCore(componentAndResourceSchemas) as unknown as Core<C>;
 
     // Each resource will be stored as the only entity in an archetype of [id, <resourceName>]
     // The resource component we added above will contain the resource value
@@ -40,9 +43,34 @@ export function createStore<NC extends Components, R extends ResourceComponents>
         });
     }
 
-    const store = {
+    const select = <
+        Include extends StringKeyOf<C>,
+        Exclude extends StringKeyOf<C> = never
+    >(
+        include: Include[],
+        options?: QueryOptions<Include, Exclude>
+    ): readonly Entity[] => {
+        const archetypes = core.queryArchetypes(include, options);
+        let length = 0;
+        for (const archetype of archetypes) {
+            length += archetype.rows;
+        }
+        const entities = new Array<Entity>(length);
+        let index = 0;
+        for (const archetype of archetypes) {
+            const typedArray = archetype.columns.id.getTypedArray();
+            for (let i = 0; i < archetype.rows; i++) {
+                entities[index++] = typedArray[i];
+            }
+        }
+        return entities;
+    }
+
+    const store: Store<C, R> = {
         ...core,
         resources,
+        select,
     };
+    
     return store as any;
 }
