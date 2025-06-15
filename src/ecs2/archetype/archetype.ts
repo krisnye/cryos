@@ -7,7 +7,7 @@ export type ArchetypeId = number;
 
 interface BaseArchetype<C> {
     readonly id: ArchetypeId;
-    readonly components: ReadonlySet<keyof C & string>;
+    readonly components: ReadonlySet<string>;
 }
 
 export interface ReadonlyArchetype<C> extends BaseArchetype<C>, ReadonlyTable<C> {

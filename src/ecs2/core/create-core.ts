@@ -1,4 +1,4 @@
-import { Schema } from "data";
+import { FromSchema, Schema } from "data";
 import { createEntityLocationTable } from "../entity-location-table";
 import * as ARCHETYPE from "../archetype";
 import * as TABLE from "data/table";
@@ -10,8 +10,8 @@ import { Simplify } from "types";
 import { Components } from "ecs2/components";
 import { StringKeyOf } from "types/string-key-of";
 
-export function createCore<NC extends Components>(newComponents: NC): Core<Simplify<CoreComponents & NC>> {
-    type C = CoreComponents & NC;
+export function createCore<NC extends Components>(newComponents: NC): Core<Simplify<CoreComponents & { [K in StringKeyOf<NC>]: FromSchema<NC[K]> }>> {
+    type C = CoreComponents & { [K in StringKeyOf<NC>]: FromSchema<NC[K]> };
 
     const components: { readonly [K in StringKeyOf<C>]: Schema } = { id: EntitySchema, ...newComponents };
     const entityLocationTable = createEntityLocationTable();
@@ -58,15 +58,15 @@ export function createCore<NC extends Components>(newComponents: NC): Core<Simpl
         return archetype as unknown as Archetype<CoreComponents & { [K in CC]: C[K] }>;
     }
 
-    const { locate: locateEntity } = entityLocationTable;
+    const { locate } = entityLocationTable;
 
     const selectEntity = (entity: Entity): EntityValues<C> | null => {
-        const location = locateEntity(entity);
+        const location = locate(entity);
         return location !== null ? TABLE.getRowData(archetypes[location.archetype], location.row) : null;
     }
 
     const deleteEntity = (entity: Entity) => {
-        const location = locateEntity(entity);
+        const location = locate(entity);
         if (location !== null) {
             const archetype = archetypes[location.archetype];
             ARCHETYPE.deleteRow(archetype, location.row, entityLocationTable);
@@ -75,7 +75,7 @@ export function createCore<NC extends Components>(newComponents: NC): Core<Simpl
     }
 
     const updateEntity = (entity: Entity, components: EntityUpdateValues<C>) => {
-        const currentLocation = locateEntity(entity);
+        const currentLocation = locate(entity);
         if (currentLocation === null) {
             throw "Entity not found";
         }
@@ -126,7 +126,7 @@ export function createCore<NC extends Components>(newComponents: NC): Core<Simpl
         components,
         queryArchetypes,
         ensureArchetype,
-        locate: locateEntity,
+        locate,
         read: selectEntity,
         delete: deleteEntity,
         update: updateEntity,

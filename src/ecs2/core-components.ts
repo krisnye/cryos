@@ -1,2 +1,2 @@
 
-export type CoreComponents = { id: number };
+export type CoreComponents = { readonly id: number };

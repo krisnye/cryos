@@ -83,11 +83,11 @@ describe('createEntityLocationTable', () => {
         const outOfBoundsLocation = table.locate(999);
         expect(outOfBoundsLocation).toEqual(null);
 
-        // // Deleted entity
-        // const entity = table.create({ archetype: 1, row: 10 });
-        // table.delete(entity);
-        // const deletedLocation = table.locate(entity);
-        // expect(deletedLocation).toBe(null);
+        // Deleted entity
+        const entity = table.create({ archetype: 1, row: 10 });
+        table.delete(entity);
+        const deletedLocation = table.locate(entity);
+        expect(deletedLocation).toBe(null);
     });
 
     it('should grow capacity when adding many entities', () => {

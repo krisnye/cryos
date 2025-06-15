@@ -53,6 +53,9 @@ export const createEntityLocationTable = (initialCapacity: number = 16): EntityL
         }
         const index = entity << 1;
         const archetype = entities[index + 0];
+        if (archetype < 0) {
+            return null;
+        }
         const row = entities[index + 1];
         return { archetype, row };
     }
