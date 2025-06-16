@@ -28,5 +28,5 @@ export interface Store<
     C extends CoreComponents = CoreComponents,
     R extends ResourceComponents = never
 > extends BaseStore<C>, Core<C> {
-    readonly resources: R;
+    readonly resources: { -readonly [K in StringKeyOf<R>]: R[K] };
 }

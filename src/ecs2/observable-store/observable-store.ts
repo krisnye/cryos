@@ -6,12 +6,13 @@ import { Entity } from "../entity";
 import { EntityValues } from "../core";
 import { Observe } from "data/observe";
 import { TransactionResult } from "../transactional-store";
+import { StringKeyOf } from "types/string-key-of";
 
 export type TransactionDeclaration<
     C extends CoreComponents = CoreComponents,
     R extends ResourceComponents = never,
     Input extends any | void = any
-> = (db: Store<C, R>, input: Input) => void
+> = (db: Store<C, R>, input: Input) => void | Entity
 
 export type TransactionDeclarations<
     C extends CoreComponents = CoreComponents,
@@ -20,7 +21,12 @@ export type TransactionDeclarations<
     readonly [name: string]: TransactionDeclaration<C, R>
 }
 
-export type TransactionFunctions = { readonly [K: string]: (...args: any | void) => void };
+/**
+ * Converts from TransactionDeclarations to TransactionFunctions by removing the initial database argument.
+ */
+export type ToTransactionFunctions<T extends TransactionDeclarations<any, any>> = { [K in StringKeyOf<T>]: T[K] extends (_arg: any, arg: infer A) => (infer V) ? (arg: A) => V extends void | Entity ? V : never : never }
+
+export type TransactionFunctions = { readonly [K: string]: (args?: any) => void | Entity };
 
 export interface ObservableStore<
     C extends CoreComponents = CoreComponents,
@@ -29,8 +35,8 @@ export interface ObservableStore<
 > extends ReadonlyStore<C, R> {
     readonly transactions: T;
     readonly observe: {
-        readonly component: { readonly [K in keyof C]: Observe<void> };
-        readonly resource: { readonly [K in keyof R]: Observe<R[K]> };
+        readonly component: { readonly [K in StringKeyOf<C>]: Observe<void> };
+        readonly resource: { readonly [K in StringKeyOf<R>]: Observe<R[K]> };
         readonly transactions: Observe<TransactionResult<C>>;
         entity(id: Entity): Observe<EntityValues<C> | null>;
         archetype(id: ArchetypeId): Observe<void>;

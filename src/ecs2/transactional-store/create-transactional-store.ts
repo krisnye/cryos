@@ -120,9 +120,25 @@ export function createTransactionalStore<C extends CoreComponents, R extends Res
         undoOperationsInReverseOrder.push({ type: "insert", values: oldValuesWithoutId });
     };
 
+    const resources = {} as { [K in keyof R]: R[K] };
+    for (const name of Object.keys(store.resources)) {
+        const resourceId = name as keyof C;
+        const archetype = store.ensureArchetype(["id", resourceId] as StringKeyOf<C>[]);
+        const entityId = archetype.columns.id.get(0);
+        Object.defineProperty(resources, name, {
+            get: Object.getOwnPropertyDescriptor(store.resources, name)!.get,
+            set: (newValue) => {
+                updateEntity(entityId, { [resourceId]: newValue } as any);
+            },
+            enumerable: true,
+        });
+    }
+
+
     // Create transaction-aware store
     const transactionStore: Store<C, R> = {
         ...store,
+        resources,
         ensureArchetype: (componentNames) => {
             const archetype = store.ensureArchetype(componentNames);
             return getWrappedArchetype(archetype);
@@ -132,7 +148,7 @@ export function createTransactionalStore<C extends CoreComponents, R extends Res
     };
 
     // Execute transaction function
-    const execute = (transactionFunction: (store: Store<C, R>) => void): TransactionResult<C> => {
+    const execute = (transactionFunction: (store: Store<C, R>) => Entity | void): TransactionResult<C> => {
         // Reset transaction state
         undoOperationsInReverseOrder = [];
         redoOperations = [];
@@ -142,10 +158,11 @@ export function createTransactionalStore<C extends CoreComponents, R extends Res
 
         try {
             // Execute the transaction
-            transactionFunction(transactionStore);
+            const value = transactionFunction(transactionStore);
 
             // Return the transaction result
             const result: TransactionResult<C> = {
+                value: value ?? undefined,
                 redo: [...redoOperations],
                 undo: [...undoOperationsInReverseOrder.reverse()],
                 changedEntities: new Set(changed.entities),

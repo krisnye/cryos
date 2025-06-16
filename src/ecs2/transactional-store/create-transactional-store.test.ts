@@ -58,11 +58,11 @@ describe("createTransactionalStore", () => {
         });
 
         expect(result).toBeDefined();
-        expect(result.redo).toHaveLength(2); // insert + update
-        expect(result.undo).toHaveLength(2); // delete + insert with old values
-        expect(result.changedEntities.size).toBe(1);
-        expect(result.changedComponents.size).toBe(1); // position
-        expect(result.changedArchetypes.size).toBe(1);
+        expect(result.redo).toHaveLength(3); // insert + update
+        expect(result.undo).toHaveLength(3); // delete + insert with old values
+        expect(result.changedEntities.size).toBe(2);
+        expect(result.changedComponents.size).toBe(2); // position
+        expect(result.changedArchetypes.size).toBe(2);
     });
 
     it("should rollback on error", () => {
@@ -152,9 +152,9 @@ describe("createTransactionalStore", () => {
             transactionStore.resources.time = { delta: 0.032, elapsed: 1 };
         });
 
-        expect(result.changedEntities.size).toBe(2);
-        expect(result.changedComponents.size).toBe(2); // position, health
-        expect(result.changedArchetypes.size).toBe(2); // two different archetypes
+        expect(result.changedEntities.size).toBe(3);
+        expect(result.changedComponents.size).toBe(3); // position, health
+        expect(result.changedArchetypes.size).toBe(3); // two different archetypes
     });
 
     it("should preserve base store functionality", () => {

@@ -16,7 +16,7 @@ export interface TransactionalStore<
      * @param transactionFunction - A function that takes the store as an argument and performs some operations on it.
      * @returns A promise that resolves when the transaction is complete.
      */
-    execute(transactionFunction: (store: Store<C, R>) => void): TransactionResult<C>;
+    execute(transactionFunction: (store: Store<C, R>) => Entity | void): TransactionResult<C>;
 }
 
 export type TransactionInsertOperation<C> = {
@@ -41,6 +41,10 @@ export type TransactionWriteOperation<C> =
     | TransactionDeleteOperation;
 
 export interface TransactionResult<C> {
+    /**
+     * The Entity value if any returned by the transaction function.
+     */
+    readonly value: Entity | void;
     readonly redo: TransactionWriteOperation<C>[];
     readonly undo: TransactionWriteOperation<C>[];
     readonly changedEntities: Set<Entity>;
