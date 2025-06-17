@@ -1,9 +1,9 @@
-import { ArchetypeId, EntityInsertValues } from "../archetype";
-import { CoreComponents } from "../core-components";
-import { ResourceComponents } from "../resource-components";
-import { ReadonlyStore, Store } from "../store";
-import { Entity } from "../entity";
-import { EntityUpdateValues } from "../core";
+import { ArchetypeId, EntityInsertValues } from "../../archetype";
+import { CoreComponents } from "../../core-components";
+import { ResourceComponents } from "../../resource-components";
+import { ReadonlyStore, Store } from "../../store";
+import { Entity } from "../../entity";
+import { EntityUpdateValues } from "../../store/core";
 
 export interface TransactionalStore<
     C extends CoreComponents = CoreComponents,

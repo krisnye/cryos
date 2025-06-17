@@ -2,23 +2,25 @@ import { ArchetypeId } from "../archetype";
 import { CoreComponents } from "../core-components";
 import { ResourceComponents } from "../resource-components";
 import { Store } from "../store";
-import { ObservableStore, ToTransactionFunctions, TransactionDeclarations } from "./observable-store";
+import { Database, ToTransactionFunctions, TransactionDeclarations } from "./database";
 import { Entity } from "../entity";
-import { EntityValues } from "../core";
-import { TransactionResult } from "../transactional-store";
+import { EntityValues } from "../store/core";
+import { TransactionResult } from "./transactional-store";
 import { mapEntries } from "data/object";
 import { StringKeyOf } from "types/string-key-of";
 import { Observe, withMap } from "data/observe";
-import { createTransactionalStore } from "ecs2/transactional-store/create-transactional-store";
+import { createTransactionalStore } from "./transactional-store/create-transactional-store";
+import { isPromise } from "../internal/is-promise";
+import { isAsyncGenerator } from "ecs2/internal/is-async-provider";
 
-export function createObservableStore<
+export function createDatabase<
     C extends CoreComponents,
     R extends ResourceComponents,
     TD extends TransactionDeclarations<C, R>
 >(
     ds: Store<C, R>,
     transactionDeclarations: TD,
-): ObservableStore<C, R, ToTransactionFunctions<TD>> {
+): Database<C, R, ToTransactionFunctions<TD>> {
     type T = ToTransactionFunctions<TD>;
 
     const transactionalStore = createTransactionalStore(ds);
@@ -48,7 +50,7 @@ export function createObservableStore<
         })
     ) as { [K in StringKeyOf<R>]: Observe<R[K]>; };
     
-    const observe: ObservableStore<C, R>["observe"] = {
+    const observe: Database<C, R>["observe"] = {
         component: observeComponent,
         resource: observeResource,
         transactions: (notify) => {
@@ -107,10 +109,44 @@ export function createObservableStore<
 
     const transactions = {} as T;
 
-    for (const [name, transaction] of Object.entries(transactionDeclarations)) {
+    for (const [name, transactionUntyped] of Object.entries(transactionDeclarations)) {
+        const transaction = transactionUntyped as (db: Store<C, R>, args: any) => void;
         Object.defineProperty(transactions, name, {
             value: (args: unknown) => {
-                return execute((db) => (transaction as any as (db: Store<C, R>, args: any) => void)(db, args));
+                // Check if args is an AsyncArgsProvider function
+                if (typeof args === 'function') {
+                    const asyncArgsProvider = args as () => Promise<any> | AsyncGenerator<any>;
+                    const asyncResult = asyncArgsProvider();
+                    
+                    if (isAsyncGenerator(asyncResult)) {
+                        const asyncArgs = asyncResult;
+                        function handleNext() {
+                            asyncArgs.next().then(({ value, done }) => {
+                                if (done) return;
+                                execute(db => transaction(db, value));
+                                handleNext(); // loop
+                            }).catch(error => {
+                                console.error('AsyncGenerator error:', error);
+                            });
+                        }
+                        
+                        handleNext();
+                    }
+                    else if (isPromise(asyncResult)) {
+                        asyncResult.then(asyncArgs => execute((db) => transaction(db, asyncArgs)))
+                            .catch(error => {
+                                console.error('Promise error:', error);
+                            });
+                    }
+                    else {
+                        // Function returned a synchronous value
+                        execute((db) => transaction(db, asyncResult));
+                    }
+                }
+                else {
+                    // Synchronous argument
+                    return execute((db) => transaction(db, args));
+                }
             },
             writable: false,
             enumerable: true,
@@ -124,7 +160,7 @@ export function createObservableStore<
         resources,
         transactions,
         observe,
-    } as ObservableStore<C, R, T>;
+    } as Database<C, R, T>;
 }
 
 const addToMapSet = <K, T>(key: K, map: Map<K, Set<T>>) => (value: T) => {

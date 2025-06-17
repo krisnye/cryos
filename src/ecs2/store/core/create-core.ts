@@ -1,10 +1,10 @@
 import { FromSchema, Schema } from "data";
-import { createEntityLocationTable } from "../entity-location-table";
-import * as ARCHETYPE from "../archetype";
+import { createEntityLocationTable } from "../../entity-location-table";
+import * as ARCHETYPE from "../../archetype";
 import * as TABLE from "data/table";
-import { Archetype } from "../archetype/archetype";
-import { CoreComponents } from "../core-components";
-import { Entity, EntitySchema } from "../entity";
+import { Archetype } from "../../archetype/archetype";
+import { CoreComponents } from "../../core-components";
+import { Entity, EntitySchema } from "../../entity";
 import { Core, EntityUpdateValues, EntityValues, QueryOptions } from "./core";
 import { Assert, Equal, Simplify } from "types";
 import { Components } from "ecs2/components";

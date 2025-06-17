@@ -3,9 +3,9 @@ import { CoreComponents } from "../core-components";
 import { ResourceComponents } from "../resource-components";
 import { ReadonlyStore, Store } from "../store";
 import { Entity } from "../entity";
-import { EntityValues } from "../core";
+import { EntityValues } from "../store/core";
 import { Observe } from "data/observe";
-import { TransactionResult } from "../transactional-store";
+import { TransactionResult } from "./transactional-store";
 import { StringKeyOf } from "types/string-key-of";
 
 export type TransactionDeclaration<
@@ -21,14 +21,16 @@ export type TransactionDeclarations<
     readonly [name: string]: TransactionDeclaration<C, R>
 }
 
+export type AsyncArgsProvider<T> = () => Promise<T> | AsyncGenerator<T>;
+
 /**
  * Converts from TransactionDeclarations to TransactionFunctions by removing the initial database argument.
  */
-export type ToTransactionFunctions<T extends TransactionDeclarations<any, any>> = { [K in StringKeyOf<T>]: T[K] extends (_arg: any, arg: infer A) => (infer V) ? (arg: A) => V extends void | Entity ? V : never : never }
+export type ToTransactionFunctions<T extends TransactionDeclarations<any, any>> = { [K in StringKeyOf<T>]: T[K] extends (_arg: any, arg: infer A) => (infer V) ? (arg: A | AsyncArgsProvider<A>) => V extends void | Entity ? V : never : never }
 
 export type TransactionFunctions = { readonly [K: string]: (args?: any) => void | Entity };
 
-export interface ObservableStore<
+export interface Database<
     C extends CoreComponents = CoreComponents,
     R extends ResourceComponents = never,
     T extends TransactionFunctions = never,

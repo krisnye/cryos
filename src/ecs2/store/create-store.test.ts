@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createStore } from "./create-store";
-import { createCoreTestSuite, positionSchema, healthSchema, nameSchema } from "../core/create-core.test";
+import { createCoreTestSuite, positionSchema, healthSchema, nameSchema } from "./core/create-core.test";
 import { F32Schema, Schema } from "data";
 
 describe("createStore", () => {

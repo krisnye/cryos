@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createTransactionalStore } from "./create-transactional-store";
-import { createStore } from "../store/create-store";
+import { createStore } from "../../store/create-store";
 import { F32Schema, Schema } from "data";
 
 // Test schemas

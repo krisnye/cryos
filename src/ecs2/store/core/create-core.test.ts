@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createCore } from "./create-core";
 import { F32Schema, Schema } from "data";
-import type { Entity } from "../entity";
-import type { Core } from "./core";
+import type { Entity } from "../../entity";
 
 // Shared test schemas
 export const positionSchema = {

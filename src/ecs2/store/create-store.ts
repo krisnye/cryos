@@ -5,10 +5,9 @@ import { CoreComponents } from "../core-components";
 import { Simplify } from "types";
 import { Store } from "./store";
 import { FromSchema, Schema } from "data";
-import { createCore } from "ecs2/core/create-core";
-import { ArchetypeId } from "ecs2/archetype";
-import { Entity } from "ecs2/entity";
-import { Core, QueryOptions } from "ecs2/core/core";
+import { createCore } from "./core/create-core";
+import { Entity } from "../entity";
+import { Core, QueryOptions } from "./core/core";
 
 export function createStore<NC extends Components, R extends ResourceComponents>(
     newComponentSchemas: NC,

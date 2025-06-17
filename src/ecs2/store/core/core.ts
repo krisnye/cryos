@@ -1,8 +1,8 @@
-import { Entity } from "../entity";
-import { Archetype, ReadonlyArchetype } from "../archetype/archetype";
+import { Entity } from "../../entity";
+import { Archetype, ReadonlyArchetype } from "../../archetype/archetype";
 import { Schema } from "data";
-import { EntityLocation } from "../entity-location";
-import { CoreComponents } from "../core-components";
+import { EntityLocation } from "../../entity-location";
+import { CoreComponents } from "../../core-components";
 import { StringKeyOf } from "types/string-key-of";
 
 export type EntityValues<C> = CoreComponents & { readonly [K in StringKeyOf<C>]?: C[K] }
