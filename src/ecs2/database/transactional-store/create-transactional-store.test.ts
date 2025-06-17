@@ -185,4 +185,44 @@ describe("createTransactionalStore", () => {
             expect(store.read(entity)).toBeDefined();
         });
     });
+
+    it("should support transient transactions", () => {
+        const baseStore = createStore(
+            { position: positionSchema, health: healthSchema },
+            { time: { delta: 0.016, elapsed: 0 } }
+        );
+        
+        const store = createTransactionalStore(baseStore);
+
+        // Execute a regular transaction (non-transient)
+        const regularResult = store.execute((transactionStore) => {
+            const archetype = transactionStore.ensureArchetype(["id", "position"]);
+            archetype.insert({ position: { x: 1, y: 2, z: 3 } });
+        });
+
+        expect(regularResult.transient).toBe(false);
+
+        // Execute a transient transaction
+        const transientResult = store.execute((transactionStore) => {
+            const archetype = transactionStore.ensureArchetype(["id", "position"]);
+            archetype.insert({ position: { x: 10, y: 20, z: 30 } });
+        }, { transient: true });
+
+        expect(transientResult.transient).toBe(true);
+
+        // Both transactions should have the same structure but different transient flags
+        expect(regularResult).toHaveProperty("value");
+        expect(regularResult).toHaveProperty("redo");
+        expect(regularResult).toHaveProperty("undo");
+        expect(regularResult).toHaveProperty("changedEntities");
+        expect(regularResult).toHaveProperty("changedComponents");
+        expect(regularResult).toHaveProperty("changedArchetypes");
+        
+        expect(transientResult).toHaveProperty("value");
+        expect(transientResult).toHaveProperty("redo");
+        expect(transientResult).toHaveProperty("undo");
+        expect(transientResult).toHaveProperty("changedEntities");
+        expect(transientResult).toHaveProperty("changedComponents");
+        expect(transientResult).toHaveProperty("changedArchetypes");
+    });
 }); 

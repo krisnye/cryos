@@ -148,7 +148,12 @@ export function createTransactionalStore<C extends CoreComponents, R extends Res
     };
 
     // Execute transaction function
-    const execute = (transactionFunction: (store: Store<C, R>) => Entity | void): TransactionResult<C> => {
+    const execute = (
+        transactionFunction: (store: Store<C, R>) => Entity | void,
+        options?: {
+            transient?: boolean;
+        }
+    ): TransactionResult<C> => {
         // Reset transaction state
         undoOperationsInReverseOrder = [];
         redoOperations = [];
@@ -163,6 +168,7 @@ export function createTransactionalStore<C extends CoreComponents, R extends Res
             // Return the transaction result
             const result: TransactionResult<C> = {
                 value: value ?? undefined,
+                transient: options?.transient ?? false,
                 redo: [...redoOperations],
                 undo: [...undoOperationsInReverseOrder.reverse()],
                 changedEntities: new Set(changed.entities),

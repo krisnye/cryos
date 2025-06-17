@@ -122,8 +122,12 @@ export function createDatabase<
                         const asyncArgs = asyncResult;
                         function handleNext() {
                             asyncArgs.next().then(({ value, done }) => {
-                                if (done) return;
-                                execute(db => transaction(db, value));
+                                if (!done || value !== undefined) {
+                                    execute(db => transaction(db, value));
+                                }
+                                if (done) {
+                                    return;
+                                };
                                 handleNext(); // loop
                             }).catch(error => {
                                 console.error('AsyncGenerator error:', error);
