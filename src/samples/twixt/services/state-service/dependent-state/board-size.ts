@@ -1,3 +1,3 @@
-import { TwixtReadonlyStore } from "../create-state-service2";
+import { TwixtReadonlyStore } from "../state-service";
 
 export const boardSize = (store: TwixtReadonlyStore) => Math.round(Math.sqrt(store.resources.board.length));

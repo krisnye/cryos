@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { createArchetype } from 'ecs/archetype';
-import { createEntityLocationTable } from 'ecs/entity-location-table';
-import { EntitySchema } from 'ecs';
+import { createArchetype } from '../archetype';
+import { createEntityLocationTable } from '../entity-location-table';
+import { EntitySchema } from '../entity';
 import { U32Schema } from 'data';
 
 describe('createArchetype', () => {
@@ -34,24 +34,24 @@ describe('createArchetype', () => {
         const archetype = createArchetype(components, id, entityLocationTable);
 
         // Create first entity
-        const entity1 = archetype.create({ value: 42 });
+        const entity1 = archetype.insert({ value: 42 });
         expect(entity1).toBe(0); // First entity should have id 0
         expect(archetype.rows).toBe(1);
         expect(archetype.columns.id.get(0)).toBe(0);
         expect(archetype.columns.value.get(0)).toBe(42);
 
         // Create second entity
-        const entity2 = archetype.create({ value: 100 });
+        const entity2 = archetype.insert({ value: 100 });
         expect(entity2).toBe(1); // Second entity should have id 1
         expect(archetype.rows).toBe(2);
         expect(archetype.columns.id.get(1)).toBe(1);
         expect(archetype.columns.value.get(1)).toBe(100);
 
         // Verify entity locations in EntityLocationTable
-        const location1 = entityLocationTable.locateEntity(entity1);
+        const location1 = entityLocationTable.locate(entity1);
         expect(location1).toEqual({ archetype: id, row: 0 });
 
-        const location2 = entityLocationTable.locateEntity(entity2);
+        const location2 = entityLocationTable.locate(entity2);
         expect(location2).toEqual({ archetype: id, row: 1 });
     });
 
@@ -74,7 +74,7 @@ describe('createArchetype', () => {
         expect(archetype.columns).toHaveProperty('level');
 
         // Create an entity with all components
-        const entity = archetype.create({
+        const entity = archetype.insert({
             health: 100,
             mana: 50,
             level: 5,
@@ -88,7 +88,7 @@ describe('createArchetype', () => {
         expect(archetype.columns.id.get(0)).toBe(0);
 
         // Verify entity location
-        const location = entityLocationTable.locateEntity(entity);
+        const location = entityLocationTable.locate(entity);
         expect(location).toEqual({ archetype: id, row: 0 });
     });
 }); 

@@ -1,4 +1,4 @@
-import { Player, TwixtReadonlyStore } from "../services/state-service/create-state-service2";
+import { Player, TwixtReadonlyStore } from "../services/state-service/state-service";
 import { boardSize } from "../services/state-service/dependent-state/board-size";
 
 /**

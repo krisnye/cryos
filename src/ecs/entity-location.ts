@@ -1,10 +1,10 @@
-import { FromSchema, Schema, I32Schema } from "data";
+import { FromSchema, Schema, I32Schema, U32Schema } from "data";
 
 export const EntityLocationSchema = {
     type: "object",
     properties: {
-        archetype: I32Schema,
-        row: I32Schema
+        archetype: U32Schema,
+        row: U32Schema
     }
 } as const satisfies Schema;
 

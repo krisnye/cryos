@@ -1,5 +1,5 @@
-import { FromSchema } from "./schema";
+import { Schema } from "./schema";
 
-export const TrueSchema = { type: "boolean", const: true, default: true } as const;
+export const TrueSchema = { type: "boolean", const: true, default: true } as const satisfies Schema;
 
-export type True = FromSchema<typeof TrueSchema>;
+export type True = true;

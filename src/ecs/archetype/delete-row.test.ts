@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { createEntityLocationTable } from 'ecs/entity-location-table';
-import { createArchetype, deleteRow } from 'ecs/archetype';
-import { EntitySchema } from 'ecs';
+import { createEntityLocationTable } from '../entity-location-table';
+import { createArchetype, deleteRow } from '../archetype';
+import { EntitySchema } from '../entity';
 import { U32Schema } from 'data';
 
 describe('Archetype_deleteRow', () => {
@@ -17,9 +17,9 @@ describe('Archetype_deleteRow', () => {
         );
 
         // Create three entities
-        const entity1 = archetype.create({ value: 100 });
-        const entity2 = archetype.create({ value: 200 });
-        const entity3 = archetype.create({ value: 300 });
+        const entity1 = archetype.insert({ value: 100 });
+        const entity2 = archetype.insert({ value: 200 });
+        const entity3 = archetype.insert({ value: 300 });
 
         // Delete the middle entity (entity2)
         deleteRow(archetype, entity2, entityLocationTable);
@@ -29,7 +29,7 @@ describe('Archetype_deleteRow', () => {
         expect(archetype.columns.value.get(1)).toBe(300);
 
         // Verify entity location table was updated for the moved entity
-        const movedEntityLocation = entityLocationTable.locateEntity(entity3);
+        const movedEntityLocation = entityLocationTable.locate(entity3);
         expect(movedEntityLocation).toEqual({ archetype: 1, row: 1 });
 
         // Verify total rows decreased
@@ -52,8 +52,8 @@ describe('Archetype_deleteRow', () => {
         );
 
         // Create two entities
-        const entity1 = archetype.create({ value: 100 });
-        const entity2 = archetype.create({ value: 200 });
+        const entity1 = archetype.insert({ value: 100 });
+        const entity2 = archetype.insert({ value: 200 });
 
         // Delete the last entity (entity2)
         deleteRow(archetype, entity2, entityLocationTable);
@@ -78,7 +78,7 @@ describe('Archetype_deleteRow', () => {
         );
 
         // Create one entity
-        const entity1 = archetype.create({ value: 100 });
+        const entity1 = archetype.insert({ value: 100 });
 
         // Delete the only entity
         deleteRow(archetype, 0, entityLocationTable);

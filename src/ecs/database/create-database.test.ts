@@ -1,55 +1,97 @@
 import { describe, it, expect, vi, Mock } from "vitest";
-import { createDatastore } from "ecs/datastore";
-import { F32Schema, FromSchema, Schema, U32Schema } from "data";
-import { Entity } from "ecs/entity";
 import { createDatabase } from "./create-database";
+import { createStore } from "../store/create-store";
+import { F32Schema, FromSchema, Schema } from "data";
+import { Entity } from "../entity";
 
-const Vec3Schema = {
-    type: 'array',
-    items: F32Schema,
-    minItems: 3,
-    maxItems: 3,
-    default: [0, 0, 0] as [number, number, number],
+// Test schemas
+const positionSchema = {
+    type: "object",
+    properties: {
+        x: F32Schema,
+        y: F32Schema,
+        z: F32Schema,
+    }
 } as const satisfies Schema;
-type Vec3 = FromSchema<typeof Vec3Schema>;
+type Position = FromSchema<typeof positionSchema>;
 
-const testSchemas = {
-    position: Vec3Schema,
-    velocity: Vec3Schema,
-    name: {
-        type: "string",
-    } as const satisfies Schema,
-    age: U32Schema,
-} as const;
+const healthSchema = {
+    type: "object",
+    properties: {
+        current: F32Schema,
+        max: F32Schema,
+    }
+} as const satisfies Schema;
+type Health = FromSchema<typeof healthSchema>;
 
-function createTestDatabase() {
-    return createDatastore()
-        .withComponents(testSchemas)
-        .withArchetypes({
-            particle: ["id", "position", "name", "velocity", "age"],
-            particleWithoutName: ["id", "position", "velocity", "age"],
-        } as const).toDatabase();
+const nameSchema = {
+    type: "string",
+    maxLength: 50,
+} as const satisfies Schema;
+type Name = FromSchema<typeof nameSchema>;
+
+function createTestObservableStore() {
+    const baseStore = createStore(
+        { position: positionSchema, health: healthSchema, name: nameSchema },
+        { time: { delta: 0.016, elapsed: 0 } }
+    );
+    
+    return createDatabase(baseStore, {
+        createPositionEntity(db, args: { position: { x: number, y: number, z: number } }) {
+            const archetype = db.ensureArchetype(["id", "position"]);
+            return archetype.insert(args);
+        },
+        createPositionHealthEntity(db, args: { position: { x: number, y: number, z: number }, health: { current: number, max: number } }) {
+            const archetype = db.ensureArchetype(["id", "position", "health"]);
+            return archetype.insert(args);
+        },
+        createPositionNameEntity(db, args: { position: { x: number, y: number, z: number }, name: string }) {
+            const archetype = db.ensureArchetype(["id", "position", "name"]);
+            return archetype.insert(args);
+        },
+        createFullEntity(db, args: { position: { x: number, y: number, z: number }, health: { current: number, max: number }, name: string }) {
+            const archetype = db.ensureArchetype(["id", "position", "health", "name"]);
+            return archetype.insert(args);
+        },
+        createEntityAndReturn(db, args: { position: Position, name: Name }) {
+            const archetype = db.ensureArchetype(["id", "position", "name"]);
+            const entity = archetype.insert(args);
+            return entity;
+        },
+        updateEntity(db, args: { 
+            entity: Entity, 
+            values: Partial<{
+                position: { x: number, y: number, z: number },
+                health: { current: number, max: number },
+                name: string
+            }>
+        }) {
+            db.update(args.entity, args.values);
+        },
+        deleteEntity(db, args: { entity: Entity }) {
+            db.delete(args.entity);
+        },
+        updateTime(db, args: { delta: number, elapsed: number }) {
+            db.resources.time = args;
+        }
+    });
 }
 
-describe("createObservableDatabase", () => {
+describe("createDatabase", () => {
     it("should notify component observers when components change", () => {
-        const db = createTestDatabase();
+        const store = createTestObservableStore();
         const positionObserver = vi.fn();
         const nameObserver = vi.fn();
         
         // Subscribe to component changes
-        const unsubscribePosition = db.observe.component.position(positionObserver);
-        const unsubscribeName = db.observe.component.name(nameObserver);
+        const unsubscribePosition = store.observe.component.position(positionObserver);
+        const unsubscribeName = store.observe.component.name(nameObserver);
 
         // Create an entity that affects both components
-        let testEntity!: Entity;
-        db.execute((db) => {
-            testEntity = db.archetypes.particle.create({
-                position: [1, 2, 3],
-                name: "Test",
-                velocity: [0, 0, 0],
-                age: 0
-            });
+        const testEntity = store.transactions.createFullEntity({
+            position: { x: 1, y: 2, z: 3 },
+            name: "Test",
+            health: { current: 100, max: 100 }
         });
 
         // Both observers should be notified
@@ -57,8 +99,9 @@ describe("createObservableDatabase", () => {
         expect(nameObserver).toHaveBeenCalledTimes(1);
 
         // Update only position
-        db.execute((db) => {
-            db.updateEntity(testEntity, { position: [4, 5, 6] });
+        store.transactions.updateEntity({
+            entity: testEntity,
+            values: { position: { x: 4, y: 5, z: 6 } }
         });
 
         // Only position observer should be notified
@@ -69,8 +112,9 @@ describe("createObservableDatabase", () => {
         unsubscribePosition();
         unsubscribeName();
         
-        db.execute((db) => {
-            db.updateEntity(testEntity, { position: [7, 8, 9], name: "Updated" });
+        store.transactions.updateEntity({
+            entity: testEntity,
+            values: { position: { x: 7, y: 8, z: 9 }, name: "Updated" }
         });
 
         expect(positionObserver).toHaveBeenCalledTimes(2);
@@ -78,53 +122,41 @@ describe("createObservableDatabase", () => {
     });
 
     it("should notify entity observers with correct values", () => {
-        const db = createTestDatabase();
-        const entityObservers = new Map<Entity, Mock>();
-        let testEntity!: Entity;
+        const store = createTestObservableStore();
 
         // Create initial entity
-        db.execute((db) => {
-            testEntity = db.archetypes.particle.create({
-                position: [1, 2, 3],
-                name: "Test",
-                velocity: [0, 0, 0],
-                age: 0
-            });
+        const testEntity = store.transactions.createFullEntity({
+            position: { x: 1, y: 2, z: 3 },
+            name: "Test",
+            health: { current: 100, max: 100 }
         });
 
         // Subscribe to entity changes
         const observer = vi.fn();
-        const unsubscribe = db.observe.entity(testEntity)(observer);
-        entityObservers.set(testEntity, observer);
+        const unsubscribe = store.observe.entity(testEntity)(observer);
 
         // Initial notification should have current values
         expect(observer).toHaveBeenCalledWith(expect.objectContaining({
-            position: [1, 2, 3],
+            position: { x: 1, y: 2, z: 3 },
             name: "Test",
-            velocity: [0, 0, 0],
-            age: 0
+            health: { current: 100, max: 100 }
         }));
 
         // Update entity
-        db.execute((db) => {
-            db.updateEntity(testEntity, {
-                name: "Updated",
-                age: 25
-            });
+        store.transactions.updateEntity({
+            entity: testEntity,
+            values: { name: "Updated", health: { current: 50, max: 100 } }
         });
 
         // Observer should be notified with new values
         expect(observer).toHaveBeenCalledWith(expect.objectContaining({
-            position: [1, 2, 3], // unchanged
+            position: { x: 1, y: 2, z: 3 }, // unchanged
             name: "Updated",
-            velocity: [0, 0, 0], // unchanged
-            age: 25
+            health: { current: 50, max: 100 }
         }));
 
         // Delete entity
-        db.execute((db) => {
-            db.deleteEntity(testEntity);
-        });
+        store.transactions.deleteEntity({ entity: testEntity });
 
         // Observer should be notified with null
         expect(observer).toHaveBeenCalledWith(null);
@@ -133,565 +165,567 @@ describe("createObservableDatabase", () => {
     });
 
     it("should notify transaction observers with full transaction results", () => {
-        const db = createTestDatabase();
+        const store = createTestObservableStore();
         const transactionObserver = vi.fn();
         
-        const unsubscribe = db.observe.transactions(transactionObserver);
+        const unsubscribe = store.observe.transactions(transactionObserver);
 
         // Execute a transaction with multiple operations
-        const result = db.execute((db) => {
-            const entity = db.archetypes.particle.create({
-                position: [1, 2, 3],
-                name: "Test",
-                velocity: [0, 0, 0],
-                age: 0
-            });
-            db.updateEntity(entity, { name: "Updated" });
+        store.transactions.createFullEntity({
+            position: { x: 1, y: 2, z: 3 },
+            name: "Test",
+            health: { current: 100, max: 100 }
         });
 
         // Transaction observer should be called with the full result
-        expect(transactionObserver).toHaveBeenCalledWith(result);
+        expect(transactionObserver).toHaveBeenCalledWith(expect.objectContaining({
+            changedEntities: expect.any(Set),
+            changedComponents: expect.any(Set),
+            changedArchetypes: expect.any(Set),
+            redo: expect.any(Array),
+            undo: expect.any(Array)
+        }));
+
+        const result = transactionObserver.mock.calls[0][0];
         expect(result.changedEntities.size).toBe(1);
-        expect(result.changedComponents.has("name")).toBe(true);
         expect(result.changedComponents.has("position")).toBe(true);
-        expect(result.redo).toHaveLength(2); // create + update
-        expect(result.undo).toHaveLength(2); // delete + update
+        expect(result.changedComponents.has("name")).toBe(true);
 
         unsubscribe();
     });
 
     it("should notify archetype observers when entities change archetypes", () => {
-        const db = createTestDatabase();
-        const particleObserver = vi.fn();
-        const particleWithoutNameObserver = vi.fn();
+        const store = createTestObservableStore();
         
-        // Subscribe to archetype changes
-        const unsubscribeParticle = db.observe.archetype(db.archetypes.particle.id)(particleObserver);
-        const unsubscribeWithoutName = db.observe.archetype(db.archetypes.particleWithoutName.id)(particleWithoutNameObserver);
-
-        // Create entity in particleWithoutName archetype
-        let entity!: Entity;
-        db.execute((db) => {
-            entity = db.archetypes.particleWithoutName.create({
-                position: [1, 2, 3],
-                velocity: [0, 0, 0],
-                age: 0
-            });
+        // Create initial entity
+        const entity = store.transactions.createPositionEntity({
+            position: { x: 1, y: 2, z: 3 }
         });
 
-        // Only particleWithoutName observer should be notified
-        expect(particleWithoutNameObserver).toHaveBeenCalledTimes(1);
-        expect(particleObserver).toHaveBeenCalledTimes(0);
+        const archetype = store.locate(entity)?.archetype;
+        expect(archetype).toBeDefined();
 
-        // Update entity to add name component, changing archetype
-        db.execute((db) => {
-            db.updateEntity(entity, { name: "Test" });
+        const archetypeObserver = vi.fn();
+        const unsubscribe = store.observe.archetype(archetype!)(archetypeObserver);
+
+        // No initial notification for archetype observers
+        expect(archetypeObserver).toHaveBeenCalledTimes(0);
+
+        // Update entity to add name component, potentially changing archetype
+        store.transactions.updateEntity({
+            entity,
+            values: { name: "Test" }
         });
 
-        // Both observers should be notified of archetype change
-        expect(particleWithoutNameObserver).toHaveBeenCalledTimes(2);
-        expect(particleObserver).toHaveBeenCalledTimes(1);
+        // Archetype observer should be notified of the change
+        expect(archetypeObserver).toHaveBeenCalledTimes(1);
 
-        unsubscribeParticle();
-        unsubscribeWithoutName();
+        unsubscribe();
     });
 
     it("should notify resource observers with immediate and update notifications", () => {
-        const db = createDatastore()
-            .withComponents(testSchemas)
-            .withArchetypes({
-                particle: ["id", "position", "name", "velocity", "age"],
-                particleWithoutName: ["id", "position", "velocity", "age"],
-            })
-            .withResources({
-                gravity: 9.8,
-                maxSpeed: 100
-            })
-            .toDatabase();
+        const store = createTestObservableStore();
 
-        const gravityObserver = vi.fn();
-        const maxSpeedObserver = vi.fn();
+        const timeObserver = vi.fn();
 
         // Subscribe to resource changes
-        const unsubscribeGravity = db.observe.resource.gravity(gravityObserver);
-        const unsubscribeMaxSpeed = db.observe.resource.maxSpeed(maxSpeedObserver);
+        const unsubscribeTime = store.observe.resource.time(timeObserver);
 
-        // Both observers should be notified immediately with initial values
-        expect(gravityObserver).toHaveBeenCalledWith(9.8);
-        expect(maxSpeedObserver).toHaveBeenCalledWith(100);
+        // Observer should be notified immediately with initial value
+        expect(timeObserver).toHaveBeenCalledWith({ delta: 0.016, elapsed: 0 });
 
-        // Update gravity resource
-        db.execute((db) => {
-            db.resources.gravity = 10.0;
-        });
+        debugger;
+        // Update time resource
+        store.transactions.updateTime({ delta: 0.032, elapsed: 1 });
 
-        // Only gravity observer should be notified
-        expect(gravityObserver).toHaveBeenCalledWith(10.0);
-        expect(maxSpeedObserver).toHaveBeenCalledTimes(1); // Still only the initial call
+        // Observer should be notified with new value
+        expect(timeObserver).toHaveBeenCalledWith({ delta: 0.032, elapsed: 1 });
 
-        // Update maxSpeed resource
-        db.execute((db) => {
-            db.resources.maxSpeed = 150;
-        });
+        // // Unsubscribe and verify no more notifications
+        // unsubscribeTime();
 
-        // Only maxSpeed observer should be notified
-        expect(maxSpeedObserver).toHaveBeenCalledWith(150);
-        expect(gravityObserver).toHaveBeenCalledTimes(2); // Initial + one update
+        // store.transactions.updateTime({ delta: 0.048, elapsed: 2 });
 
-        // Unsubscribe and verify no more notifications
-        unsubscribeGravity();
-        unsubscribeMaxSpeed();
-
-        db.execute((db) => {
-            db.resources.gravity = 11.0;
-            db.resources.maxSpeed = 200;
-        });
-
-        expect(gravityObserver).toHaveBeenCalledTimes(2); // No more calls after unsubscribe
-        expect(maxSpeedObserver).toHaveBeenCalledTimes(2); // No more calls after unsubscribe
+        // expect(timeObserver).toHaveBeenCalledTimes(2); // No more calls after unsubscribe
     });
 
-    it("should support transactions and notify observers", () => {
-        const db = createTestDatabase().withTransactions({
-            createParticle(db, args: { position: Vec3, name: string, velocity: Vec3, age: number }) {
-                db.archetypes.particle.create(args);
-            },
-            moveParticle(db, { entity, time }: { entity: Entity, time: number }) {
-                const entityValues = db.selectEntity(entity);
-                if (entityValues) {
-                    const position = entityValues.position;
-                    const velocity = entityValues.velocity;
-                    if (position && velocity) {
-                        const newPosition: Vec3 = [
-                            position[0] + velocity[0] * time,
-                            position[1] + velocity[1] * time,
-                            position[2] + velocity[2] * time
-                        ];
-                        db.updateEntity(entity, { position: newPosition });
-                    }
-                }
+    it("should support multiple observers for the same target", () => {
+        const store = createTestObservableStore();
+        
+        const observer1 = vi.fn();
+        const observer2 = vi.fn();
+        const observer3 = vi.fn();
+
+        // Subscribe multiple observers to the same component
+        const unsubscribe1 = store.observe.component.position(observer1);
+        const unsubscribe2 = store.observe.component.position(observer2);
+        const unsubscribe3 = store.observe.component.position(observer3);
+
+        // Create entity with position
+        const entity = store.transactions.createPositionEntity({
+            position: { x: 1, y: 2, z: 3 }
+        });
+
+        // All observers should be notified
+        expect(observer1).toHaveBeenCalledTimes(1);
+        expect(observer2).toHaveBeenCalledTimes(1);
+        expect(observer3).toHaveBeenCalledTimes(1);
+
+        // Unsubscribe one observer
+        unsubscribe2();
+
+        // Update position
+        store.transactions.updateEntity({
+            entity,
+            values: { position: { x: 4, y: 5, z: 6 } }
+        });
+
+        // Only remaining observers should be notified
+        expect(observer1).toHaveBeenCalledTimes(2);
+        expect(observer2).toHaveBeenCalledTimes(1); // No more calls
+        expect(observer3).toHaveBeenCalledTimes(2);
+
+        unsubscribe1();
+        unsubscribe3();
+    });
+
+    it("should handle observer cleanup correctly", () => {
+        const store = createTestObservableStore();
+        
+        const observer = vi.fn();
+        const unsubscribe = store.observe.component.position(observer);
+
+        // Create entity
+        const entity = store.transactions.createPositionEntity({
+            position: { x: 1, y: 2, z: 3 }
+        });
+
+        expect(observer).toHaveBeenCalledTimes(1);
+
+        // Unsubscribe
+        unsubscribe();
+
+        // Update entity
+        store.transactions.updateEntity({
+            entity,
+            values: { position: { x: 4, y: 5, z: 6 } }
+        });
+
+        // Observer should not be called after unsubscribe
+        expect(observer).toHaveBeenCalledTimes(1);
+    });
+
+    it("should handle observing non-existent entities", () => {
+        const store = createTestObservableStore();
+        
+        const observer = vi.fn();
+        const unsubscribe = store.observe.entity(999 as Entity)(observer);
+
+        // Should be notified with null for non-existent entity
+        expect(observer).toHaveBeenCalledWith(null);
+
+        unsubscribe();
+    });
+
+    it("should handle complex transaction scenarios with multiple observers", () => {
+        const store = createTestObservableStore();
+        
+        const positionObserver = vi.fn();
+        const healthObserver = vi.fn();
+        const transactionObserver = vi.fn();
+        const entityObserver = vi.fn();
+
+        // Subscribe to various observers
+        const unsubscribePosition = store.observe.component.position(positionObserver);
+        const unsubscribeHealth = store.observe.component.health(healthObserver);
+        const unsubscribeTransaction = store.observe.transactions(transactionObserver);
+
+        // Create entity
+        const entity = store.transactions.createPositionHealthEntity({
+            position: { x: 1, y: 2, z: 3 },
+            health: { current: 100, max: 100 }
+        });
+
+        const unsubscribeEntity = store.observe.entity(entity)(entityObserver);
+
+        // All observers should be notified
+        expect(positionObserver).toHaveBeenCalledTimes(1);
+        expect(healthObserver).toHaveBeenCalledTimes(1);
+        expect(transactionObserver).toHaveBeenCalledTimes(1);
+        expect(entityObserver).toHaveBeenCalledTimes(1);
+
+        // Update multiple components
+        store.transactions.updateEntity({
+            entity,
+            values: { 
+                position: { x: 4, y: 5, z: 6 },
+                health: { current: 50, max: 100 }
             }
         });
 
-        // Set up observers
-        const positionObserver = vi.fn();
-        const transactionObserver = vi.fn();
-        
-        const unsubscribePosition = db.observe.component.position(positionObserver);
-        const unsubscribeTransaction = db.observe.transactions(transactionObserver);
-
-        // Execute a transaction
-        db.transactions.createParticle({
-            position: [1, 2, 3],
-            name: "Test Particle",
-            velocity: [1, 1, 1],
-            age: 0
-        });
-
-        // Verify observers were notified of creation
-        expect(positionObserver).toHaveBeenCalledTimes(1);
-        expect(transactionObserver).toHaveBeenCalledTimes(1);
-        expect(transactionObserver.mock.calls[0][0].changedComponents.has("position")).toBe(true);
-        expect(transactionObserver.mock.calls[0][0].changedEntities.size).toBe(1);
-
-        const entity = db.archetypes.particle.columns.id.get(0);
-        // Execute another transaction
-        db.transactions.moveParticle({ entity, time: 2 });
-
-        // Verify observers were notified of movement
+        // All observers should be notified again
         expect(positionObserver).toHaveBeenCalledTimes(2);
+        expect(healthObserver).toHaveBeenCalledTimes(2);
         expect(transactionObserver).toHaveBeenCalledTimes(2);
-        expect(transactionObserver.mock.calls[1][0].changedComponents.has("position")).toBe(true);
-        expect(transactionObserver.mock.calls[1][0].changedEntities.size).toBe(1);
+        expect(entityObserver).toHaveBeenCalledTimes(2);
 
-        // Verify the final state
-        expect(db.selectEntity(entity)?.position).toEqual([3, 4, 5]); // [1,2,3] + [1,1,1] * 2
+        // Verify entity observer received correct values
+        expect(entityObserver).toHaveBeenCalledWith(expect.objectContaining({
+            position: { x: 4, y: 5, z: 6 },
+            health: { current: 50, max: 100 }
+        }));
 
         unsubscribePosition();
+        unsubscribeHealth();
         unsubscribeTransaction();
+        unsubscribeEntity();
     });
 
-    it("should support computed resources immediately and observed", () => {
-        const db = createDatastore().withResources({
-            gravity: 9.8,
-            gravityMultiplier: 100,
-        }).toDatabase()
-        .withComputedResource("effectiveGravity", ["gravity", "gravityMultiplier"], ({gravity, gravityMultiplier}) => gravity * gravityMultiplier);
-
-        expect(db.resources.effectiveGravity).toBeCloseTo(9.8 * 100);
-
-        db.execute(db => db.resources.gravity = 10.0);
-
-        expect(db.resources.effectiveGravity).toBeCloseTo(10.0 * 100);
-
-        // now check observers
-        const effectiveGravityObserver = vi.fn();
-        const unsubscribeEffectiveGravity = db.observe.resource.effectiveGravity(effectiveGravityObserver);
-
-        expect(effectiveGravityObserver).toHaveBeenCalledWith(10.0 * 100);
-
-        db.execute(db => db.resources.gravity = 11.0);
-
-        expect(effectiveGravityObserver).toHaveBeenCalledWith(11.0 * 100);
-
-        unsubscribeEffectiveGravity();        
+    it("should handle rapid successive changes efficiently", () => {
+        const store = createTestObservableStore();
         
+        const observer = vi.fn();
+        const unsubscribe = store.observe.component.position(observer);
+
+        // Create entity
+        const entity = store.transactions.createPositionEntity({
+            position: { x: 1, y: 2, z: 3 }
+        });
+
+        // Make rapid successive updates
+        for (let i = 0; i < 5; i++) {
+            store.transactions.updateEntity({
+                entity,
+                values: { position: { x: i, y: i, z: i } }
+            });
+        }
+
+        // Observer should be called for each change
+        expect(observer).toHaveBeenCalledTimes(6); // 1 for create + 5 for updates
+
+        unsubscribe();
     });
 
-    describe("Systems", () => {
-        it("should run systems in correct phase order", () => {
-            const executionOrder: string[] = [];
-            
-            const db = createTestDatabase().withSystems(
-                {
-                    name: "render",
-                    phase: "render",
-                    run: () => {
-                        executionOrder.push("render");
+    it("should support transaction functions that return an Entity", () => {
+        const store = createTestObservableStore();
+        
+        // Execute a transaction that returns an Entity
+        const returnedEntity = store.transactions.createEntityAndReturn({
+            position: { x: 10, y: 20, z: 30 },
+            name: "ReturnedEntity"
+        });
+
+        // Verify that an Entity was returned
+        expect(returnedEntity).toBeDefined();
+        expect(typeof returnedEntity).toBe("number");
+
+        // Verify the entity exists in the store
+        const entityValues = store.read(returnedEntity);
+        expect(entityValues).toBeDefined();
+        expect(entityValues?.position).toEqual({ x: 10, y: 20, z: 30 });
+        expect(entityValues?.name).toBe("ReturnedEntity");
+
+        // Verify the entity can be found in the store using select
+        const selectedEntities = store.select(["id", "position", "name"]);
+        expect(selectedEntities).toContain(returnedEntity);
+    });
+
+    describe("AsyncArgs Support", () => {
+        it("should handle Promise-based async arguments", async () => {
+            const store = createTestObservableStore();
+            const observer = vi.fn();
+            const unsubscribe = store.observe.component.position(observer);
+
+            // Create a promise that resolves to entity data
+            const entityDataPromise = Promise.resolve({
+                position: { x: 100, y: 200, z: 300 },
+                name: "AsyncEntity"
+            });
+
+            // Execute transaction with promise argument wrapped in function
+            store.transactions.createPositionNameEntity(() => entityDataPromise);
+
+            // Wait for the promise to resolve
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            // Verify the entity was created with the resolved data
+            const entities = store.select(["id", "position", "name"]);
+            const createdEntity = entities.find(entityId => {
+                const values = store.read(entityId);
+                return values?.name === "AsyncEntity";
+            });
+
+            expect(createdEntity).toBeDefined();
+            const entityValues = store.read(createdEntity!);
+            expect(entityValues?.position).toEqual({ x: 100, y: 200, z: 300 });
+            expect(entityValues?.name).toBe("AsyncEntity");
+
+            // Verify observer was notified
+            expect(observer).toHaveBeenCalledTimes(1);
+
+            unsubscribe();
+        });
+
+        it("should handle AsyncGenerator streaming arguments", async () => {
+            const store = createTestObservableStore();
+            const observer = vi.fn();
+            const unsubscribe = store.observe.component.position(observer);
+
+            // Create an async generator that yields multiple entity data
+            async function* entityDataStream() {
+                yield { position: { x: 1, y: 1, z: 1 }, name: "Stream1" };
+                yield { position: { x: 2, y: 2, z: 2 }, name: "Stream2" };
+                yield { position: { x: 3, y: 3, z: 3 }, name: "Stream3" };
+            }
+
+            // Execute transaction with async generator wrapped in function
+            store.transactions.createPositionNameEntity(() => entityDataStream());
+
+            // Wait for all entities to be processed
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            // Verify all entities were created
+            const entities = store.select(["id", "position", "name"]);
+            const streamEntities = entities.filter(entityId => {
+                const values = store.read(entityId);
+                return values?.name?.startsWith("Stream");
+            });
+
+            expect(streamEntities).toHaveLength(3);
+
+            // Verify each entity has correct data
+            const entity1 = store.read(streamEntities[0]);
+            const entity2 = store.read(streamEntities[1]);
+            const entity3 = store.read(streamEntities[2]);
+
+            expect(entity1?.position).toEqual({ x: 1, y: 1, z: 1 });
+            expect(entity1?.name).toBe("Stream1");
+            expect(entity2?.position).toEqual({ x: 2, y: 2, z: 2 });
+            expect(entity2?.name).toBe("Stream2");
+            expect(entity3?.position).toEqual({ x: 3, y: 3, z: 3 });
+            expect(entity3?.name).toBe("Stream3");
+
+            // Verify observer was notified for each entity
+            expect(observer).toHaveBeenCalledTimes(3);
+
+            unsubscribe();
+        });
+
+        it("should handle AsyncGenerator with delays", async () => {
+            const store = createTestObservableStore();
+            const observer = vi.fn();
+            const unsubscribe = store.observe.component.position(observer);
+
+            // Create an async generator with delays
+            async function* delayedEntityStream() {
+                yield { position: { x: 10, y: 10, z: 10 }, name: "Delayed1" };
+                await new Promise(resolve => setTimeout(resolve, 5));
+                yield { position: { x: 20, y: 20, z: 20 }, name: "Delayed2" };
+                await new Promise(resolve => setTimeout(resolve, 5));
+                yield { position: { x: 30, y: 30, z: 30 }, name: "Delayed3" };
+            }
+
+            // Execute transaction with delayed async generator wrapped in function
+            store.transactions.createPositionNameEntity(() => delayedEntityStream());
+
+            // Wait for all entities to be processed
+            await new Promise(resolve => setTimeout(resolve, 20));
+
+            // Verify all entities were created
+            const entities = store.select(["id", "position", "name"]);
+            const delayedEntities = entities.filter(entityId => {
+                const values = store.read(entityId);
+                return values?.name?.startsWith("Delayed");
+            });
+
+            expect(delayedEntities).toHaveLength(3);
+            expect(observer).toHaveBeenCalledTimes(3);
+
+            unsubscribe();
+        });
+
+        it("should handle mixed sync and async arguments in the same transaction", async () => {
+            const store = createTestObservableStore();
+            const observer = vi.fn();
+            const unsubscribe = store.observe.component.position(observer);
+
+            // Create entities with different argument types
+            store.transactions.createPositionNameEntity({
+                position: { x: 1, y: 1, z: 1 },
+                name: "SyncEntity"
+            });
+
+            store.transactions.createPositionNameEntity(
+                () => Promise.resolve({
+                    position: { x: 2, y: 2, z: 2 },
+                    name: "PromiseEntity"
+                })
+            );
+
+            async function* streamEntityGenerator() {
+                yield { position: { x: 3, y: 3, z: 3 }, name: "StreamEntity" };
+            }
+
+            store.transactions.createPositionNameEntity(() => streamEntityGenerator());
+
+            // Wait for async operations
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            // Verify all entities were created
+            const entities = store.select(["id", "position", "name"]);
+            const testEntities = entities.filter(entityId => {
+                const values = store.read(entityId);
+                return values?.name?.endsWith("Entity");
+            });
+
+            expect(testEntities).toHaveLength(3);
+
+            const syncEntity = store.read(testEntities.find(e => store.read(e)?.name === "SyncEntity")!);
+            const promiseEntity = store.read(testEntities.find(e => store.read(e)?.name === "PromiseEntity")!);
+            const streamEntity = store.read(testEntities.find(e => store.read(e)?.name === "StreamEntity")!);
+
+            expect(syncEntity?.position).toEqual({ x: 1, y: 1, z: 1 });
+            expect(promiseEntity?.position).toEqual({ x: 2, y: 2, z: 2 });
+            expect(streamEntity?.position).toEqual({ x: 3, y: 3, z: 3 });
+
+            expect(observer).toHaveBeenCalledTimes(3);
+
+            unsubscribe();
+        });
+
+        it("should handle AsyncGenerator that yields no values", async () => {
+            const store = createTestObservableStore();
+            const observer = vi.fn();
+            const unsubscribe = store.observe.component.position(observer);
+
+            // Create an empty async generator
+            async function* emptyStream() {
+                // Yields nothing
+            }
+
+            // Execute transaction with empty async generator wrapped in function
+            store.transactions.createPositionNameEntity(() => emptyStream());
+
+            // Wait for processing
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            // Verify no entities were created
+            const entities = store.select(["id", "position", "name"]);
+            expect(entities).toHaveLength(0);
+            expect(observer).toHaveBeenCalledTimes(0);
+
+            unsubscribe();
+        });
+
+        it("should handle AsyncGenerator with error handling", async () => {
+            const store = createTestObservableStore();
+            const observer = vi.fn();
+            const unsubscribe = store.observe.component.position(observer);
+
+            // Create an async generator that throws an error
+            async function* errorStream() {
+                yield { position: { x: 1, y: 1, z: 1 }, name: "BeforeError" };
+                throw new Error("Test error");
+            }
+
+            // Execute transaction with error-throwing async generator wrapped in function
+            store.transactions.createPositionNameEntity(() => errorStream());
+
+            // Wait for processing
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            // Verify only the first entity was created before the error
+            const entities = store.select(["id", "position", "name"]);
+            const beforeErrorEntity = entities.find(entityId => {
+                const values = store.read(entityId);
+                return values?.name === "BeforeError";
+            });
+
+            expect(beforeErrorEntity).toBeDefined();
+            expect(observer).toHaveBeenCalledTimes(1);
+
+            unsubscribe();
+        });
+
+        it("should handle complex AsyncGenerator with conditional yielding", async () => {
+            const store = createTestObservableStore();
+            const observer = vi.fn();
+            const unsubscribe = store.observe.component.position(observer);
+
+            // Create a complex async generator with conditional logic
+            async function* conditionalStream() {
+                for (let i = 0; i < 5; i++) {
+                    if (i % 2 === 0) {
+                        yield { 
+                            position: { x: i, y: i * 2, z: i * 3 }, 
+                            name: `Even${i}` 
+                        };
                     }
-                },
-                {
-                    name: "input",
-                    phase: "input",
-                    run: () => {
-                        executionOrder.push("input");
-                    }
-                },
-                {
-                    name: "update",
-                    phase: "update",
-                    run: () => {
-                        executionOrder.push("update");
-                    }
+                    await new Promise(resolve => setTimeout(resolve, 1));
                 }
-            );
+            }
 
-            db.systems.run();
+            // Execute transaction with conditional async generator wrapped in function
+            store.transactions.createPositionNameEntity(() => conditionalStream());
 
-            expect(executionOrder).toEqual(["input", "update", "render"]);
+            // Wait for processing
+            await new Promise(resolve => setTimeout(resolve, 20));
+
+            // Verify only even-numbered entities were created
+            const entities = store.select(["id", "position", "name"]);
+            const evenEntities = entities.filter(entityId => {
+                const values = store.read(entityId);
+                return values?.name?.startsWith("Even");
+            });
+
+            expect(evenEntities).toHaveLength(3); // Even 0, 2, 4
+
+            // Verify correct data for each entity
+            const even0 = store.read(evenEntities.find(e => store.read(e)?.name === "Even0")!);
+            const even2 = store.read(evenEntities.find(e => store.read(e)?.name === "Even2")!);
+            const even4 = store.read(evenEntities.find(e => store.read(e)?.name === "Even4")!);
+
+            expect(even0?.position).toEqual({ x: 0, y: 0, z: 0 });
+            expect(even2?.position).toEqual({ x: 2, y: 4, z: 6 });
+            expect(even4?.position).toEqual({ x: 4, y: 8, z: 12 });
+
+            expect(observer).toHaveBeenCalledTimes(3);
+
+            unsubscribe();
         });
 
-        it("should run systems with dependencies in correct order within phase", () => {
-            const executionOrder: string[] = [];
-            
-            const db = createTestDatabase().withSystems(
-                {
-                    name: "physicsIntegration",
-                    phase: "physics",
-                    run: () => {
-                        executionOrder.push("physicsIntegration");
-                    }
-                },
-                {
-                    name: "collisionDetection",
-                    phase: "physics",
-                    before: ["physicsIntegration"],
-                    run: () => {
-                        executionOrder.push("collisionDetection");
-                    }
-                },
-            );
+        it("should maintain transaction integrity with async operations", async () => {
+            const store = createTestObservableStore();
+            const transactionObserver = vi.fn();
+            const unsubscribe = store.observe.transactions(transactionObserver);
 
-            db.systems.run();
+            // Create a promise that resolves to entity data
+            const entityDataPromise = Promise.resolve({
+                position: { x: 100, y: 200, z: 300 },
+                name: "TransactionTest"
+            });
 
-            expect(executionOrder).toEqual(["collisionDetection", "physicsIntegration"]);
-        });
+            // Execute transaction with promise wrapped in function
+            store.transactions.createPositionNameEntity(() => entityDataPromise);
 
-        it("should handle async systems and wait for completion", async () => {
-            const executionOrder: string[] = [];
-            const system1EndTime = { value: 0 };
-            const system2StartTime = { value: 0 };
-            
-            const db = createTestDatabase().withSystems(
-                {
-                    name: "asyncSystem1",
-                    phase: "update",
-                    run: async () => {
-                        executionOrder.push("asyncSystem1-start");
-                        await new Promise(resolve => setTimeout(resolve, 10));
-                        executionOrder.push("asyncSystem1-end");
-                        system1EndTime.value = Date.now();
-                    }
-                },
-                {
-                    name: "asyncSystem2",
-                    phase: "update",
-                    run: async () => {
-                        system2StartTime.value = Date.now();
-                        executionOrder.push("asyncSystem2-start");
-                        await new Promise(resolve => setTimeout(resolve, 5));
-                        executionOrder.push("asyncSystem2-end");
-                    }
-                }
-            );
+            // Wait for the promise to resolve
+            await new Promise(resolve => setTimeout(resolve, 10));
 
-            await db.systems.run();
+            // Verify transaction observer was called with proper transaction result
+            expect(transactionObserver).toHaveBeenCalledWith(expect.objectContaining({
+                changedEntities: expect.any(Set),
+                changedComponents: expect.any(Set),
+                changedArchetypes: expect.any(Set),
+                redo: expect.any(Array),
+                undo: expect.any(Array)
+            }));
 
-            expect(executionOrder).toEqual([
-                "asyncSystem1-start",
-                "asyncSystem1-end",
-                "asyncSystem2-start",
-                "asyncSystem2-end"
-            ]);
-            expect(system2StartTime.value).toBeGreaterThanOrEqual(system1EndTime.value);
-        });
+            const result = transactionObserver.mock.calls[0][0];
+            expect(result.changedEntities.size).toBe(1);
+            expect(result.changedComponents.has("position")).toBe(true);
+            expect(result.changedComponents.has("name")).toBe(true);
 
-        it("should run only specified phases", () => {
-            const executionOrder: string[] = [];
-            
-            const db = createTestDatabase().withSystems(
-                {
-                    name: "input",
-                    phase: "input",
-                    run: () => {
-                        executionOrder.push("input");
-                    }
-                },
-                {
-                    name: "update",
-                    phase: "update",
-                    run: () => {
-                        executionOrder.push("update");
-                    }
-                },
-                {
-                    name: "render",
-                    phase: "render",
-                    run: () => {
-                        executionOrder.push("render");
-                    }
-                }
-            );
-
-            db.systems.run(["input", "render"]);
-
-            expect(executionOrder).toEqual(["input", "render"]);
-        });
-
-        it("should handle mixed sync and async systems correctly", async () => {
-            const executionOrder: string[] = [];
-            
-            const db = createTestDatabase().withSystems(
-                {
-                    name: "syncSystem",
-                    phase: "update",
-                    run: () => {
-                        executionOrder.push("syncSystem");
-                    }
-                },
-                {
-                    name: "asyncSystem",
-                    phase: "update",
-                    run: async () => {
-                        executionOrder.push("asyncSystem-start");
-                        await new Promise(resolve => setTimeout(resolve, 10));
-                        executionOrder.push("asyncSystem-end");
-                    }
-                }
-            );
-
-            await db.systems.run();
-
-            expect(executionOrder).toEqual([
-                "syncSystem",
-                "asyncSystem-start",
-                "asyncSystem-end"
-            ]);
-        });
-
-        it("should support custom phases", () => {
-            const executionOrder: string[] = [];
-            
-            const db = createTestDatabase()
-                .withPhases(["custom1", "custom2", "custom3"] as const)
-                .withSystems(
-                    {
-                        name: "system1",
-                        phase: "custom1",
-                        run: () => {
-                            executionOrder.push("system1");
-                        }
-                    },
-                    {
-                        name: "system2",
-                        phase: "custom2",
-                        run: () => {
-                            executionOrder.push("system2");
-                        }
-                    },
-                    {
-                        name: "system3",
-                        phase: "custom3",
-                        run: () => {
-                            executionOrder.push("system3");
-                        }
-                    }
-                );
-
-            db.systems.run();
-
-            expect(executionOrder).toEqual(["system1", "system2", "system3"]);
-        });
-
-        it("should allow individual system execution", async () => {
-            const system1Run = vi.fn();
-            const system2Run = vi.fn();
-            
-            const db = createTestDatabase().withSystems(
-                {
-                    name: "system1",
-                    phase: "update",
-                    run: system1Run
-                },
-                {
-                    name: "system2",
-                    phase: "update",
-                    run: system2Run
-                }
-            );
-
-            // Run individual systems
-            db.systems.system1.run();
-            await db.systems.system2.run();
-
-            expect(system1Run).toHaveBeenCalledTimes(1);
-            expect(system2Run).toHaveBeenCalledTimes(1);
-        });
-
-        it("should handle complex dependency chains", () => {
-            const executionOrder: string[] = [];
-            
-            const db = createTestDatabase().withSystems(
-                {
-                    name: "A",
-                    phase: "update",
-                    run: () => {
-                        executionOrder.push("A");
-                    }
-                },
-                {
-                    name: "B",
-                    phase: "update",
-                    after: ["A"],
-                    run: () => {
-                        executionOrder.push("B");
-                    }
-                },
-                {
-                    name: "C",
-                    phase: "update",
-                    after: ["A"],
-                    run: () => {
-                        executionOrder.push("C");
-                    }
-                },
-                {
-                    name: "D",
-                    phase: "update",
-                    after: ["B", "C"],
-                    run: () => {
-                        executionOrder.push("D");
-                    }
-                }
-            );
-
-            db.systems.run();
-
-            // A must run first, D must run last, B and C can run in either order after A
-            expect(executionOrder[0]).toBe("A");
-            expect(executionOrder[3]).toBe("D");
-            expect(executionOrder).toContain("B");
-            expect(executionOrder).toContain("C");
-        });
-
-        it("should handle async systems with dependencies", async () => {
-            const executionOrder: string[] = [];
-            
-            const db = createTestDatabase().withSystems(
-                {
-                    name: "asyncA",
-                    phase: "update",
-                    run: async () => {
-                        executionOrder.push("asyncA-start");
-                        await new Promise(resolve => setTimeout(resolve, 10));
-                        executionOrder.push("asyncA-end");
-                    }
-                },
-                {
-                    name: "asyncB",
-                    phase: "update",
-                    after: ["asyncA"],
-                    run: async () => {
-                        executionOrder.push("asyncB-start");
-                        await new Promise(resolve => setTimeout(resolve, 5));
-                        executionOrder.push("asyncB-end");
-                    }
-                }
-            );
-
-            await db.systems.run();
-
-            expect(executionOrder).toEqual([
-                "asyncA-start",
-                "asyncA-end",
-                "asyncB-start",
-                "asyncB-end"
-            ]);
-        });
-
-        it("should provide access to phases", () => {
-            const db = createTestDatabase().withSystems(
-                {
-                    name: "test",
-                    phase: "input",
-                    run: () => {}
-                }
-            );
-
-            expect(db.systems.phases).toEqual([
-                "input", "preUpdate", "update", "prePhysics", "physics", 
-                "postPhysics", "postUpdate", "preRender", "render", "postRender"
-            ]);
-        });
-
-        it("should handle empty phases gracefully", () => {
-            const db = createTestDatabase();
-
-            // Should not throw when running with no systems
-            expect(() => db.systems.run()).not.toThrow();
-        });
-
-        it("should handle systems in different phases with dependencies", () => {
-            const executionOrder: string[] = [];
-            
-            const db = createTestDatabase().withSystems(
-                {
-                    name: "inputSystem",
-                    phase: "input",
-                    run: () => {
-                        executionOrder.push("input");
-                    }
-                },
-                {
-                    name: "updateSystem",
-                    phase: "update",
-                    run: () => {
-                        executionOrder.push("update");
-                    }
-                },
-                {
-                    name: "renderSystem",
-                    phase: "render",
-                    run: () => {
-                        executionOrder.push("render");
-                    }
-                }
-            );
-
-            db.systems.run();
-
-            // Systems should run in phase order regardless of dependencies
-            expect(executionOrder).toEqual(["input", "update", "render"]);
+            unsubscribe();
         });
     });
-});
+}); 

@@ -1,4 +1,4 @@
-import { calculateWinner } from "samples/twixt/functions/calculate-winner";
-import { TwixtReadonlyStore } from "../create-state-service2";
+import { calculateWinner } from "../../../functions/calculate-winner";
+import { TwixtReadonlyStore } from "../state-service";
 
 export const winner = (db: TwixtReadonlyStore) => calculateWinner(db);

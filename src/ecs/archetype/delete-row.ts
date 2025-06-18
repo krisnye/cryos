@@ -1,7 +1,7 @@
 import * as TABLE from "data/table";
 import { Archetype } from "./archetype";
-import { CoreComponents } from "ecs/datastore/core-components";
-import { EntityLocationTable } from "ecs/entity-location-table";
+import { CoreComponents } from "../core-components";
+import { EntityLocationTable } from "../entity-location-table";
 
 /**
  * Deletes a row from the archetype and updates the entity location table for any row which may have been moved into it's position.
@@ -11,6 +11,6 @@ export const deleteRow = <C extends CoreComponents>(archetype: Archetype<C>, row
     const movedARowToFillHole = TABLE.deleteRow(archetype, row);
     if (movedARowToFillHole) {
         const movedId = archetype.columns.id.get(row);
-        entityLocationTable.updateEntity(movedId, { archetype: archetype.id, row });
+        entityLocationTable.update(movedId, { archetype: archetype.id, row });
     }
 }

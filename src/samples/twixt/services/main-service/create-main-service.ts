@@ -1,4 +1,4 @@
-import { createTwixtStateService } from "../state-service/create-state-service2";
+import { createTwixtStateService } from "../state-service/state-service";
 import { MainService } from "./main-service";
 
 export function createMainService(): MainService {

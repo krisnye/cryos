@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { observeDependentValue } from './observe-dependent-value';
 import { createStore } from '../store/create-store';
 import { createDatabase } from './create-database';
-import { ToReadonlyStore } from 'ecs2/store';
+import { ToReadonlyStore } from '../store';
 
 describe('observeDependentValue', () => {
     it('should compute and observe dependent values from resources', async () => {

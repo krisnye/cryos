@@ -1,86 +1,60 @@
-import { Entity } from "ecs";
-import { CoreComponents } from "ecs/datastore/core-components";
-import { ArchetypeComponents } from "ecs/datastore/archetype-components";
-import { ResourceComponents } from "ecs/datastore/resource-components";
-import { ArchetypeId } from "ecs/archetype";
+import { ArchetypeId } from "../archetype";
+import { CoreComponents } from "../core-components";
+import { ResourceComponents } from "../resource-components";
+import { ReadonlyStore, Store } from "../store";
+import { Entity } from "../entity";
+import { EntityValues } from "../store/core";
 import { Observe } from "data/observe";
-import { TransactionResult, TransactionDatastore, TransactionDeclarations, ToTransactionFunctions, TransactionFunctions } from "ecs/datastore/transaction/transaction-datastore";
-import { EntityValues } from "ecs/datastore/datastore";
-import { Simplify } from "types";
-import { DefaultPhases, System, SystemNames, SystemPhases, Systems } from "./system";
+import { TransactionResult } from "./transactional-store";
+import { StringKeyOf } from "types/string-key-of";
+
+export type TransactionDeclaration<
+    C extends CoreComponents = CoreComponents,
+    R extends ResourceComponents = never,
+    Input extends any | void = any
+> = (db: Store<C, R>, input: Input) => void | Entity
+
+export type TransactionDeclarations<
+    C extends CoreComponents = CoreComponents,
+    R extends ResourceComponents = never,
+> = {
+    readonly [name: string]: TransactionDeclaration<C, R>
+}
+
+export type AsyncArgsProvider<T> = () => Promise<T> | AsyncGenerator<T>;
+
+/**
+ * Converts from TransactionDeclarations to TransactionFunctions by removing the initial database argument.
+ */
+export type ToTransactionFunctions<T> = {
+    [K in keyof T]:
+      T[K] extends (db: Store<any, any>, ...rest: infer R) => infer Rtn
+        ? R extends []               // only the db param → no args
+          ? () => Rtn
+          : R extends [infer A]      // db + one extra → widen extra to A | string
+            ? (arg: A | AsyncArgsProvider<A>) => Rtn
+            : never                  // more than one extra arg – not covered here
+        : never;
+  };
+
+export type TransactionFunctions = { readonly [K: string]: (args?: any) => void | Entity };
 
 export interface Database<
     C extends CoreComponents = CoreComponents,
-    A extends ArchetypeComponents<CoreComponents> = {},
-    R extends ResourceComponents = {},
-    T extends TransactionFunctions = {},
-    S extends SystemNames = never,
-    P extends SystemPhases = DefaultPhases,
-> extends Omit<TransactionDatastore<C, A, R>, "withArchetypes" | "withComponents" | "withResources" | "toDatabase"> {
+    R extends ResourceComponents = never,
+    T extends TransactionFunctions = never,
+> extends ReadonlyStore<C, R> {
     readonly transactions: T;
     readonly observe: {
-        readonly component: { [K in keyof C]: Observe<void> };
-        readonly resource: { [K in keyof R]: Observe<R[K]> };
+        readonly component: { readonly [K in StringKeyOf<C>]: Observe<void> };
+        readonly resource: { readonly [K in StringKeyOf<R>]: Observe<R[K]> };
         readonly transactions: Observe<TransactionResult<C>>;
         entity(id: Entity): Observe<EntityValues<C> | null>;
         archetype(id: ArchetypeId): Observe<void>;
     }
-    readonly systems: Systems<S, P> & { readonly phases: P, run(phases?: readonly P[number][]): Promise<void> };
-    withTransactions: <NT extends TransactionDeclarations<C, A, R>>(transactions: NT)
-        => Database<C, A, R, Simplify<T & ToTransactionFunctions<NT>>>;
-    withComputedResource<
-        N extends string,
-        const D extends readonly (keyof R)[],
-        CT
-      >(
-        name: N,
-        resources: D,
-        compute: (resources: { [K in D[number]]: R[K] }) => CT
-      ): Database<C, A, Simplify<R & { [K in N]: CT }>>;
-    withPhases: <NP extends SystemPhases>(phases: NP) => Database<C, A, R, T, S, NP>;
-    withSystems:<
-        const NewSystems extends readonly System<P>[],
-        NewNames extends NewSystems[number]["name"]
-      >(
-        ...systems: NewSystems
-      ) => Database<C, A, R, T, S | NewNames, P>;
 }
 
-export type ComputedResource<
-  R extends ResourceComponents,
-  D extends readonly (keyof R)[],
-  T
-> = {
-  resources: D;
-  compute: (resources: { [K in D[number]]: R[K] }) => T;
-};
-
-export type ComputedResources<R extends ResourceComponents> = {
-  [name: string]: ComputedResource<R, readonly (keyof R)[], unknown>;
-};
-
-declare const db: Database<{ id: number }, {}, { a: number, b: string }, {}>;
-async () => {
-    const db2 = db.withComputedResource("foo", ["a", "b"], ({a, b}) => false);
-    const db3 = db2.withSystems(
-      {
-        name: "foo",
-        phase: "input",
-        run: () => {
-          console.log("foo");
-        }
-      },
-      {
-        name: "bar",
-        phase: "input",
-        run: () => {
-          console.log("bar");
-        }
-      }
-    );
-    db3.systems.foo.run();
-    await db3.systems.bar.run();
-    // @ts-expect-error
-    db3.systems.baz.run();
-};
-
+type TestTransactionFunctions = ToTransactionFunctions<{
+    test1: (db: Store<any, any>, arg: number) => void;
+    test2: (db: Store<any, any>) => void;
+}>

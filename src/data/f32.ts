@@ -1,4 +1,4 @@
-import type { FromSchema, Schema } from "./schema";
+import type { Schema } from "./schema";
 
 export const F32Schema = {
     type: 'number',
@@ -6,4 +6,4 @@ export const F32Schema = {
     default: 0 as number,
 } as const satisfies Schema;
 
-export type F32 = FromSchema<typeof F32Schema>;
+export type F32 = number;

@@ -1,6 +1,7 @@
 import { grow } from "data/array-buffer-like/grow";
-import { Entity, EntityLocation } from "ecs";
 import { EntityLocationTable } from "./entity-location-table";
+import { EntityLocation } from "../entity-location";
+import { Entity } from "../entity";
 
 export const createEntityLocationTable = (initialCapacity: number = 16): EntityLocationTable => {
 
@@ -46,12 +47,15 @@ export const createEntityLocationTable = (initialCapacity: number = 16): EntityL
         freeListHead = entity;
     }
 
-    const locateEntity = (entity: Entity): EntityLocation => {
+    const locateEntity = (entity: Entity): EntityLocation | null => {
         if (entity >= nextIndex) {
-            return { archetype: -1, row: -1 };
+            return null;
         }
         const index = entity << 1;
         const archetype = entities[index + 0];
+        if (archetype < 0) {
+            return null;
+        }
         const row = entities[index + 1];
         return { archetype, row };
     }
@@ -63,9 +67,9 @@ export const createEntityLocationTable = (initialCapacity: number = 16): EntityL
     }
 
     return {
-        createEntity,
-        deleteEntity,
-        locateEntity,
-        updateEntity,
+        create: createEntity,
+        delete: deleteEntity,
+        locate: locateEntity,
+        update: updateEntity,
     };
 }
