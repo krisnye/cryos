@@ -1,7 +1,7 @@
-import { Player, BoardLink, BoardPoint } from "../services/state-service/create-state-service";
 import { Line2, subLine } from "math/line2";
 import { intersects } from "math/line2/intersects";
-import { getBoardSize } from "../dependent-state/board-size";
+import { Player, BoardLink, BoardPoint } from "../services/state-service/create-state-service2";
+import { boardSize } from "../services/state-service/dependent-state/board-size";
 
 // Convert board index to x,y coordinates (0,0 is top-left)
 const indexToCoords = (index: number, size: number): [number, number] => {
@@ -34,7 +34,7 @@ export const calculateNewLinks = (
     board: BoardPoint[],
     links: BoardLink[]
 ): BoardLink[] => {
-    const size = getBoardSize(board);
+    const size = Math.round(Math.sqrt(board.length));
 
     // If the point is already occupied by the opponent, return no potential links
     const pointValue = board[newIndex];

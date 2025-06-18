@@ -2,7 +2,6 @@ import { TwixtElement } from "../twixt-element";
 import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { useObservableValues } from "ui/hooks/use-observable-values";
-import { boardSize } from "../dependent-state/board-size";
 import { range } from "data/functions/range";
 import "./twixt-point";
 import "./twixt-links";
@@ -18,8 +17,8 @@ export class TwixtBoard extends TwixtElement {
 
     protected override render() {
         const values = useObservableValues(() => ({
-            size: boardSize(this.service),
-            links: this.service.state.observe.resource.links,
+            size: this.service.state.observe.boardSize,
+            links: this.service.state.database.observe.resource.links,
         }));
 
         if (!values)

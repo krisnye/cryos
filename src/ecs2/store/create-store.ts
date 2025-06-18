@@ -12,7 +12,7 @@ import { Core, QueryOptions } from "./core/core";
 export function createStore<NC extends Components, R extends ResourceComponents>(
     newComponentSchemas: NC,
     resourceDefaults: R,
-): Store<Simplify<CoreComponents & { [K in StringKeyOf<NC>]: FromSchema<NC[K]> }>, R> {
+): Store<Simplify<CoreComponents & { [K in StringKeyOf<NC>]: FromSchema<NC[K]> }>, { -readonly [K in StringKeyOf<R>]: R[K] }> {
     type C = CoreComponents & { [K in StringKeyOf<NC>]: FromSchema<NC[K]> };
     const resources = {} as R;
 

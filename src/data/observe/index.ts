@@ -1,4 +1,3 @@
-
 export * from "./observe.js";
 export * from "./notify.js";
 export * from "./unobserve.js";
@@ -7,3 +6,5 @@ export * from "./from-properties.js";
 export * from "./to-promise.js";
 export * from "./with-map.js";
 export * from "./with-deduplicate.js";
+export * from "./with-batch.js";
+export * from "./with-lazy.js";

@@ -1,3 +1,4 @@
-import { createStateService } from "./create-state-service";
+import { createTwixtStateService } from "./create-state-service2";
 
-export type StateService = ReturnType<typeof createStateService>;
+export * from "./create-state-service2";
+export type TwixtStateService = ReturnType<typeof createTwixtStateService>;

@@ -1,14 +1,14 @@
-import { getBoardSize } from "../dependent-state/board-size";
-import { MainService } from "../services/main-service/main-service";
-import { BoardLink, BoardPoint, Player } from "../services/state-service/create-state-service";
+import { Player, TwixtReadonlyStore } from "../services/state-service/create-state-service2";
+import { boardSize } from "../services/state-service/dependent-state/board-size";
 
 /**
  * The game is won when any player connects a complete unbroken line of their own color from one edge to the opposite edge.
  */
 export const calculateWinner = (
-    {board, links}: {board: BoardPoint[], links: BoardLink[]},
+    store: TwixtReadonlyStore,
 ): Player | null => {
-    const size = getBoardSize(board);
+    const { board, links } = store.resources;
+    const size = boardSize(store);
     
     // Check if any player has a complete line from one edge to the opposite edge
     const players = ["red", "black"] as const;

@@ -2,8 +2,6 @@ import { TwixtElement } from "../twixt-element";
 import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { useObservableValues } from "ui/hooks/use-observable-values";
-import { currentPlayer } from "../dependent-state/current-player";
-import { winner } from "../dependent-state/winner";
 import redCircle from "../assets/red-circle.svg";
 import blackCircle from "../assets/black-circle.svg";
 
@@ -67,8 +65,8 @@ export class TwixtTurnIndicator extends TwixtElement {
 
     protected override render() {
         const values = useObservableValues(() => ({
-            player: currentPlayer(this.service),
-            winner: winner(this.service),
+            player: this.service.state.observe.currentPlayer,
+            winner: this.service.state.observe.winner,
         }));
 
         if (!values) return;
@@ -81,7 +79,7 @@ export class TwixtTurnIndicator extends TwixtElement {
                     </div>
                     <button 
                         class="reset-button"
-                        @click=${() => this.service.state.transactions.newGame()}
+                        @click=${() => this.service.state.database.transactions.newGame()}
                     >
                         New Game
                     </button>

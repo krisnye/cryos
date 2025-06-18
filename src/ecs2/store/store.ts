@@ -21,6 +21,8 @@ export interface ReadonlyStore<
     readonly resources: { readonly [K in StringKeyOf<R>]: R[K] };
 }
 
+export type ToReadonlyStore<T extends Store<any, any>> = T extends Store<infer C, infer R> ? ReadonlyStore<C, R> : never;
+
 /**
  * Store is the main interface for storing components, entities and resources.
  */

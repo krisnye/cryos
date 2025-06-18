@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { calculateWinner } from './calculate-winner';
-import type { Player } from '../services/state-service/create-state-service';
+import { BoardLink, BoardPoint, createTwixtStore, type Player } from '../services/state-service/state-service';
+
+function createTestStore(board: BoardPoint[], links: BoardLink[]) {
+    const store = createTwixtStore();
+    store.resources.board = board;
+    store.resources.links = links;
+    return store;
+}
 
 describe('calculateWinner', () => {
     // Helper function to create a board with specific points
@@ -13,10 +20,9 @@ describe('calculateWinner', () => {
     };
 
     it('should return null for empty board', () => {
-        const board = new Array(5 * 5).fill(null);
-        const links: [number, number][] = [];
+        const store = createTestStore(new Array(5 * 5).fill(null), []);
         
-        const result = calculateWinner({board, links});
+        const result = calculateWinner(store);
         expect(result).toBe(null);
     });
 
@@ -38,7 +44,7 @@ describe('calculateWinner', () => {
             [21, 24], // middle-right to bottom-right
         ];
 
-        const result = calculateWinner({board, links});
+        const result = calculateWinner(createTestStore(board, links));
         expect(result).toBe('red');
     });
 
@@ -68,7 +74,7 @@ describe('calculateWinner', () => {
             [22, 24], // bottom-middle to bottom-right
         ];
 
-        const result = calculateWinner({board, links});
+        const result = calculateWinner(createTestStore(board, links));
         expect(result).toBe('black');
     });
 
@@ -91,7 +97,7 @@ describe('calculateWinner', () => {
             [8, 15],
         ];
 
-        const result = calculateWinner({board, links});
+        const result = calculateWinner(createTestStore(board, links));
         expect(result).toBe(null);
     });
 
@@ -108,7 +114,7 @@ describe('calculateWinner', () => {
         // No links between pieces
         const links: [number, number][] = [];
 
-        const result = calculateWinner({board, links});
+        const result = calculateWinner(createTestStore(board, links));
         expect(result).toBe(null);
     });
 
@@ -138,7 +144,7 @@ describe('calculateWinner', () => {
             [22, 24],
         ];
 
-        const result = calculateWinner({board, links});
+        const result = calculateWinner(createTestStore(board, links));
         expect(result).toBe('red');
     });
 }); 

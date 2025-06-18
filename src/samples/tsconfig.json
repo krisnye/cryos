@@ -6,6 +6,9 @@
             "path": "../ecs"
         },
         {
+            "path": "../ecs2"
+        },
+        {
             "path": "../data"
         },
         {

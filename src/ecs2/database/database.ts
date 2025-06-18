@@ -26,7 +26,16 @@ export type AsyncArgsProvider<T> = () => Promise<T> | AsyncGenerator<T>;
 /**
  * Converts from TransactionDeclarations to TransactionFunctions by removing the initial database argument.
  */
-export type ToTransactionFunctions<T extends TransactionDeclarations<any, any>> = { [K in StringKeyOf<T>]: T[K] extends (_arg: any, arg: infer A) => (infer V) ? (arg: A | AsyncArgsProvider<A>) => V extends void | Entity ? V : never : never }
+export type ToTransactionFunctions<T> = {
+    [K in keyof T]:
+      T[K] extends (db: Store<any, any>, ...rest: infer R) => infer Rtn
+        ? R extends []               // only the db param → no args
+          ? () => Rtn
+          : R extends [infer A]      // db + one extra → widen extra to A | string
+            ? (arg: A | AsyncArgsProvider<A>) => Rtn
+            : never                  // more than one extra arg – not covered here
+        : never;
+  };
 
 export type TransactionFunctions = { readonly [K: string]: (args?: any) => void | Entity };
 
@@ -44,3 +53,8 @@ export interface Database<
         archetype(id: ArchetypeId): Observe<void>;
     }
 }
+
+type TestTransactionFunctions = ToTransactionFunctions<{
+    test1: (db: Store<any, any>, arg: number) => void;
+    test2: (db: Store<any, any>) => void;
+}>

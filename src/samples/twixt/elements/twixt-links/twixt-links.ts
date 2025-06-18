@@ -1,11 +1,10 @@
 import { TwixtElement } from "../../twixt-element";
 import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { BoardLink } from "../../services/state-service/create-state-service";
 import { useObservableValues } from "ui/hooks/use-observable-values";
 import { calculateNewLinks } from "../../functions/calculate-new-links";
 import "../twixt-link";
-import { currentPlayer } from "samples/twixt/dependent-state/current-player";
+import { BoardLink } from "samples/twixt/services";
 
 @customElement("twixt-links")
 export class TwixtLinks extends TwixtElement {
@@ -25,8 +24,8 @@ export class TwixtLinks extends TwixtElement {
 
     protected override render() {
         const values = useObservableValues(() => ({
-            hoverIndex: this.service.state.observe.resource.hoverIndex,
-            currentPlayer: currentPlayer(this.service),
+            hoverIndex: this.service.state.database.observe.resource.hoverIndex,
+            currentPlayer: this.service.state.observe.currentPlayer,
         }));
 
         if (!values) return;
@@ -35,7 +34,7 @@ export class TwixtLinks extends TwixtElement {
             ? calculateNewLinks(
                 values.currentPlayer,
                 values.hoverIndex,
-                this.service.state.resources.board,
+                this.service.state.database.resources.board,
                 this.links
             )
             : [];
