@@ -1,9 +1,8 @@
-import { createObservableState } from "data/observe/create-observable-state";
+import { createObservableState, toPromise } from "@adobe/data/observe";
 import { MainService } from "./services/database";
-import { ServiceApplication } from "ui/elements";
+import { ServiceApplication } from "@adobe/data/lit";
 import { html } from "lit";
 import { customElement } from "lit/decorators.js";
-import { toPromise } from "data/observe";
 
 @customElement("cryos-service-sample")
 export class ServiceSample extends ServiceApplication<MainService> {
@@ -12,6 +11,7 @@ export class ServiceSample extends ServiceApplication<MainService> {
         const [name, setName] = createObservableState("service");
         const [counter, setCounter] = createObservableState<number>(0);
         return {
+            serviceName: "main-service",
             name,
             setName,
             counter,

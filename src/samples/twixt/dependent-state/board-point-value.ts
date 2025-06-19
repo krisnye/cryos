@@ -1,4 +1,4 @@
-import { Observe, withDeduplicate, withMap } from "data/observe";
+import { Observe, withDeduplicate, withMap } from "@adobe/data/observe";
 import { MainService } from "../services/main-service/main-service";
 import { BoardPoint } from "../services";
 

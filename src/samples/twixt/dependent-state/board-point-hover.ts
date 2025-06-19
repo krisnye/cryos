@@ -1,4 +1,4 @@
-import { fromProperties, Observe, withDeduplicate, withMap } from "data/observe";
+import { fromProperties, Observe, withDeduplicate, withMap } from "@adobe/data/observe";
 import { MainService } from "../services/main-service/main-service";
 import { Player } from "../services";
 

@@ -1,4 +1,4 @@
-import { TypedBuffer } from "data";
+import { TypedBuffer } from "@adobe/data/types";
 
 /**
  * Metadata for a single X × Y “tile” in a {@link StructureMap}.

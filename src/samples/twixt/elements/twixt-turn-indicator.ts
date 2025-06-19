@@ -1,7 +1,7 @@
 import { TwixtElement } from "../twixt-element";
 import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import { useObservableValues } from "ui/hooks/use-observable-values";
+import { useObservableValues } from "@adobe/data/lit";
 import redCircle from "../assets/red-circle.svg";
 import blackCircle from "../assets/black-circle.svg";
 

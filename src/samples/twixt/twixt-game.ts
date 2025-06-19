@@ -1,4 +1,4 @@
-import { ServiceApplication } from "ui/elements";
+import { ServiceApplication } from "@adobe/data/lit";
 import { MainService } from "./services/main-service/main-service";
 import { createMainService } from "./services/main-service/create-main-service";
 import { customElement } from "lit/decorators.js";

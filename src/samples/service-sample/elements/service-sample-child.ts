@@ -1,9 +1,7 @@
 import { customElement } from "lit/decorators.js";
 import { MainService } from "../services/database";
-import { ServiceElement } from "ui/elements";
+import { withHooks, useObservableValues, ServiceElement } from "@adobe/data/lit";
 import { html } from "lit";
-import { withHooks } from "ui/hooks/with-hooks";
-import { useObservableValues } from "ui/hooks/use-observable-values";
 
 @customElement("cryos-service-sample-child")
 export class ServiceSampleChild extends ServiceElement<MainService> {

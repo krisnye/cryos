@@ -1,6 +1,4 @@
-import { F32Schema } from "../../data/f32";
-import type { FromSchema } from "../../data/schema/from-schema";
-import type { Schema } from "../../data/schema/schema";
+import { F32Schema, Schema, FromSchema } from "@adobe/data/schema";
 
 export const Vec3Schema = {
     type: 'array',

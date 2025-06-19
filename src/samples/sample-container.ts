@@ -2,9 +2,8 @@ import { html, LitElement, TemplateResult, css } from "lit";
 import { customElement } from "lit/decorators.js";
 import "./service-sample";
 import "./twixt";
-import { withHooks } from "ui/hooks/with-hooks";
-import { useObservableValues } from "ui/hooks/use-observable-values";
-import { createQueryState } from "data/observe/create-query-state";
+import { withHooks, useObservableValues } from "@adobe/data/lit";
+import { createQueryState } from "@adobe/data/observe";
 
 interface SampleDefinition {
     name: string;

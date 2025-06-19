@@ -1,4 +1,4 @@
-import { FromSchema, Schema } from "data/schema";
+import { FromSchema, Schema } from "@adobe/data/schema";
 import { Vec2Schema } from "../vec2/vec2";
 
 export const Line2Schema = {

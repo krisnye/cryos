@@ -1,7 +1,7 @@
 import { getWebGPUGraphicsContext, GraphicsContext } from "graphics";
 import { html, css, LitElement, PropertyValues } from "lit";
 import { customElement } from "lit/decorators.js";
-import { withHooks } from "ui/hooks/with-hooks";
+import { withHooks } from "@adobe/data/lit";
 
 @customElement("graphics-tutorials")
 export class GraphicsTutorials extends LitElement {

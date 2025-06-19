@@ -1,7 +1,7 @@
 import { TwixtElement } from "../../twixt-element";
 import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { useObservableValues } from "ui/hooks/use-observable-values";
+import { useObservableValues } from "@adobe/data/lit";
 import { calculateNewLinks } from "../../functions/calculate-new-links";
 import "../twixt-link";
 import { BoardLink } from "samples/twixt/services";

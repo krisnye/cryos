@@ -1,4 +1,4 @@
-import { mutableClone } from "data/functions/mutable-clone";
+import { mutableClone } from "@adobe/data/types";
 import { TwixtStore } from "../state-service";
 import { calculateNewLinks } from "samples/twixt/functions/calculate-new-links";
 import { currentPlayer } from "../dependent-state/current-player";

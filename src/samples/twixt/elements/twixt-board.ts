@@ -1,10 +1,11 @@
 import { TwixtElement } from "../twixt-element";
 import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import { useObservableValues } from "ui/hooks/use-observable-values";
-import { range } from "data/functions/range";
+import { useObservableValues } from "@adobe/data/lit";
 import "./twixt-point";
 import "./twixt-links";
+
+const range = (size: number) => Array.from({ length: size }, (_, i) => i);
 
 @customElement("twixt-board")
 export class TwixtBoard extends TwixtElement {

@@ -2,13 +2,8 @@
   "extends": "../tsconfig.base.json",
   "include": [],
   "references": [
-    { "path": "./data" },
     { "path": "./graphics" },
-    { "path": "./types" },
-    { "path": "./ecs" },
     { "path": "./samples" },
-    { "path": "./ui" },
-    { "path": "./services" },
     { "path": "./physics" }
   ]
 } 

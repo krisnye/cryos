@@ -3,22 +3,7 @@
     "include": ["**/*"],
     "references": [
         {
-            "path": "../ecs"
-        },
-        {
-            "path": "../data"
-        },
-        {
             "path": "../graphics"
         },
-        {
-            "path": "../types"
-        },
-        {
-            "path": "../services"
-        },
-        {
-            "path": "../ui"
-        }
     ]
 }
