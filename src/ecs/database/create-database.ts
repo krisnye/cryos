@@ -1,6 +1,6 @@
 import { ArchetypeId } from "../archetype";
 import { CoreComponents } from "../core-components";
-import { ResourceComponents } from "../resource-components";
+import { ResourceComponents } from "../store/resource-components";
 import { Store } from "../store";
 import { Database, ToTransactionFunctions, TransactionDeclarations } from "./database";
 import { Entity } from "../entity";
@@ -10,8 +10,8 @@ import { mapEntries } from "data/object";
 import { StringKeyOf } from "types/string-key-of";
 import { Observe, withMap } from "data/observe";
 import { createTransactionalStore } from "./transactional-store/create-transactional-store";
-import { isPromise } from "../internal/is-promise";
-import { isAsyncGenerator } from "../internal/is-async-provider";
+import { isPromise } from "./is-promise";
+import { isAsyncGenerator } from "./is-async-provider";
 
 export function createDatabase<
     C extends CoreComponents,

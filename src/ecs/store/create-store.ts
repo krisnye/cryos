@@ -1,5 +1,5 @@
-import { ResourceComponents } from "../resource-components";
-import { Components } from "../components";
+import { ResourceComponents } from "./resource-components";
+import { ComponentSchemas } from "./component-schemas";
 import { StringKeyOf } from "types/string-key-of";
 import { CoreComponents } from "../core-components";
 import { Simplify } from "types";
@@ -9,7 +9,7 @@ import { createCore } from "./core/create-core";
 import { Entity } from "../entity";
 import { Core, QueryOptions } from "./core/core";
 
-export function createStore<NC extends Components, R extends ResourceComponents>(
+export function createStore<NC extends ComponentSchemas, R extends ResourceComponents>(
     newComponentSchemas: NC,
     resourceDefaults: R,
 ): Store<Simplify<CoreComponents & { [K in StringKeyOf<NC>]: FromSchema<NC[K]> }>, { -readonly [K in StringKeyOf<R>]: R[K] }> {

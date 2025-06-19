@@ -1,6 +1,6 @@
 import { ArchetypeId } from "../archetype";
 import { CoreComponents } from "../core-components";
-import { ResourceComponents } from "../resource-components";
+import { ResourceComponents } from "../store/resource-components";
 import { ReadonlyStore, Store } from "../store";
 import { Entity } from "../entity";
 import { EntityValues } from "../store/core";

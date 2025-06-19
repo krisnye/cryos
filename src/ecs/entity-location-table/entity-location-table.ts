@@ -1,5 +1,5 @@
 import { Entity } from "../entity";
-import { EntityLocation } from "../entity-location";
+import { EntityLocation } from "./entity-location";
 
 export interface EntityLocationTable {
     create: (location: EntityLocation) => Entity;

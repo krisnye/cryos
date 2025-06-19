@@ -1,7 +1,7 @@
 import { Entity } from "../../entity";
 import { Archetype, ReadonlyArchetype } from "../../archetype/archetype";
 import { Schema } from "data";
-import { EntityLocation } from "../../entity-location";
+import { EntityLocation } from "../../entity-location-table/entity-location";
 import { CoreComponents } from "../../core-components";
 import { StringKeyOf } from "types/string-key-of";
 

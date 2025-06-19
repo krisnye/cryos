@@ -1,4 +1,4 @@
-import { FromSchema, Schema, I32Schema, U32Schema } from "data";
+import { FromSchema, Schema, U32Schema } from "data";
 
 export const EntityLocationSchema = {
     type: "object",

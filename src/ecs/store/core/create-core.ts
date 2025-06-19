@@ -7,10 +7,10 @@ import { CoreComponents } from "../../core-components";
 import { Entity, EntitySchema } from "../../entity";
 import { Core, EntityUpdateValues, EntityValues, QueryOptions } from "./core";
 import { Assert, Equal, Simplify } from "types";
-import { Components } from "../../components";
+import { ComponentSchemas } from "../component-schemas";
 import { StringKeyOf } from "types/string-key-of";
 
-export function createCore<NC extends Components>(newComponentSchemas: NC): Core<Simplify<CoreComponents & { [K in StringKeyOf<NC>]: FromSchema<NC[K]> }>> {
+export function createCore<NC extends ComponentSchemas>(newComponentSchemas: NC): Core<Simplify<CoreComponents & { [K in StringKeyOf<NC>]: FromSchema<NC[K]> }>> {
     type C = CoreComponents & { [K in StringKeyOf<NC>]: FromSchema<NC[K]> };
 
     const componentSchemas: { readonly [K in StringKeyOf<C>]: Schema } = { id: EntitySchema, ...newComponentSchemas };

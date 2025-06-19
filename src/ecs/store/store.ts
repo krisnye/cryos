@@ -1,6 +1,6 @@
 import { StringKeyOf } from "types/string-key-of";
 import { CoreComponents } from "../core-components";
-import { ResourceComponents } from "../resource-components";
+import { ResourceComponents } from "./resource-components";
 import { Core, QueryOptions, ReadonlyCore } from "./core/core";
 import { Entity } from "../entity";
 
