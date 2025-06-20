@@ -1,4 +1,4 @@
-import { TypedBuffer, copyToGPUBuffer } from "@adobe/data/types";
+import { TypedBuffer, copyToGPUBuffer } from "@adobe/data/typed-buffer";
 
 export const toGPUBuffer = async <T>(
     buffer: TypedBuffer<T>,

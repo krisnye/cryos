@@ -1,5 +1,5 @@
 import { FromSchema, Schema } from "@adobe/data/schema";
-import { createStructBuffer, getStructLayout } from "@adobe/data/types";
+import { createStructBuffer, getStructLayout } from "@adobe/data/typed-buffer";
 
 export const createStructGPUBuffer = <S extends Schema>(
     args: {
