@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { intersects } from './intersects';
-import { Line2 } from './line2';
+import { intersects } from './intersects.js';
+import { Line2 } from './line2.js';
 
 describe('intersects', () => {
     it('should return true for intersecting lines', () => {

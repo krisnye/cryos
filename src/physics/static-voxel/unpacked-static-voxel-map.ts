@@ -1,6 +1,6 @@
-import { StaticVoxel, toDebugStaticVoxel } from "./static-voxel";
-import { createStaticVoxelColumn, getBaseHeight, getDataOffset, getHeight, StaticVoxelColumn } from "./static-voxel-column";
-import { EmptyStaticVoxel, StaticVoxelMap, StaticVoxelMapSize } from "./static-voxel-map";
+import { StaticVoxel, toDebugStaticVoxel } from "./static-voxel.js";
+import { createStaticVoxelColumn, getBaseHeight, getDataOffset, getHeight, StaticVoxelColumn } from "./static-voxel-column.js";
+import { EmptyStaticVoxel, StaticVoxelMap, StaticVoxelMapSize } from "./static-voxel-map.js";
 
 export interface UnpackedStaticVoxelMap {
     /**

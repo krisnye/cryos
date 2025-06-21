@@ -1,7 +1,7 @@
 import { createObservableState, toPromise } from "@adobe/data/observe";
-import { MainService } from "./services/database";
+import { MainService } from "./services/database.js";
 import { ServiceApplication } from "@adobe/data/lit";
-import { html } from "lit";
+import { html, css, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 
 @customElement("cryos-service-sample")

@@ -1,9 +1,9 @@
-import { TwixtElement } from "../../twixt-element";
+import { TwixtElement } from "../../twixt-element.js";
 import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { useObservableValues } from "@adobe/data/lit";
-import { indexToCoords } from "../../utils/coordinates";
-import { BoardLink } from "samples/twixt/services";
+import { indexToPoint } from "../../functions/index.js";
+import { BoardLink } from "../../services/index.js";
 
 @customElement("twixt-link")
 export class TwixtLink extends TwixtElement {
@@ -49,8 +49,8 @@ export class TwixtLink extends TwixtElement {
         if (!values) return;
 
         const [from, to] = this.link;
-        const fromCoords = indexToCoords(from, values.size);
-        const toCoords = indexToCoords(to, values.size);
+        const fromCoords = indexToPoint(from, values.size);
+        const toCoords = indexToPoint(to, values.size);
 
         // Calculate line position and rotation using percentages
         const x1 = (fromCoords[0] / values.size) * 100;

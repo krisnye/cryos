@@ -1,5 +1,5 @@
-import { Player, TwixtReadonlyStore } from "../services/state-service/state-service";
-import { boardSize } from "../services/state-service/dependent-state/board-size";
+import { Player, TwixtReadonlyStore } from "../services/state-service/state-service.js";
+import { boardSize } from "../services/state-service/dependent-state/board-size.js";
 
 /**
  * The game is won when any player connects a complete unbroken line of their own color from one edge to the opposite edge.

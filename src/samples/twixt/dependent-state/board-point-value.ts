@@ -1,6 +1,6 @@
 import { Observe, withDeduplicate, withMap } from "@adobe/data/observe";
-import { MainService } from "../services/main-service/main-service";
-import { BoardPoint } from "../services";
+import { MainService } from "../services/main-service/main-service.js";
+import { BoardPoint } from "../services/index.js";
 
 export const boardPointValue = (
     service: MainService,

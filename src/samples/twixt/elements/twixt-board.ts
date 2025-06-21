@@ -1,4 +1,4 @@
-import { TwixtElement } from "../twixt-element";
+import { TwixtElement } from "../twixt-element.js";
 import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { useObservableValues } from "@adobe/data/lit";

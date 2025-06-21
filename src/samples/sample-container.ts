@@ -14,17 +14,17 @@ interface SampleDefinition {
 const samples: Record<string, SampleDefinition> = {
     "service": {
         name: "Service Sample",
-        load: () => import("./service-sample"),
+        load: () => import("./service-sample/index.js"),
         render: () => html`<cryos-service-sample></cryos-service-sample>`
     },
     "twixt": {
         name: "Twixt",
-        load: () => import("./twixt"),
+        load: () => import("./twixt/index.js"),
         render: () => html`<twixt-game></twixt-game>`
     },
     "graphics-tutorials": {
         name: "Graphics Tutorials",
-        load: () => import("./graphics-tutorials"),
+        load: () => import("./graphics-tutorials/index.js"),
         render: () => html`<graphics-tutorials></graphics-tutorials>`
     }
 } as const;

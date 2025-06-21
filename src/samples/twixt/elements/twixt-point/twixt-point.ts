@@ -1,11 +1,12 @@
-import { TwixtElement } from "../../twixt-element";
+import { TwixtElement } from "../../twixt-element.js";
 import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { useObservableValues } from "@adobe/data/lit";
-import { boardPointValue as boardPointPiece } from "../../dependent-state/board-point-value";
+import { boardPointValue as boardPointPiece } from "../../dependent-state/board-point-value.js";
 import redCircle from "../../assets/red-circle.svg";
 import blackCircle from "../../assets/black-circle.svg";
-import { boardPointHover } from "../../dependent-state/board-point-hover";
+import { boardPointHover } from "../../dependent-state/board-point-hover.js";
+import { useConnected } from "@adobe/data/lit";
 
 const isCornerPoint = (index: number, size: number): boolean => {
     const x = index % size;

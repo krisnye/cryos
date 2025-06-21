@@ -1,1 +1,1 @@
-export * from "./static-voxel-map";
+export * from "./static-voxel-map.js";

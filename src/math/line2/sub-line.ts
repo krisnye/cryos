@@ -1,5 +1,5 @@
-import { interpolate } from "./interpolate";
-import { Line2 } from "./line2";
+import { interpolate } from "./interpolate.js";
+import { Line2 } from "./line2.js";
 
 export const subLine = (line: Line2, alpha: number, beta: number): Line2 => {
     const a = line.a;

@@ -1,6 +1,6 @@
-import { BoardPoint } from "../state-service";
-import { boardSize } from "../dependent-state/board-size";
-import { TwixtStore } from "../state-service";
+import { BoardPoint } from "../state-service.js";
+import { boardSize } from "../dependent-state/board-size.js";
+import { TwixtStore } from "../state-service.js";
 
 export const newGame = (store: TwixtStore) => {
     const size = boardSize(store);

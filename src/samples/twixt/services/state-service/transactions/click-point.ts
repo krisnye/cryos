@@ -1,8 +1,8 @@
 import { mutableClone } from "@adobe/data";
-import { TwixtStore } from "../state-service";
-import { calculateNewLinks } from "samples/twixt/functions/calculate-new-links";
-import { currentPlayer } from "../dependent-state/current-player";
-import { validHoverIndex } from "../dependent-state/valid-hover-index";
+import { TwixtStore } from "../state-service.js";
+import { calculateNewLinks } from "../../../functions/calculate-new-links.js";
+import { currentPlayer } from "../dependent-state/current-player.js";
+import { validHoverIndex } from "../dependent-state/valid-hover-index.js";
 
 export const clickPoint = (db: TwixtStore) => {
     const index = validHoverIndex(db);

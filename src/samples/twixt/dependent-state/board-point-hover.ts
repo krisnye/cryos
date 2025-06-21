@@ -1,6 +1,6 @@
 import { fromProperties, Observe, withDeduplicate, withMap } from "@adobe/data/observe";
-import { MainService } from "../services/main-service/main-service";
-import { Player } from "../services";
+import { MainService } from "../services/main-service/main-service.js";
+import { Player } from "../services/index.js";
 
 export const boardPointHover = (
     service: MainService,

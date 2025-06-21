@@ -1,5 +1,5 @@
-import { Line2 } from "./line2";
-import { epsilon } from "../constants";
+import { Line2 } from "./line2.js";
+import { epsilon } from "../constants.js";
 
 export const intersects = (line1: Line2, line2: Line2, includeEndpoints = false) => {
     const a = line1.a;

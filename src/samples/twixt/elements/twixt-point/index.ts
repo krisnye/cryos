@@ -1,2 +1,1 @@
-
-export * from "./twixt-point";
+export * from "./twixt-point.js";

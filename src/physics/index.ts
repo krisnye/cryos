@@ -1,1 +1,1 @@
-export * from "./static-voxel";
+export * from "./static-voxel/index.js";

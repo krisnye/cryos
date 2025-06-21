@@ -1,1 +1,1 @@
-export * from "./graphics-tutorials";
+export * from "./graphics-tutorials.js";

@@ -1,5 +1,5 @@
 import { FromSchema, Schema } from "@adobe/data/schema";
-import { Vec2Schema } from "../vec2/vec2";
+import { Vec2Schema } from "../vec2/vec2.js";
 
 export const Line2Schema = {
     type: 'object',

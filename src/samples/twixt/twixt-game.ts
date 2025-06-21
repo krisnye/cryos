@@ -1,8 +1,8 @@
 import { ServiceApplication } from "@adobe/data/lit";
-import { MainService } from "./services/main-service/main-service";
-import { createMainService } from "./services/main-service/create-main-service";
+import { MainService } from "./services/main-service/main-service.js";
+import { createMainService } from "./services/main-service/create-main-service.js";
 import { customElement } from "lit/decorators.js";
-import { html, css } from "lit";
+import { html, css, LitElement } from "lit";
 import "./elements";
 
 @customElement("twixt-game")

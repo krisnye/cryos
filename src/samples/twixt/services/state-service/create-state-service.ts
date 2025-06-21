@@ -1,9 +1,9 @@
 import { createStore, createDatabase, observeDependentValue, ToReadonlyStore } from "@adobe/data/ecs";
-import * as transactions from "./transactions";
-import { winner } from "./dependent-state/winner";
-import { boardSize } from "./dependent-state/board-size";
-import { currentPlayer } from "./dependent-state/current-player";
-import { BoardLink, BoardPoint } from "./state-service";
+import * as transactions from "./transactions/index.js";
+import { winner } from "./dependent-state/winner.js";
+import { boardSize } from "./dependent-state/board-size.js";
+import { currentPlayer } from "./dependent-state/current-player.js";
+import { BoardLink, BoardPoint } from "./state-service.js";
 
 export function createTwixtStore() {
     return createStore({} as const, {

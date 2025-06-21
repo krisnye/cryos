@@ -1,4 +1,4 @@
-import { TwixtReadonlyStore } from "../state-service";
+import { TwixtReadonlyStore } from "../state-service.js";
 
 export const currentPlayer = (store: TwixtReadonlyStore) => {
     const redCount = store.resources.board.filter(point => point === "red").length;

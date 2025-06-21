@@ -1,2 +1,2 @@
-export * from './camera';
-export * from './to-view-projection';
+export * from './camera.js';
+export * from './to-view-projection.js';

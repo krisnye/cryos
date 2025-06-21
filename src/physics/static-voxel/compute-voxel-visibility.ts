@@ -1,5 +1,5 @@
-import { StaticVoxel } from "./static-voxel";
-import { StaticVoxelMap } from "./static-voxel-map";
+import { StaticVoxel } from "./static-voxel.js";
+import { StaticVoxelMap } from "./static-voxel-map.js";
 
 /**
  * Iterates every voxel in every column of the map.

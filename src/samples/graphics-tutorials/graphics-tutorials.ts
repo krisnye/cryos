@@ -1,4 +1,4 @@
-import { getWebGPUGraphicsContext, GraphicsContext } from "graphics";
+import { getWebGPUGraphicsContext, GraphicsContext } from "../../graphics/index.js";
 import { html, css, LitElement, PropertyValues } from "lit";
 import { customElement } from "lit/decorators.js";
 import { withHooks } from "@adobe/data/lit";

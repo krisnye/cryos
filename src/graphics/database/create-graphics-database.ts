@@ -1,4 +1,4 @@
-import { GraphicsContext } from "graphics/graphics-context";
+import { GraphicsContext } from "../graphics-context.js";
 
 export function createGraphicsDatastore(context: GraphicsContext) {
     

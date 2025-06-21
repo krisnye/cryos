@@ -1,1 +1,1 @@
-export * from "./twixt-link"; 
+export * from "./twixt-link.js"; 

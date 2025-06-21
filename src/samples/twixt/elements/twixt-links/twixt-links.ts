@@ -1,10 +1,10 @@
-import { TwixtElement } from "../../twixt-element";
+import { TwixtElement } from "../../twixt-element.js";
 import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { useObservableValues } from "@adobe/data/lit";
-import { calculateNewLinks } from "../../functions/calculate-new-links";
+import { calculateNewLinks } from "../../functions/index.js";
 import "../twixt-link";
-import { BoardLink } from "samples/twixt/services";
+import { BoardLink } from "../../services/index.js";
 
 @customElement("twixt-links")
 export class TwixtLinks extends TwixtElement {

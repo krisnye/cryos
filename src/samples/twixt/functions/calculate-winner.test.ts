@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { calculateWinner } from './calculate-winner';
-import { BoardLink, BoardPoint, createTwixtStore, type Player } from '../services/state-service/state-service';
+import { calculateWinner } from './calculate-winner.js';
+import { BoardLink, BoardPoint, createTwixtStore, type Player } from '../services/state-service/state-service.js';
 
 function createTestStore(board: BoardPoint[], links: BoardLink[]) {
     const store = createTwixtStore();

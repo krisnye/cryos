@@ -1,7 +1,7 @@
-import { Line2, subLine } from "math/line2";
-import { intersects } from "math/line2/intersects";
-import { boardSize } from "../services/state-service/dependent-state/board-size";
-import { Player, BoardLink, BoardPoint } from "../services/state-service/state-service";
+import { Line2, subLine } from "../../../math/line2/index.js";
+import { intersects } from "../../../math/line2/intersects.js";
+import { boardSize } from "../services/state-service/dependent-state/board-size.js";
+import { Player, BoardLink, BoardPoint } from "../services/state-service/state-service.js";
 
 // Convert board index to x,y coordinates (0,0 is top-left)
 const indexToCoords = (index: number, size: number): [number, number] => {

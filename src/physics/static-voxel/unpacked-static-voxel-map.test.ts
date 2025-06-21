@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { createUnpackedStaticVoxelMap, packStaticVoxelMap, setVoxel, unpackStaticVoxelMap } from './unpacked-static-voxel-map';
-import { setType } from './static-voxel';
+import { createUnpackedStaticVoxelMap, packStaticVoxelMap, setVoxel, unpackStaticVoxelMap } from './unpacked-static-voxel-map.js';
+import { setType } from './static-voxel.js';
 
 describe('UnpackedStaticVoxelMap', () => {
     it('should create a 2x2 voxel map with empty columns', () => {

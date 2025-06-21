@@ -1,6 +1,6 @@
-import { TwixtReadonlyStore } from "../state-service";
-import { boardSize } from "./board-size";
-import { currentPlayer } from "./current-player";
+import { TwixtReadonlyStore } from "../state-service.js";
+import { boardSize } from "./board-size.js";
+import { currentPlayer } from "./current-player.js";
 
 export const isHoverValidMove = (store: TwixtReadonlyStore) => {
     if (store.resources.hoverIndex === null) {

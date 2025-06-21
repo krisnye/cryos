@@ -1,4 +1,4 @@
-import type { Vec2 } from './vec2';
+import type { Vec2 } from './vec2.js';
 
 // Mathematical Operations
 export const abs = ([x, y]: Vec2): Vec2 => [Math.abs(x), Math.abs(y)];

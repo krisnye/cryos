@@ -1,5 +1,5 @@
-import { StaticVoxel, toDebugStaticVoxel } from "./static-voxel";
-import { StaticVoxelColumn, toDebugStaticVoxelColumn } from "./static-voxel-column";
+import { StaticVoxel, toDebugStaticVoxel } from "./static-voxel.js";
+import { StaticVoxelColumn, toDebugStaticVoxelColumn } from "./static-voxel-column.js";
 
 export type StaticVoxelMapSize = number;
 

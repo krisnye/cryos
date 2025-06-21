@@ -1,4 +1,4 @@
-import { GraphicsContext } from "graphics";
+import { GraphicsContext } from "../../../graphics/index.js";
 
 export async function createMainService(context: GraphicsContext) {
 }
