@@ -1,11 +1,11 @@
-import { ServiceApplication } from "@adobe/data/lit";
+import { ServiceApplication, withHooks } from "@adobe/data/lit";
 import { MainService } from "./services/main-service/main-service.js";
 import { createMainService } from "./services/main-service/create-main-service.js";
 import { customElement } from "lit/decorators.js";
-import { html, css, LitElement } from "lit";
-import "./elements";
+import { html, css } from "lit";
+import "./elements/index.js";
 
-@customElement("twixt-game")
+@customElement("twixt-main-element")
 export class TwixtGame extends ServiceApplication<MainService> {
     static override styles = css`
         .rules-link {
@@ -39,7 +39,11 @@ export class TwixtGame extends ServiceApplication<MainService> {
         return createMainService();
     }
 
-    protected override render() {
+    @withHooks
+    override render() {
+        if (!this.service) {
+            return html`<div>Loading...</div>`;
+        }
         return html`
             <div class="game-container">
                 <a

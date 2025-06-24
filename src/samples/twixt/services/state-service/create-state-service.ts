@@ -4,12 +4,13 @@ import { winner } from "./dependent-state/winner.js";
 import { boardSize } from "./dependent-state/board-size.js";
 import { currentPlayer } from "./dependent-state/current-player.js";
 import { BoardLink, BoardPoint } from "./state-service.js";
+import { applyArg } from "@adobe/data/functions";
 
 export function createTwixtStore() {
     return createStore({} as const, {
-        board: new Array<BoardPoint>(24 ** 2).fill(null),
-        links: new Array<BoardLink>(0),
-        hoverIndex: null as number | null,
+        board: { default: new Array<BoardPoint>(24 ** 2).fill(null) },
+        links: { default: new Array<BoardLink>(0) },
+        hoverIndex: { default: null as number | null },
     } as const)
 }
 
@@ -19,7 +20,7 @@ export type TwixtReadonlyStore = ToReadonlyStore<TwixtStore>;
 export function createTwixtDatabase() {
     return createDatabase(
         createTwixtStore(),
-        transactions
+        (store) => applyArg(store, transactions)
     );
 }
 

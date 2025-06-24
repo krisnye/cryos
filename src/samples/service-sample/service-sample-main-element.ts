@@ -1,10 +1,10 @@
 import { createObservableState, toPromise } from "@adobe/data/observe";
-import { MainService } from "./services/database.js";
+import { MainService } from "./services/main-service.js";
 import { ServiceApplication } from "@adobe/data/lit";
-import { html, css, LitElement } from "lit";
+import { html } from "lit";
 import { customElement } from "lit/decorators.js";
 
-@customElement("cryos-service-sample")
+@customElement("service-sample-main-element")
 export class ServiceSample extends ServiceApplication<MainService> {
 
     protected override async createService(): Promise<MainService> {
@@ -24,7 +24,7 @@ export class ServiceSample extends ServiceApplication<MainService> {
         };
     }
 
-    protected override render() {
+    override render() {
         if (!this.service) {
             return html`<div>No service</div>`;
         }
@@ -38,7 +38,7 @@ export class ServiceSample extends ServiceApplication<MainService> {
                 <div>
                     <button @click=${() => this.service.increment()}>Increment Counter</button>
                 </div>
-                <cryos-service-sample-child></cryos-service-sample-child>
+                <service-sample-main-element-child></service-sample-main-element-child>
             </div>
         `;
     }

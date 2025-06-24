@@ -31,8 +31,8 @@ const linkToLine2 = (link: BoardLink, size: number): Line2 => {
 export const calculateNewLinks = (
     player: Player,
     newIndex: number,
-    board: BoardPoint[],
-    links: BoardLink[]
+    board: readonly BoardPoint[],
+    links: readonly BoardLink[]
 ): BoardLink[] => {
     const size = Math.round(Math.sqrt(board.length));
 

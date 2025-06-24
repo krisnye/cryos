@@ -1,4 +1,4 @@
-import { Player, TwixtReadonlyStore } from "../services/state-service/state-service.js";
+import { BoardLink, Player, TwixtReadonlyStore } from "../services/state-service/state-service.js";
 import { boardSize } from "../services/state-service/dependent-state/board-size.js";
 
 /**
@@ -52,9 +52,9 @@ export const calculateWinner = (
 // Helper function to check if there's a path from start to any of the target points
 const hasPathToAny = (
     start: number,
-    targets: number[],
-    playerPoints: number[],
-    links: [number, number][]
+    targets: readonly number[],
+    playerPoints: readonly number[],
+    links: readonly BoardLink[]
 ): boolean => {
     const visited = new Set<number>();
     const queue = [start];

@@ -15,17 +15,17 @@ const samples: Record<string, SampleDefinition> = {
     "service": {
         name: "Service Sample",
         load: () => import("./service-sample/index.js"),
-        render: () => html`<cryos-service-sample></cryos-service-sample>`
+        render: () => html`<service-sample-main-element></service-sample-main-element>`
     },
     "twixt": {
         name: "Twixt",
         load: () => import("./twixt/index.js"),
-        render: () => html`<twixt-game></twixt-game>`
+        render: () => html`<twixt-main-element></twixt-main-element>`
     },
-    "graphics-tutorials": {
-        name: "Graphics Tutorials",
-        load: () => import("./graphics-tutorials/index.js"),
-        render: () => html`<graphics-tutorials></graphics-tutorials>`
+    "particle-sample": {
+        name: "Particle Sample",
+        load: () => import("./particles/index.js"),
+        render: () => html`<particles-main-element></particles-main-element>`
     }
 } as const;
 

@@ -4,7 +4,7 @@ import { calculateNewLinks } from "../../../functions/calculate-new-links.js";
 import { currentPlayer } from "../dependent-state/current-player.js";
 import { validHoverIndex } from "../dependent-state/valid-hover-index.js";
 
-export const clickPoint = (db: TwixtStore) => {
+export const clickPoint = (db: TwixtStore) => () => {
     const index = validHoverIndex(db);
     if (index) {
         const player = currentPlayer(db);
