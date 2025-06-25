@@ -1,6 +1,6 @@
 import { FromSchema, Schema } from "@adobe/data/schema";
 
-export const SystemPhaseSchema = {
+export const SystemUpdatePhaseSchema = {
     enum: [
         "input",
         "preUpdate",
@@ -9,6 +9,11 @@ export const SystemPhaseSchema = {
         "physics",
         "postPhysics",
         "postUpdate",
+    ]
+} as const satisfies Schema;
+
+export const SystemRenderPhaseSchema = {
+    enum: [
         "preRender",
         "render",
         "postRender",
@@ -16,4 +21,10 @@ export const SystemPhaseSchema = {
     ]
 } as const satisfies Schema;
 
+export const SystemPhaseSchema = {
+    enum: [
+        ...SystemUpdatePhaseSchema.enum,
+        ...SystemRenderPhaseSchema.enum,
+    ]
+} as const satisfies Schema;
 export type SystemPhase = FromSchema<typeof SystemPhaseSchema>;

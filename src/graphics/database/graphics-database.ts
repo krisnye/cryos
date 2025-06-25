@@ -1,7 +1,7 @@
 import { GraphicsContext } from "graphics/graphics-context.js";
 import { System } from "../systems/system.js";
 import { createDatabaseSchema, Entity } from "@adobe/data/ecs";
-import { FrameSchema } from "graphics/frame.js";
+import { Frame, FrameSchema } from "graphics/frame.js";
 
 export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
     return createDatabaseSchema({
@@ -15,11 +15,19 @@ export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
         renderPassEncoder: { default: null as unknown as GPURenderPassEncoder, transient: true },
         renderFrame: FrameSchema,
         systems: { default: {} as Record<string, System>, transient: true }
-    }, (store) => ({
-        updateBuffer: ({ entity, buffer }: { entity: Entity, buffer: GPUBuffer }) => {
-            store.update(entity, { buffer });
-        }
-    }))
+    }, (store) => {
+        return ({
+            setUpdateFrame: (frame: Frame) => {
+                store.resources.updateFrame = frame;
+            },
+            setRenderFrame: (frame: Frame) => {
+                store.resources.renderFrame = frame;
+            },
+            updateBuffer: ({ entity, buffer }: { entity: Entity, buffer: GPUBuffer }) => {
+                store.update(entity, { buffer });
+            }
+        })
+    })
 }
 
 

@@ -21,7 +21,7 @@ typescript
 
 # Testing
 
-- Use pnpm test [filename]
+- Use pnpm test [filename] --run to make tests exit automatically
 - BEFORE FIXING, pause and verify test and implementation and describe which one is in error.
 - Focus on concise code coverage and edge cases.
 - Unit tests live adjacent to files they test as <my-file>.test.ts
