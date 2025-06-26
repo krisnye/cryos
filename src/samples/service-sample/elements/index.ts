@@ -1,1 +1,1 @@
-export * from "./service-sample-child";
+export * from "./service-sample-child.js";

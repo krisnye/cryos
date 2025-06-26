@@ -1,14 +1,12 @@
-import { TwixtElement } from "../../twixt-element";
+import { TwixtElement } from "../../twixt-element.js";
 import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { useObservableValues } from "ui/hooks/use-observable-values";
-import { boardPointValue as boardPointPiece } from "../../dependent-state/board-point-value";
+import { useObservableValues } from "@adobe/data/lit";
+import { boardPointValue as boardPointPiece } from "../../dependent-state/board-point-value.js";
 import redCircle from "../../assets/red-circle.svg";
 import blackCircle from "../../assets/black-circle.svg";
-import { boardPointHover } from "../../dependent-state/board-point-hover";
-import { boardSize } from "../../dependent-state/board-size";
-import { currentPlayer } from "../../dependent-state/current-player";
-import { winner } from "samples/twixt/dependent-state/winner";
+import { boardPointHover } from "../../dependent-state/board-point-hover.js";
+import { useConnected } from "@adobe/data/lit";
 
 const isCornerPoint = (index: number, size: number): boolean => {
     const x = index % size;
@@ -89,9 +87,9 @@ export class TwixtPoint extends TwixtElement {
         const values = useObservableValues(() => ({
             piece: boardPointPiece(this.service, this.index),
             hover: boardPointHover(this.service, this.index),
-            size: boardSize(this.service),
-            player: currentPlayer(this.service),
-            winner: winner(this.service),
+            size: this.service.state.observe.boardSize,
+            player: this.service.state.observe.currentPlayer,
+            winner: this.service.state.observe.winner,
         }));
 
         if (!values)
@@ -110,9 +108,9 @@ export class TwixtPoint extends TwixtElement {
         return html`
             <div class=${"point" + (validMove ? " enabled" : "")}
                 style=${borderStyle}
-                @click=${validMove ? (() => this.service.state.transactions.clickPoint()) : undefined}
-                @mouseenter=${validMove ? (() => this.service.state.transactions.setHoverIndex(this.index)) : undefined}
-                @mouseleave=${() => this.service.state.transactions.setHoverIndex(null)}
+                @click=${validMove ? (() => this.service.state.database.transactions.clickPoint()) : undefined}
+                @mouseenter=${validMove ? (() => this.service.state.database.transactions.setHoverIndex(this.index)) : undefined}
+                @mouseleave=${() => this.service.state.database.transactions.setHoverIndex(null)}
             >
                 <span class=${isHover ? "content-hover" : ""}>
                 ${displayValue === null 

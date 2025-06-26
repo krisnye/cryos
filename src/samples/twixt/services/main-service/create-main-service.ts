@@ -1,8 +1,8 @@
-import { createStateService } from "../state-service/create-state-service";
-import { MainService } from "./main-service";
+import { createTwixtStateService } from "../state-service/state-service.js";
+import { MainService } from "./main-service.js";
 
 export function createMainService(): MainService {
     return {
-        state: createStateService(),
+        state: createTwixtStateService(),
     } as unknown as MainService;
 }

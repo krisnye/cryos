@@ -2,8 +2,5 @@
     "extends": "../../tsconfig.base.json",
     "include": ["**/*"],
     "references": [
-        { "path": "../data" },
-        { "path": "../types" },
-        { "path": "../ecs" }
     ]
 }

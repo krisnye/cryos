@@ -1,13 +1,13 @@
-import { TypedBuffer } from "data";
+import { TypedBuffer } from "@adobe/data/typed-buffer";
 
 /**
- * Metadata for a single X × Y “tile” in a {@link StructureMap}.
+ * Metadata for a single X × Y "tile" in a {@link StructureMap}.
  *
  * Every tile owns a **contiguous** slice inside the shared `blocks` buffer:
  *
  * - `height` – Highest `Z` coordinate (exclusive) of any block in this tile.
  *               Lets you skip empty air quickly when traversing vertically.
- * - `dataIndex` – Zero-based offset in `blocks` where this tile’s data starts.
+ * - `dataIndex` – Zero-based offset in `blocks` where this tile's data starts.
  * - `dataLength` – Number of blocks belonging to this tile.
  *                  `0` ⇒ empty column.
  *

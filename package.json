@@ -13,8 +13,7 @@
     "test": "vitest run",
     "clean": "rm -rf lib dist",
     "deploy": "npm run clean && npm run build && npm publish --access public",
-    "test:debug": "node --inspect ./node_modules/vitest/vitest.mjs run --no-browser",
-    "typecheck": "tsc --build --noEmit"
+    "test:debug": "node --inspect ./node_modules/vitest/vitest.mjs run --no-browser"
   },
   "exports": {
     "./*": "./lib/*.js"
@@ -45,6 +44,7 @@
   "author": "krisnye@gmail.com",
   "license": "MIT",
   "dependencies": {
+    "@adobe/data": "^0.1.3",
     "@lit/context": "^1.1.5"
   }
 }

@@ -1,14 +1,14 @@
-import { getBoardSize } from "../dependent-state/board-size";
-import { MainService } from "../services/main-service/main-service";
-import { BoardLink, BoardPoint, Player } from "../services/state-service/create-state-service";
+import { BoardLink, Player, TwixtReadonlyStore } from "../services/state-service/state-service.js";
+import { boardSize } from "../services/state-service/dependent-state/board-size.js";
 
 /**
  * The game is won when any player connects a complete unbroken line of their own color from one edge to the opposite edge.
  */
 export const calculateWinner = (
-    {board, links}: {board: BoardPoint[], links: BoardLink[]},
+    store: TwixtReadonlyStore,
 ): Player | null => {
-    const size = getBoardSize(board);
+    const { board, links } = store.resources;
+    const size = boardSize(store);
     
     // Check if any player has a complete line from one edge to the opposite edge
     const players = ["red", "black"] as const;
@@ -52,9 +52,9 @@ export const calculateWinner = (
 // Helper function to check if there's a path from start to any of the target points
 const hasPathToAny = (
     start: number,
-    targets: number[],
-    playerPoints: number[],
-    links: [number, number][]
+    targets: readonly number[],
+    playerPoints: readonly number[],
+    links: readonly BoardLink[]
 ): boolean => {
     const visited = new Set<number>();
     const queue = [start];

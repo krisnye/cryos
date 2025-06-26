@@ -13,6 +13,7 @@ export default defineConfig({
         vitePluginString({ compress: false })
     ],
     test: {
+        tsconfig: './tsconfig.base.json',
         api: {
             strictPort: false,
         },

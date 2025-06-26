@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
+    "module": "NodeNext",
     "target": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "stripInternal": true,
     "removeComments": false,
@@ -20,7 +20,6 @@
     "declaration": true,
     "sourceMap": true,
     "composite": true,
-    "incremental": true,
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
     "lib": ["ES2024", "DOM", "DOM.Iterable", "esnext"],

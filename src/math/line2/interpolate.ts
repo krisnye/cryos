@@ -1,5 +1,5 @@
-import { Vec2 } from "math/vec2";
-import { Line2 } from "./line2";
+import { Vec2 } from "../vec2/index.js";
+import { Line2 } from "./line2.js";
 
 export const interpolate = (line: Line2, alpha: number): Vec2 => {
     const a = line.a;

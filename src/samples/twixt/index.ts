@@ -1,3 +1,3 @@
-export * from "./twixt-game";
-export * from "./services";
-export * from "./elements";
+export * from "./twixt-main-element.js";
+export * from "./services/index.js";
+export * from "./elements/index.js";

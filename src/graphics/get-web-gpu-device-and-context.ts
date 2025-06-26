@@ -1,4 +1,4 @@
-import { GraphicsContext } from "./graphics-context";
+import { GraphicsContext } from "./graphics-context.js";
 
 export const getWebGPUGraphicsContext = async (canvas: HTMLCanvasElement)
 : Promise<GraphicsContext> => {

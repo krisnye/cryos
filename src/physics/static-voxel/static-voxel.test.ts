@@ -12,7 +12,7 @@ import {
     StaticVoxelUnbondY,
     StaticVoxelUnbondZ,
     toDebugStaticVoxel,
-} from './static-voxel';
+} from './static-voxel.js';
 
 describe('StaticVoxel', () => {
     describe('bonds', () => {

@@ -1,4 +1,4 @@
-import { F32Schema, FromSchema, Schema, U32Schema } from "data";
+import { F32Schema, FromSchema, Schema, U32Schema } from "@adobe/data/schema";
 
 export const StaticVoxelSchema = {
     type: "object",

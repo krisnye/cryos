@@ -2,9 +2,8 @@ import { html, LitElement, TemplateResult, css } from "lit";
 import { customElement } from "lit/decorators.js";
 import "./service-sample";
 import "./twixt";
-import { withHooks } from "ui/hooks/with-hooks";
-import { useObservableValues } from "ui/hooks/use-observable-values";
-import { createQueryState } from "data/observe/create-query-state";
+import { withHooks, useObservableValues } from "@adobe/data/lit";
+import { createQueryState } from "@adobe/data/observe";
 
 interface SampleDefinition {
     name: string;
@@ -15,18 +14,18 @@ interface SampleDefinition {
 const samples: Record<string, SampleDefinition> = {
     "service": {
         name: "Service Sample",
-        load: () => import("./service-sample"),
-        render: () => html`<cryos-service-sample></cryos-service-sample>`
+        load: () => import("./service-sample/index.js"),
+        render: () => html`<service-sample-main-element></service-sample-main-element>`
     },
     "twixt": {
         name: "Twixt",
-        load: () => import("./twixt"),
-        render: () => html`<twixt-game></twixt-game>`
+        load: () => import("./twixt/index.js"),
+        render: () => html`<twixt-main-element></twixt-main-element>`
     },
-    "graphics-tutorials": {
-        name: "Graphics Tutorials",
-        load: () => import("./graphics-tutorials"),
-        render: () => html`<graphics-tutorials></graphics-tutorials>`
+    "particle-sample": {
+        name: "Particle Sample",
+        load: () => import("./particles/index.js"),
+        render: () => html`<particles-main-element></particles-main-element>`
     }
 } as const;
 
