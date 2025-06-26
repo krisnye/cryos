@@ -10,7 +10,7 @@ export async function createMainService(context: GraphicsContext) {
         createParticleDatabaseSchema(context),
     );
 
-    const systemRunner = createSystemService();
+    const systemRunner = createSystemService(store);
     systemRunner.setRunning(true);
     systemRunner.updateFrame(database.transactions.setUpdateFrame);
     systemRunner.renderFrame(database.transactions.setRenderFrame);
@@ -22,7 +22,7 @@ export async function createMainService(context: GraphicsContext) {
         systemRunner,
     };
     const systems = applyArg(service, systemFactories);
-    systemRunner.addSystems(Object.values(systems));
+    systemRunner.addSystems(Object.values(systems).flat());
 
     return service;
 }

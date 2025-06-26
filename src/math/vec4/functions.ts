@@ -114,6 +114,12 @@ export const log2 = ([x, y, z, w]: Vec4): Vec4 => [Math.log2(x), Math.log2(y), M
 export const sqrt = ([x, y, z, w]: Vec4): Vec4 => [Math.sqrt(x), Math.sqrt(y), Math.sqrt(z), Math.sqrt(w)];
 
 // Helper functions needed by some of the above
+export const add = ([x1, y1, z1, w1]: Vec4, [x2, y2, z2, w2]: Vec4): Vec4 => [
+    x1 + x2,
+    y1 + y2,
+    z1 + z2,
+    w1 + w2
+];
 export const subtract = ([x1, y1, z1, w1]: Vec4, [x2, y2, z2, w2]: Vec4): Vec4 => [
     x1 - x2,
     y1 - y2,

@@ -83,6 +83,7 @@ export const log2 = ([x, y]: Vec2): Vec2 => [Math.log2(x), Math.log2(y)];
 export const sqrt = ([x, y]: Vec2): Vec2 => [Math.sqrt(x), Math.sqrt(y)];
 
 // Helper functions needed by some of the above
+export const add = ([x1, y1]: Vec2, [x2, y2]: Vec2): Vec2 => [x1 + x2, y1 + y2];
 export const subtract = ([x1, y1]: Vec2, [x2, y2]: Vec2): Vec2 => [x1 - x2, y1 - y2];
 export const scale = ([x, y]: Vec2, s: number): Vec2 => [x * s, y * s];
 export const negate = ([x, y]: Vec2): Vec2 => [-x, -y]; 
