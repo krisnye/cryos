@@ -7,6 +7,7 @@ import * as VEC3 from "math/vec3/index.js";
 import { F32Schema } from "@adobe/data/schema";
 
 export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
+    console.log("aspectRatio:", context.canvas.width / context.canvas.height, context.canvas.width, context.canvas.height);
     return createDatabaseSchema({
         buffer: { default: null as unknown as GPUBuffer, transient: true },
     }, {
