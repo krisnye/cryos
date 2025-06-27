@@ -3,19 +3,26 @@ import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
 import { createMainService, MainService } from "./services/create-main-service.js";
 import { getWebGPUGraphicsContext } from "graphics/get-web-gpu-device-and-context.js";
-import "./elements/particles-label.js";
 import { when } from "lit/directives/when.js";
+import "./elements/particles-label.js";
+import "./elements/canvas-overlay.js";
 
 @customElement("particles-main-element")
 export class ParticlesMainElement extends ServiceApplication<MainService> {
 
     static override styles = [
         css`
-            canvas {
-                border: 1px solid black;
+            canvas, canvas-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
                 width: 800px;
                 height: 600px;
             }
+            canvas-overlay {
+                border: 1px solid red;
+            }
+
         `
     ];
 
@@ -29,9 +36,8 @@ export class ParticlesMainElement extends ServiceApplication<MainService> {
         // we don't render any other children until the service is created.
         return html`
             <div>
-                <h1>Particle Sample</h1>
-                <canvas></canvas>
-                ${when(this.service, () => html`<particles-label></particles-label>`)}
+                <canvas width="800" height="600"></canvas>
+                ${when(this.service, () => html`<canvas-overlay></canvas-overlay>`)}
             </div>
         `;
     }
