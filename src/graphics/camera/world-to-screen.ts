@@ -26,6 +26,12 @@ export const worldToScreen = (
     // Transform world position to clip space
     const clipSpace = MAT4.multiplyVec4(viewProjection, [...worldPosition, 1]);
     
+    // Check if point is behind camera (W < 0)
+    if (clipSpace[3] <= 0) {
+        // Return invalid coordinates for points behind camera
+        return [canvasWidth * 2, canvasHeight * 2];
+    }
+    
     // Perform perspective divide to get normalized device coordinates (NDC)
     const ndcX = clipSpace[0] / clipSpace[3];
     const ndcY = clipSpace[1] / clipSpace[3];
@@ -125,6 +131,16 @@ export const getWorldPositionDepth = (
     
     const clipSpace = MAT4.multiplyVec4(viewProjection, [...worldPosition, 1]);
     
-    // Return normalized depth (0 to 1)
-    return (clipSpace[2] / clipSpace[3] + 1) * 0.5;
+    // Check if point is behind camera
+    if (clipSpace[3] <= 0) {
+        return 2.0; // Invalid depth for points behind camera
+    }
+    
+    // Calculate normalized depth (0 to 1)
+    // For perspective projection, we need to use the Z component after perspective divide
+    const ndcZ = clipSpace[2] / clipSpace[3];
+    
+    // The perspective matrix uses reversed depth (near=1, far=0)
+    // So we need to invert the depth calculation
+    return 1.0 - (ndcZ + 1) * 0.5;
 }; 

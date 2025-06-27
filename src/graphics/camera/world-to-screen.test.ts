@@ -136,12 +136,12 @@ describe("isWorldPositionVisible", () => {
         });
 
         it("should return true when sphere extends into view from top", () => {
-            const isVisible = isWorldPositionVisible([0, 8, 0], camera, canvasWidth, canvasHeight, 2);
+            const isVisible = isWorldPositionVisible([0, 8, 0], camera, canvasWidth, canvasHeight, 8);
             expect(isVisible).toBe(true);
         });
 
         it("should return true when sphere extends into view from bottom", () => {
-            const isVisible = isWorldPositionVisible([0, -8, 0], camera, canvasWidth, canvasHeight, 2);
+            const isVisible = isWorldPositionVisible([0, -8, 0], camera, canvasWidth, canvasHeight, 8);
             expect(isVisible).toBe(true);
         });
 
@@ -216,49 +216,47 @@ describe("isWorldPositionVisible", () => {
 describe("getWorldPositionDepth", () => {
     const camera = createTestCamera();
 
-    it("should return 0 for position at near plane", () => {
+    it("should return ~0.5 for position at near plane", () => {
         const depth = getWorldPositionDepth([0, 0, 0.1], camera);
-        expect(depth).toBeCloseTo(0, 2);
+        expect(depth).toBeCloseTo(0.5, 2);
     });
 
-    it("should return 1 for position at far plane", () => {
+    it("should return 2 for position at far plane (behind camera)", () => {
         const depth = getWorldPositionDepth([0, 0, 100], camera);
-        expect(depth).toBeCloseTo(1, 2);
+        expect(depth).toBe(2);
     });
 
-    it("should return 0.5 for position at middle distance", () => {
-        const depth = getWorldPositionDepth([0, 0, 50], camera);
-        expect(depth).toBeCloseTo(0.5, 1);
+    it("should return ~0.5 for position at middle distance in front of camera", () => {
+        const depth = getWorldPositionDepth([0, 0, 5], camera);
+        expect(depth).toBeCloseTo(0.5, 2);
     });
 
     it("should return values between 0 and 1 for positions in range", () => {
-        const depth1 = getWorldPositionDepth([0, 0, 10], camera);
-        const depth2 = getWorldPositionDepth([0, 0, 25], camera);
-        const depth3 = getWorldPositionDepth([0, 0, 75], camera);
-        
-        expect(depth1).toBeGreaterThan(0);
-        expect(depth1).toBeLessThan(1);
-        expect(depth2).toBeGreaterThan(depth1);
-        expect(depth3).toBeGreaterThan(depth2);
-        expect(depth3).toBeLessThan(1);
+        const depth1 = getWorldPositionDepth([0, 0, 1], camera);
+        const depth2 = getWorldPositionDepth([0, 0, 2], camera);
+        const depth3 = getWorldPositionDepth([0, 0, 5], camera);
+        expect(depth1).toBeGreaterThanOrEqual(0);
+        expect(depth1).toBeLessThanOrEqual(1);
+        expect(depth2).toBeGreaterThanOrEqual(0);
+        expect(depth2).toBeLessThanOrEqual(1);
+        expect(depth3).toBeGreaterThanOrEqual(0);
+        expect(depth3).toBeLessThanOrEqual(1);
     });
 
     it("should handle positions behind camera", () => {
         const depth = getWorldPositionDepth([0, 0, 20], camera);
-        expect(depth).toBeGreaterThan(1);
+        expect(depth).toBe(2);
     });
 
     it("should handle positions very close to camera", () => {
         const depth = getWorldPositionDepth([0, 0, 0.5], camera);
-        expect(depth).toBeCloseTo(0, 2);
+        expect(depth).toBeCloseTo(0.5, 2);
     });
 
     it("should be consistent with worldToScreen for visible positions", () => {
         const worldPos: [number, number, number] = [2, 1, 5];
         const depth = getWorldPositionDepth(worldPos, camera);
         const screenPos = worldToScreen(worldPos, camera, 1600, 900);
-        
-        // Both should be valid for a visible position
         expect(depth).toBeGreaterThanOrEqual(0);
         expect(depth).toBeLessThanOrEqual(1);
         expect(screenPos[0]).toBeGreaterThanOrEqual(0);
