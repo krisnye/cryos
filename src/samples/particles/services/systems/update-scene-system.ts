@@ -2,7 +2,7 @@
 import { System } from "graphics/systems/system.js";
 import { MainService } from "../create-main-service.js";
 import { createStructBuffer } from "@adobe/data/typed-buffer";
-import { SceneSchema } from "samples/particles/types/Scene.js";
+import { SceneSchema } from "samples/particles/types/scene.js";
 import { toViewProjection } from "graphics/camera/to-view-projection.js";
 
 export const updateSceneSystem = ({ store }: MainService): System => {

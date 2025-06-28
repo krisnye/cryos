@@ -41,6 +41,12 @@ export const smoothstep = ([e0x, e0y, e0z]: Vec3, [e1x, e1y, e1z]: Vec3, [x, y, 
 // Geometric Functions
 export const length = ([x, y, z]: Vec3): number => Math.sqrt(x * x + y * y + z * z);
 export const distance = (a: Vec3, b: Vec3): number => length(subtract(b, a));
+export const distanceSquared = (a: Vec3, b: Vec3): number => {
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    const dz = b[2] - a[2];
+    return dx * dx + dy * dy + dz * dz;
+};
 export const dot = ([x1, y1, z1]: Vec3, [x2, y2, z2]: Vec3): number => 
     x1 * x2 + y1 * y2 + z1 * z2;
 export const cross = ([x1, y1, z1]: Vec3, [x2, y2, z2]: Vec3): Vec3 => [

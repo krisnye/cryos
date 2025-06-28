@@ -1,8 +1,8 @@
 import { GraphicsContext } from "graphics/graphics-context.js";
 import { createDatabaseSchema } from "@adobe/data/ecs";
-import { Vec3, Vec3Schema, Vec4 } from "math/index.js";
+import { Vec2, Vec2Schema, Vec3, Vec3Schema, Vec4 } from "math/index.js";
 import { createGraphicsDatabaseSchema } from "graphics/database/graphics-database.js";
-import { ParticleSchema } from "../types/Particle.js";
+import { ParticleSchema } from "../types/particle/particle.js";
 
 export const createParticleDatabaseSchema = (context: GraphicsContext) => {
     const graphicsDatabaseSchema = createGraphicsDatabaseSchema(context);
@@ -13,12 +13,23 @@ export const createParticleDatabaseSchema = (context: GraphicsContext) => {
         particle: ParticleSchema,
     }, {
         ...graphicsDatabaseSchema.resources,
+        mousePosition: Vec2Schema,
     }, (store) => {
-        const particleArchetype = store.ensureArchetype(["id", "particle", "velocity"]);
         return ({ 
             ...graphicsDatabaseSchema.transactions(store),
-            createParticle: ({ position, velocity, color }: { position: Vec3, velocity: Vec3, color: Vec4 }) => {
-                return particleArchetype.insert({ particle: { position, color }, velocity });
+            setMousePosition: (position: Vec2) => {
+                store.resources.mousePosition = position;
+            },
+            setParticleColor: ({ id, color }: { id: number, color: Vec4 }) => {
+                const entityValues  = store.read(id);
+                if (entityValues) {
+                    store.update(id, {
+                        particle: {
+                            ...entityValues.particle!,
+                            color
+                        }
+                    });
+                }
             }
         })
     })

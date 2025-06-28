@@ -5,11 +5,12 @@ import { DatabaseFromSchema, StoreFromSchema } from "../../../../data/dist/ecs/d
 import { Camera, CameraSchema } from "graphics/camera/camera.js";
 import * as VEC3 from "math/vec3/index.js";
 import { F32Schema } from "@adobe/data/schema";
+import { AabbSchema } from "math/aabb/aabb.js";
 
 export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
-    console.log("aspectRatio:", context.canvas.width / context.canvas.height, context.canvas.width, context.canvas.height);
     return createDatabaseSchema({
         buffer: { default: null as unknown as GPUBuffer, transient: true },
+        boundingBox: AabbSchema,
     }, {
         graphics: { default: context, transient: true },
         camera: {
@@ -24,6 +25,7 @@ export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
                 up: [0, 1, 0],
             } satisfies Camera
         },
+        timeScale: { ...F32Schema, default: 1.0 },
         lightDirection: { ...VEC3.Vec3Schema, default: VEC3.normalize([1, 2, 5.0]) },
         ambientStrength: { ...F32Schema, default: 0.5 },
         lightColor: { ...VEC3.Vec3Schema, default: [1.2, 1.2, 1.2] as VEC3.Vec3 },

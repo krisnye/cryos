@@ -7,8 +7,8 @@ typescript
 # Paradigm
 
 - separation of concerns
-- Functional programming
 - Data oriented
+- Functional programming, but prefer performance inside functions, functional interface outside.
 - Prefer Immutable data, but mutation allowed for high performance
 - No classes, enums or inheritance
 

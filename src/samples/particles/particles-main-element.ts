@@ -38,7 +38,7 @@ export class ParticlesMainElement extends ServiceApplication<MainService> {
         // we have to render the canvas first because we use it to create the service.
         // we don't render any other children until the service is created.
         return html`
-            <div>
+            <div @pointermove=${(e: PointerEvent) => this.service.database.transactions.setMousePosition([e.clientX, e.clientY])}>
                 <canvas width=${this.width} height=${this.height}></canvas>
                 ${when(this.service, () => html`<canvas-overlay style="width: ${this.width}px; height: ${this.height}px;"></canvas-overlay>`)}
             </div>

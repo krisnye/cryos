@@ -3,6 +3,7 @@ import { css, html } from "lit";
 import { ParticlesElement } from "../particles-element.js";
 import { worldToScreen, getWorldPositionDepth } from "graphics/camera/world-to-screen.js";
 import { useEffect } from "@adobe/data/lit";
+import * as VEC3 from "math/vec3/index.js";
 
 @customElement("particles-label")
 export class ParticlesLabel extends ParticlesElement {
@@ -18,14 +19,16 @@ export class ParticlesLabel extends ParticlesElement {
                 background: rgba(0, 0, 0, 0.8);
                 color: white;
                 padding: 2px 6px;
-                border-radius: 3px;
+                border: white solid 1px;
+                border-radius: 6px;
+                border-top-left-radius: 0;
                 font-size: 12px;
                 font-family: monospace;
-                transform: translate(-50%, -50%);
+                /* transform: translate(-50%, -50%); */
                 /* Optimize for frequent movement */
                 will-change: transform, left, top, z-index;
                 /* Force hardware acceleration */
-                transform: translate(-50%, -50%) translateZ(0);
+                /* transform: translate(-50%, -50%) translateZ(0); */
                 /* Alternative: use backface-visibility to force compositing */
                 backface-visibility: hidden;
             }
@@ -33,19 +36,20 @@ export class ParticlesLabel extends ParticlesElement {
     ];
 
     override render() {
-        const particles = this.service.store.ensureArchetype(["id", "particle", "velocity"]);
+        const particles = this.service.store.ensureArchetype(["id", "particle", "velocity", "boundingBox"]);
         useEffect(() => {
             return this.service.database.observe.resource.renderFrame(() => {
                 const particle = particles.columns.particle.get(this.particleIndex);
+                const bottomRightCorner = VEC3.add(particle.position, [0.5, -0.5, 0.5]);
                 const screenPos = worldToScreen(
-                    particle.position, 
+                    bottomRightCorner, 
                     this.service.store.resources.camera, 
                     this.service.store.resources.graphics.canvas.width,
                     this.service.store.resources.graphics.canvas.height
                 );
                 
                 // Calculate depth for z-index layering
-                const depth = getWorldPositionDepth(particle.position, this.service.store.resources.camera);
+                const depth = getWorldPositionDepth(bottomRightCorner, this.service.store.resources.camera);
                 const zIndex = Math.floor(depth * 10000); // Scale depth to z-index range
                 
                 this.style.left = `${screenPos[0]}px`;

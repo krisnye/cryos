@@ -1,16 +1,14 @@
 import { System } from "graphics/systems/system.js";
 import { MainService } from "../create-main-service.js";
 import shaderSource from './particles.wgsl?raw';
-import { copyToGPUBuffer, getStructLayout } from "@adobe/data/typed-buffer";
-import { ParticleSchema } from "samples/particles/types/Particle.js";
+import { ParticleSchema } from "samples/particles/types/particle/particle.js";
 import { createStructGPUBuffer } from "graphics/create-struct-gpu-buffer.js";
+import { copyColumnToGPUBuffer } from "@adobe/data/table";
 
-export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
-    const particles = main.store.ensureArchetype(["id", "velocity", "particle"]);
+export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {//    const particles = main.store.ensureArchetype(["id", "velocity", "particle"]);
     const { graphics: { device, context } } = main.database.resources;
     const { store } = main;
 
-    const particleLayout = getStructLayout(ParticleSchema)!;
     let particlesBuffer = createStructGPUBuffer({
         device,
         schema: ParticleSchema,
@@ -59,16 +57,21 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         }
     });
 
+    // this is closed over by both systems, written by the first and read by the second
+    let particleCount = 0;
+
     return [{
         name: "copyParticlesToGPUBufferSystem",
         phase: "update",
         run: () => {
-            particlesBuffer = copyToGPUBuffer(
-                particles.columns.particle,
+            const particleTables = store.queryArchetypes(["id", "velocity", "particle"]);
+            particlesBuffer = copyColumnToGPUBuffer(
+                particleTables,
+                "particle",
                 device,
-                particlesBuffer,
-                particleLayout.size * particles.rows
+                particlesBuffer
             );
+            particleCount = particleTables.reduce((acc, table) => acc + table.rows, 0);
         }
     },{
         name: "renderParticlesSystem",
@@ -85,7 +88,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
 
             renderPassEncoder.setPipeline(pipeline);
             renderPassEncoder.setBindGroup(0, bindGroup);
-            renderPassEncoder.draw(36, particles.rows, 0, 0); // 36 vertices (12 triangles), 1 instance per particle row
+            renderPassEncoder.draw(36, particleCount, 0, 0); // 36 vertices (12 triangles), 1 instance per particle row
         }
     }]
 };
