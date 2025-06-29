@@ -5,7 +5,7 @@ import { worldToScreen, getWorldPositionDepth } from "graphics/camera/world-to-s
 import { useEffect } from "@adobe/data/lit";
 import * as VEC3 from "math/vec3/index.js";
 
-@customElement("particles-label")
+@customElement("voxel-particles-label")
 export class ParticlesLabel extends ParticlesElement {
 
     @property({ type: Number })

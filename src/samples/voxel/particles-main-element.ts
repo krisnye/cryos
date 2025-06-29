@@ -7,7 +7,7 @@ import { when } from "lit/directives/when.js";
 import "./elements/particles-label.js";
 import "./elements/canvas-overlay.js";
 
-@customElement("particles-main-element")
+@customElement("voxel-main-element")
 export class ParticlesMainElement extends ServiceApplication<MainService> {
 
     @property({ type: Number })
@@ -17,12 +17,12 @@ export class ParticlesMainElement extends ServiceApplication<MainService> {
 
     static override styles = [
         css`
-            canvas, canvas-overlay {
+            canvas, voxel-canvas-overlay {
                 position: absolute;
                 top: 0;
                 left: 0;
             }
-            canvas-overlay {
+            voxel-canvas-overlay {
                 border: 1px solid red;
             }
 
@@ -40,7 +40,7 @@ export class ParticlesMainElement extends ServiceApplication<MainService> {
         return html`
             <div @pointermove=${(e: PointerEvent) => this.service.database.transactions.setMousePosition([e.clientX, e.clientY])}>
                 <canvas width=${this.width} height=${this.height}></canvas>
-                ${when(this.service, () => html`<canvas-overlay style="width: ${this.width}px; height: ${this.height}px;"></canvas-overlay>`)}
+                ${when(this.service, () => html`<voxel-canvas-overlay style="width: ${this.width}px; height: ${this.height}px;"></voxel-canvas-overlay>`)}
             </div>
         `;
     }

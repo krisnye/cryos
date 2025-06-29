@@ -5,7 +5,7 @@ import "./particles-label.js";
 import { useMemo, useObservableValues } from "@adobe/data/lit";
 import { repeat } from "lit/directives/repeat.js";
 
-@customElement("canvas-overlay")
+@customElement("voxel-canvas-overlay")
 export class CanvasOverlay extends ParticlesElement {
 
     static override styles = [
@@ -28,7 +28,7 @@ export class CanvasOverlay extends ParticlesElement {
                 ${repeat(
                     Array.from({ length: particles.rows }, (_, i) => i),
                     (index) => index,
-                    (index) => html`<particles-label .particleIndex=${index}></particles-label>`
+                    (index) => html`<voxel-particles-label .particleIndex=${index}></voxel-particles-label>`
                 )}
             </div>
         `;
