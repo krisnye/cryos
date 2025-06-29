@@ -1,7 +1,5 @@
 import { html, LitElement, TemplateResult, css } from "lit";
 import { customElement } from "lit/decorators.js";
-import "./service-sample";
-import "./twixt";
 import { withHooks, useObservableValues } from "@adobe/data/lit";
 import { createQueryState } from "@adobe/data/observe";
 
@@ -26,6 +24,11 @@ const samples: Record<string, SampleDefinition> = {
         name: "Particle Sample",
         load: () => import("./particles/index.js"),
         render: () => html`<particles-main-element></particles-main-element>`
+    },
+    "voxels": {
+        name: "Voxels",
+        load: () => import("./voxel/index.js"),
+        render: () => html`<voxel-main-element></voxel-main-element>`
     }
 } as const;
 
