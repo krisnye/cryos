@@ -1,7 +1,8 @@
 import { GraphicsContext } from "graphics/graphics-context.js";
-import { createDatabaseSchema, Entity } from "@adobe/data/ecs";
+import { createDatabaseSchema, Entity, Store } from "@adobe/data/ecs";
 import { Frame, FrameSchema } from "graphics/frame.js";
 import { DatabaseFromSchema, StoreFromSchema } from "../../../../data/dist/ecs/database/database-schema/database-schema.js";
+import { FromSchemas } from "@adobe/data/schema";
 import { Camera, CameraSchema } from "graphics/camera/camera.js";
 import * as VEC3 from "math/vec3/index.js";
 import { F32Schema } from "@adobe/data/schema";
@@ -53,4 +54,10 @@ export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
 
 export type GraphicsDatabase = DatabaseFromSchema<ReturnType<typeof createGraphicsDatabaseSchema>>;
 export type GraphicsStore = StoreFromSchema<ReturnType<typeof createGraphicsDatabaseSchema>>;
+
+// Type for stores that extend GraphicsStore (useful for databases that build upon graphics database)
+export type ExtendedGraphicsStore<T extends object = never> = Store<
+    FromSchemas<ReturnType<typeof createGraphicsDatabaseSchema>["components"]> & T,
+    FromSchemas<ReturnType<typeof createGraphicsDatabaseSchema>["resources"]>
+>;
 
