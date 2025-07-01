@@ -36,9 +36,11 @@ export class ParticlesLabel extends ParticlesElement {
     ];
 
     override render() {
-        const particles = this.service.store.ensureArchetype(["id", "particle", "position", "color", "velocity", "boundingBox"]);
+        // using a particle table directly will only work for particles with this exact archetype
+        // a query would find all particle tables including those with additional components
+        const particles = this.service.database.archetypes.Particle;
         useEffect(() => {
-            return this.service.database.observe.resource.renderFrame(() => {
+            return this.service.database.observe.resources.renderFrame(() => {
                 const position = particles.columns.position.get(this.particleIndex);
                 const bottomRightCorner = VEC3.add(position, [0.5, -0.5, 0.5]);
                 const screenPos = worldToScreen(

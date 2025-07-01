@@ -1,15 +1,14 @@
-import { createDatabaseFromSchemas } from "@adobe/data/ecs";
+import { createDatabase, createStore } from "@adobe/data/ecs";
 import { GraphicsContext } from "../../../graphics/index.js";
 import { createParticleDatabaseSchema } from "./particles-database.js";
 import { createSystemService } from "graphics/systems/create-system-service.js";
 import { applyArg } from "@adobe/data/functions";
 import * as systemFactories from "./systems/index.js";
-import { Simplify } from "@adobe/data/types";
 
 export async function createMainService(context: GraphicsContext) {
-    const { database, store } = createDatabaseFromSchemas(
-        createParticleDatabaseSchema(context),
-    );
+    const schema = createParticleDatabaseSchema(context);
+    const store = createStore(schema.components, schema.resources, schema.archetypes);
+    const database = createDatabase(store, schema.transactions);
 
     const systemRunner = createSystemService(store);
     systemRunner.setRunning(true);

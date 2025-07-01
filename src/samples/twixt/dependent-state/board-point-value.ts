@@ -6,6 +6,6 @@ export const boardPointValue = (
     service: MainService,
     index: number
 ): Observe<BoardPoint> => withDeduplicate(withMap(
-    service.state.database.observe.resource.board,
+    service.state.database.observe.resources.board,
     (board) => board[index]
 ));
