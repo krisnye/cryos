@@ -54,10 +54,3 @@ export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
 
 export type GraphicsDatabase = DatabaseFromSchema<ReturnType<typeof createGraphicsDatabaseSchema>>;
 export type GraphicsStore = StoreFromSchema<ReturnType<typeof createGraphicsDatabaseSchema>>;
-
-// Type for stores that extend GraphicsStore (useful for databases that build upon graphics database)
-export type ExtendedGraphicsStore<T extends object = never> = Store<
-    FromSchemas<ReturnType<typeof createGraphicsDatabaseSchema>["components"]> & T,
-    FromSchemas<ReturnType<typeof createGraphicsDatabaseSchema>["resources"]>
->;
-

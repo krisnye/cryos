@@ -30,7 +30,7 @@ export const pickParticlesSystem = ({ store, database }: MainService): System =>
 
             if (pickedParticleId) {
                 const randomColor = [Math.random(), Math.random(), Math.random(), 1] as const;
-                database.transactions.setParticleColor({ id: pickedParticleId, color: randomColor });
+                database.transactions.setColor({ id: pickedParticleId, color: randomColor });
             }
         }
     } as const satisfies System;

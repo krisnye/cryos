@@ -8,20 +8,16 @@ export const moveParticlesSystem = ({ store }: MainService): System => {
         phase: "update",
         run: () => {
             const timeScale = store.resources.timeScale;
-            for (const table of store.queryArchetypes(["id", "velocity", "particle"])) {
+            for (const table of store.queryArchetypes(["id", "velocity", "position", "particle"])) {
                 for (let i = 0; i < table.rows; i++) {
-                    const particle = table.columns.particle.get(i);
+                    const position = table.columns.position.get(i);
                     const velocity = table.columns.velocity.get(i);
-                    const position = particle.position;
                     const newPosition = VEC3.add(position, VEC3.scale(velocity, timeScale));
                     const maxRange = 10;
                     if (newPosition[0] < -maxRange || newPosition[0] > maxRange || newPosition[1] < -maxRange || newPosition[1] > maxRange || newPosition[2] < -maxRange || newPosition[2] > maxRange) {
                         table.columns.velocity.set(i, VEC3.negate(velocity))
                     }
-                    table.columns.particle.set(i, {
-                        ...particle,
-                        position: newPosition
-                    });
+                    table.columns.position.set(i, newPosition);
                 }
             }
         }

@@ -36,11 +36,11 @@ export class ParticlesLabel extends ParticlesElement {
     ];
 
     override render() {
-        const particles = this.service.store.ensureArchetype(["id", "particle", "velocity", "boundingBox"]);
+        const particles = this.service.store.ensureArchetype(["id", "particle", "position", "color", "velocity", "boundingBox"]);
         useEffect(() => {
             return this.service.database.observe.resource.renderFrame(() => {
-                const particle = particles.columns.particle.get(this.particleIndex);
-                const bottomRightCorner = VEC3.add(particle.position, [0.5, -0.5, 0.5]);
+                const position = particles.columns.position.get(this.particleIndex);
+                const bottomRightCorner = VEC3.add(position, [0.5, -0.5, 0.5]);
                 const screenPos = worldToScreen(
                     bottomRightCorner, 
                     this.service.store.resources.camera, 

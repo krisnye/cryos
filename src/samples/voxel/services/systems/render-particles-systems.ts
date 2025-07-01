@@ -1,20 +1,19 @@
 import { System } from "graphics/systems/system.js";
 import { MainService } from "../create-main-service.js";
 import shaderSource from './particles.wgsl?raw';
-import { ParticleSchema } from "samples/particles/types/particle/particle.js";
 import { createStructGPUBuffer } from "graphics/create-struct-gpu-buffer.js";
 import { copyColumnToGPUBuffer } from "@adobe/data/table";
+import { Vec3Schema } from "math/vec3/index.js";
+import { Vec4Schema } from "math/vec4/index.js";
 
-export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {//    const particles = main.store.ensureArchetype(["id", "velocity", "particle"]);
+export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
     const { graphics: { device, context } } = main.database.resources;
     const { store } = main;
 
-    let particlesBuffer = createStructGPUBuffer({
-        device,
-        schema: ParticleSchema,
-        elements: [],
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-    });
+    const bufferSchemas = [
+        ["position", Vec3Schema],
+        ["color", Vec4Schema]
+    ] as const;
 
     // Create bind group layout
     const bindGroupLayout = device.createBindGroupLayout({
@@ -24,11 +23,11 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
                 visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
                 buffer: { type: 'uniform' }
             },
-            {
-                binding: 1,
+            ...bufferSchemas.map(([name, schema], index) => ({
+                binding: index + 1,
                 visibility: GPUShaderStage.VERTEX,
                 buffer: { type: 'read-only-storage' }
-            }
+            }) as const)
         ]
     });
 
@@ -57,6 +56,15 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         }
     });
 
+    const buffers = bufferSchemas.map(([name, schema]) => {
+        return createStructGPUBuffer({
+            device,
+            schema,
+            elements: [],
+            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+        });
+    });
+
     // this is closed over by both systems, written by the first and read by the second
     let particleCount = 0;
 
@@ -64,13 +72,16 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         name: "copyParticlesToGPUBufferSystem",
         phase: "update",
         run: () => {
-            const particleTables = store.queryArchetypes(["id", "velocity", "particle"]);
-            particlesBuffer = copyColumnToGPUBuffer(
-                particleTables,
-                "particle",
-                device,
-                particlesBuffer
-            );
+            const particleTables = store.queryArchetypes(["id", "velocity", "position", "color", "particle"]);
+            for (let i = 0; i < bufferSchemas.length; i++) {
+                const [name, schema] = bufferSchemas[i];
+                buffers[i] = copyColumnToGPUBuffer(
+                    particleTables,
+                    name,
+                    device,
+                    buffers[i]
+                );
+            }
             particleCount = particleTables.reduce((acc, table) => acc + table.rows, 0);
         }
     },{
@@ -82,7 +93,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
                 layout: bindGroupLayout,
                 entries: [
                     { binding: 0, resource: { buffer: store.resources.sceneBuffer } },
-                    { binding: 1, resource: { buffer: particlesBuffer } }
+                    ...buffers.map((buffer, index) => ({ binding: index + 1, resource: { buffer } }) as const)
                 ]
             });
 

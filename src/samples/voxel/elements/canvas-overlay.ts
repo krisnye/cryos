@@ -21,7 +21,7 @@ export class CanvasOverlay extends ParticlesElement {
             renderFrame: this.service.database.observe.resource.renderFrame
         }));
 
-        const particles = useMemo(() => this.service.store.ensureArchetype(["id", "particle", "velocity", "boundingBox"]));
+        const particles = useMemo(() => this.service.store.ensureArchetype(["id", "particle", "position", "color", "velocity", "boundingBox"]));
 
         return html`
             <div>
