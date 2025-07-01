@@ -1,7 +1,3 @@
-struct Particle {
-    position: vec3<f32>,
-    color: vec4<f32>,
-}
 
 struct Scene {
     viewProjection: mat4x4<f32>,
@@ -13,7 +9,8 @@ struct Scene {
 const CUBE_SIZE = 0.5;
 
 @binding(0) @group(0) var<uniform> scene: Scene;
-@binding(1) @group(0) var<storage, read> particles: array<Particle>;
+@binding(1) @group(0) var<storage, read> positions: array<vec3<f32>>;
+@binding(2) @group(0) var<storage, read> colors: array<vec4<f32>>;
 
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
@@ -65,12 +62,11 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32,
         vec3<f32>(0.0, -1.0, 0.0)   // Bottom
     );
     
-    let particle = particles[instanceIndex];
-    let worldPos = pos[indices[vertexIndex]] + particle.position;
+    let worldPos = pos[indices[vertexIndex]] + positions[instanceIndex];
     
     var output: VertexOutput;
     output.position = scene.viewProjection * vec4<f32>(worldPos, 1.0);
-    output.color = particle.color.rgb;
+    output.color = colors[instanceIndex].rgb;
     output.worldPos = worldPos;
     // Calculate which face we're on and use appropriate normal
     output.normal = normals[vertexIndex / 6];

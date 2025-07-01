@@ -16,7 +16,7 @@ function groupSystemsByPhase(systems: System[]): Map<SystemPhase, System[]> {
     return systemsByPhase;
 }
 
-export function createSystemService(store: GraphicsStore): SystemService {
+export function createSystemService<T extends GraphicsStore>(store: T): SystemService {
     let updateFrame = { count: 0 };
     let renderFrame = { count: 0 };
     let isRunning = false;

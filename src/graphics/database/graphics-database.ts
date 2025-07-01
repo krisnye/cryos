@@ -1,63 +1,89 @@
 import { GraphicsContext } from "graphics/graphics-context.js";
-import { createDatabaseSchema, Entity, Store } from "@adobe/data/ecs";
+import { AsyncArgsProvider, createDatabaseSchema, DatabaseFromSchema, Entity, StoreFromSchema } from "@adobe/data/ecs";
 import { Frame, FrameSchema } from "graphics/frame.js";
-import { DatabaseFromSchema, StoreFromSchema } from "../../../../data/dist/ecs/database/database-schema/database-schema.js";
-import { FromSchemas } from "@adobe/data/schema";
 import { Camera, CameraSchema } from "graphics/camera/camera.js";
 import * as VEC3 from "math/vec3/index.js";
-import { F32Schema } from "@adobe/data/schema";
+import { F32Schema, Schema } from "@adobe/data/schema";
 import { AabbSchema } from "math/aabb/aabb.js";
+import { Assert, Equal } from "@adobe/data/types";
+import { ReadonlyTypedBuffer } from "@adobe/data/typed-buffer";
 
 export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
-    return createDatabaseSchema({
-        buffer: { default: null as unknown as GPUBuffer, transient: true },
-        boundingBox: AabbSchema,
-    }, {
-        graphics: { default: context, transient: true },
-        camera: {
-            ...CameraSchema,
-            default: {
-                aspect: context.canvas.width / context.canvas.height,
-                fieldOfView: Math.PI / 4,
-                nearPlane: 0.1,
-                farPlane: 100.0,
-                position: [0, 0, 20],
-                target: [0, 0, 0],
-                up: [0, 1, 0],
-            } satisfies Camera
+    const T =  createDatabaseSchema(
+        {
+            buffer: { default: null as unknown as GPUBuffer, transient: true },
+            boundingBox: AabbSchema,
         },
-        timeScale: { ...F32Schema, default: 1.0 },
-        lightDirection: { ...VEC3.Vec3Schema, default: VEC3.normalize([1, 2, 5.0]) },
-        ambientStrength: { ...F32Schema, default: 0.5 },
-        lightColor: { ...VEC3.Vec3Schema, default: [1.2, 1.2, 1.2] as VEC3.Vec3 },
-        sceneBuffer: { default: null as unknown as GPUBuffer, transient: true },
-        // valid during update phase
-        commandEncoder: { default: null as unknown as GPUCommandEncoder, transient: true },
-        updateFrame: FrameSchema,
-        // valid during the render phase
-        renderPassEncoder: { default: null as unknown as GPURenderPassEncoder, transient: true },
-        renderFrame: FrameSchema,
-    }, (store) => {
-        return ({
-            setUpdateFrame: (frame: Frame) => {
-                store.resources.updateFrame = frame;
+        {
+            graphics: { default: context, transient: true },
+            camera: {
+                ...CameraSchema,
+                default: {
+                    aspect: context.canvas.width / context.canvas.height,
+                    fieldOfView: Math.PI / 4,
+                    nearPlane: 0.1,
+                    farPlane: 100.0,
+                    position: [0, 0, 20],
+                    target: [0, 0, 0],
+                    up: [0, 1, 0],
+                } satisfies Camera
             },
-            setRenderFrame: (frame: Frame) => {
-                store.resources.renderFrame = frame;
-            },
-            updateBuffer: ({ entity, buffer }: { entity: Entity, buffer: GPUBuffer }) => {
-                store.update(entity, { buffer });
-            }
-        })
-    })
+            timeScale: { ...F32Schema, default: 1.0 },
+            lightDirection: { ...VEC3.Vec3Schema, default: VEC3.normalize([1, 2, 5.0]) },
+            ambientStrength: { ...F32Schema, default: 0.5 },
+            lightColor: { ...VEC3.Vec3Schema, default: [1.2, 1.2, 1.2] as VEC3.Vec3 },
+            sceneBuffer: { default: null as unknown as GPUBuffer, transient: true },
+            // valid during update phase
+            commandEncoder: { default: null as unknown as GPUCommandEncoder, transient: true },
+            updateFrame: FrameSchema,
+            // valid during the render phase
+            renderPassEncoder: { default: null as unknown as GPURenderPassEncoder, transient: true },
+            renderFrame: FrameSchema,
+        },
+        {
+            foo: ["buffer", "boundingBox"]
+        },
+        (store) => {
+            return ({
+                setUpdateFrame: (frame: Frame) => {
+                    store.resources.updateFrame = frame;
+                },
+                setRenderFrame: (frame: Frame) => {
+                    store.resources.renderFrame = frame;
+                },
+                updateBuffer: ({ entity, buffer }: { entity: Entity, buffer: GPUBuffer }) => {
+                    store.update(entity, { buffer });
+                }
+            })
+        }
+    );
+    return T;
 }
 
 export type GraphicsDatabase = DatabaseFromSchema<ReturnType<typeof createGraphicsDatabaseSchema>>;
 export type GraphicsStore = StoreFromSchema<ReturnType<typeof createGraphicsDatabaseSchema>>;
 
-// Type for stores that extend GraphicsStore (useful for databases that build upon graphics database)
-export type ExtendedGraphicsStore<T extends object = never> = Store<
-    FromSchemas<ReturnType<typeof createGraphicsDatabaseSchema>["components"]> & T,
-    FromSchemas<ReturnType<typeof createGraphicsDatabaseSchema>["resources"]>
->;
+declare const foo: GraphicsDatabase;
+type CheckArchetypes = Assert<Equal<typeof foo.archetypes.foo.columns.boundingBox, ReadonlyTypedBuffer<{
+    readonly min: readonly [number, number, number];
+    readonly max: readonly [number, number, number];
+}>>>;
+// @ts-expect-error
+type CheckComponentsMissing = Assert<Equal<typeof foo.componentSchemas.missing, Schema>>;
+type CheckComponents = Assert<Equal<typeof foo.componentSchemas.boundingBox, Schema>>;
 
+type CheckResources = Assert<Equal<typeof foo.resources.graphics, GraphicsContext>>;
+// @ts-expect-error
+type CheckResourcesMissing = Assert<Equal<typeof foo.resources.missing, GraphicsContext>>;
+
+type CheckTransactions = Assert<Equal<typeof foo.transactions.setUpdateFrame, (arg: {
+    readonly count: number;
+} | AsyncArgsProvider<{
+    readonly count: number;
+}>) => void>>;
+// @ts-expect-error
+type CheckTransactionsMissing = Assert<Equal<typeof foo.transactions.missing, (arg: {
+    readonly count: number;
+} | AsyncArgsProvider<{
+    readonly count: number;
+}>) => void>>;

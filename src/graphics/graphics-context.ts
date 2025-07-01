@@ -1,6 +1,6 @@
 
 export type GraphicsContext = {
-    canvas: HTMLCanvasElement;
-    device: GPUDevice;
-    context: GPUCanvasContext;
+    readonly canvas: HTMLCanvasElement;
+    readonly device: GPUDevice;
+    readonly context: GPUCanvasContext;
 }

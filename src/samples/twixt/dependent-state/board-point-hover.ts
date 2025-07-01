@@ -7,7 +7,7 @@ export const boardPointHover = (
     index: number
 ): Observe<Player | null> => withDeduplicate(withMap(
     fromProperties({
-        hoverIndex: service.state.database.observe.resource.hoverIndex,
+        hoverIndex: service.state.database.observe.resources.hoverIndex,
         player: service.state.observe.currentPlayer,
     }),
     (props) => props.hoverIndex === index ? props.player : null

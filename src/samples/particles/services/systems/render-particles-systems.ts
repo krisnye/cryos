@@ -5,7 +5,7 @@ import { ParticleSchema } from "samples/particles/types/particle/particle.js";
 import { createStructGPUBuffer } from "graphics/create-struct-gpu-buffer.js";
 import { copyColumnToGPUBuffer } from "@adobe/data/table";
 
-export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {//    const particles = main.store.ensureArchetype(["id", "velocity", "particle"]);
+export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
     const { graphics: { device, context } } = main.database.resources;
     const { store } = main;
 

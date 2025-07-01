@@ -19,7 +19,7 @@ export class TwixtBoard extends TwixtElement {
     protected override render() {
         const values = useObservableValues(() => ({
             size: this.service.state.observe.boardSize,
-            links: this.service.state.database.observe.resource.links,
+            links: this.service.state.database.observe.resources.links,
         }));
 
         if (!values)

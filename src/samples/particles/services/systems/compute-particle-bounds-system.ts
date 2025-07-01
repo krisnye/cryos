@@ -7,7 +7,7 @@ export const computeParticleBoundsSystem = ({ store }: MainService): System => {
         name: "computeParticleBoundsSystem",
         phase: "postUpdate",
         run: () => {
-            for (const table of store.queryArchetypes(["id", "particle", "velocity", "boundingBox"])) {
+            for (const table of store.queryArchetypes(["id", "particle", "boundingBox"])) {
                 for (let row = 0; row < table.rows; row++) {
                     const particle = table.columns.particle.get(row);
                     table.columns.boundingBox.set(row, {

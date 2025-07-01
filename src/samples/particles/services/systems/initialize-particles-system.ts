@@ -5,7 +5,6 @@ import * as VEC3 from "math/vec3/index.js";
 import { AabbSchema } from "math/aabb/aabb.js";
 
 export const initializeParticlesSystem = ({ store }: MainService): System => {
-    const particles = store.ensureArchetype(["id", "velocity", "particle", "boundingBox"]);
     return withRunOnce({
         name: "initializeParticlesSystem",
         phase: "update",
@@ -14,7 +13,7 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
             // and with random velocity
             const velocity = 0.2;
             for (let i = 0; i < 100; i++) {
-                particles.insert({
+                store.archetypes.Particle.insert({
                     particle: {
                         position:  [Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1],
                         color: [Math.random(), Math.random(), Math.random(), 1]
