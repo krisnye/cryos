@@ -20,7 +20,7 @@ export const pickParticlesSystem = ({ store, database }: MainService): System =>
             const invViewProjection = MAT4.inverse(viewProjection);
             
             // Convert screen position to world space pick line
-            const pickLine =  screenToWorldRay(screenPosition, invViewProjection, canvasWidth, canvasHeight);
+            const pickLine = screenToWorldRay(screenPosition, invViewProjection, canvasWidth, canvasHeight);
             
             const pickedParticleId = pickFromTables({
                 tables: particleTables,

@@ -2,7 +2,7 @@ import { createObservableState } from "@adobe/data/observe";
 import { SystemService } from "./system-service.js";
 import { System } from "./system.js";
 import { SystemPhase, SystemRenderPhaseSchema, SystemUpdatePhaseSchema } from "./system-phase.js";
-import { GraphicsDatabase, GraphicsStore } from "graphics/database/graphics-database.js";
+import { GraphicsStore } from "graphics/database/graphics-database.js";
 
 function groupSystemsByPhase(systems: System[]): Map<SystemPhase, System[]> {
     const systemsByPhase = new Map<SystemPhase, System[]>();

@@ -5,8 +5,7 @@ export const Vec2Schema = {
     items: F32Schema,
     minItems: 2,
     maxItems: 2,
-    default: [0, 0] as [number, number],
+    default: [0, 0] as readonly [number, number],
 } as const satisfies Schema;
 
 export type Vec2 = FromSchema<typeof Vec2Schema>;
-

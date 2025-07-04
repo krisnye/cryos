@@ -98,8 +98,28 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
             });
 
             renderPassEncoder.setPipeline(pipeline);
-            renderPassEncoder.setBindGroup(0, bindGroup);
-            renderPassEncoder.draw(36, particleCount, 0, 0); // 36 vertices (12 triangles), 1 instance per particle row
+            if (particleCount > 0) {
+                renderPassEncoder.setBindGroup(0, bindGroup);
+                renderPassEncoder.draw(36, particleCount, 0, 0); // 36 vertices (12 triangles), 1 instance per particle row
+            }
+
+            // let's also render out our chunks.
+            const staticVoxelChunkTable = store.archetypes.StaticVoxelChunk;
+            for (let i = 0; i < staticVoxelChunkTable.rows; i++) {
+                const positions = staticVoxelChunkTable.columns.staticVoxelChunkPositionsBuffer.get(i);
+                const colors = staticVoxelChunkTable.columns.staticVoxelChunkColorsBuffer.get(i);
+                const staticVoxelChunkBindGroup = device.createBindGroup({
+                    layout: bindGroupLayout,
+                    entries: [
+                        { binding: 0, resource: { buffer: store.resources.sceneBuffer } },
+                        { binding: 1, resource: { buffer: positions } },
+                        { binding: 2, resource: { buffer: colors } },
+                    ]
+                });
+                renderPassEncoder.setBindGroup(0, staticVoxelChunkBindGroup);
+                const renderCount = staticVoxelChunkTable.columns.staticVoxelChunkRenderCount.get(i);
+                renderPassEncoder.draw(36, renderCount, 0, 0); // 36 vertices (12 triangles), 1 instance per chunk chunk
+            }
         }
     }]
 };

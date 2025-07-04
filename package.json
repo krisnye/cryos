@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc --build && tsc-alias && vite build",
-    "dev": "run-p dev:*",
+    "dev": "rm -rf node_modules/.vite && run-p dev:*",
     "dev:build": "tsc --build --watch --preserveWatchOutput & tsc-alias --watch",
     "dev:build-vite": "vite build --watch",
     "dev:test": "vitest watch",

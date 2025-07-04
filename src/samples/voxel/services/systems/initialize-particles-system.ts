@@ -3,6 +3,8 @@ import { MainService } from "../create-main-service.js";
 import { withRunOnce } from "graphics/systems/with-run-once.js";
 import * as VEC3 from "math/vec3/index.js";
 import { AabbSchema } from "math/aabb/aabb.js";
+import { Vec2 } from "math/index.js";
+import { createRandomStaticVoxelChunk } from "samples/voxel/types/static-voxel-chunk/create-random-static-voxel-chunk.js";
 
 export const initializeParticlesSystem = ({ store }: MainService): System => {
     return withRunOnce({
@@ -20,6 +22,26 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
                     boundingBox: AabbSchema.default,
                     particle: true
                 })
+            }
+
+            // create a few adjacent chunks
+            const size = 4;
+            for (let i = -1; i < 2; i++) {
+                const position: Vec2 = [i * size, 0];
+                const chunk = createRandomStaticVoxelChunk(size, position);
+                store.archetypes.StaticVoxelChunk.insert({
+                    staticVoxelChunk: chunk,
+                    position: [...position, 0],
+                    staticVoxelChunkPositionsBuffer: store.resources.graphics.device.createBuffer({
+                        size: 0, // we will update the size later
+                        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+                    }),
+                    staticVoxelChunkColorsBuffer: store.resources.graphics.device.createBuffer({
+                        size: 0, // we will update the size later
+                        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+                    }),
+                    staticVoxelChunkRenderCount: 0,
+                });
             }
         }
     })
