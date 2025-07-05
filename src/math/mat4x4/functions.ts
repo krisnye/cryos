@@ -204,7 +204,6 @@ export const perspective = (fovy: number, aspect: number, near: number, far: num
     if (far <= near) throw new Error('Far plane must be greater than near plane');
 
     const f = 1.0 / Math.tan(fovy / 2);
-    // Use reversed depth for better numerical precision
     const nf = near / (near - far);
     return [
         f / aspect, 0, 0, 0,
@@ -213,22 +212,6 @@ export const perspective = (fovy: number, aspect: number, near: number, far: num
         0, 0, near * nf, 0
     ];
 };
-
-export const perspective2 = (
-    fovy: number,
-    aspect: number,
-    near: number,
-    far: number
-  ): Float32Array => {
-    const f = 1 / Math.tan(fovy * 0.5);
-    const ir = 1 / (far - near);           // 1 / range
-    return new Float32Array([
-      f / aspect, 0, 0, 0,
-      0,          f, 0, 0,
-      0,          0,  far * ir, 1,         // z → 0‥1 after divide
-      0,          0, -far * near * ir, 0
-    ]);
-  }
 
 export const orthographic = (
     left: number,

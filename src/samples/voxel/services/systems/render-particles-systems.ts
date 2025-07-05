@@ -47,11 +47,11 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         },
         primitive: {
             topology: 'triangle-list',
-            cullMode: 'none'
+            cullMode: 'back'
         },
         depthStencil: {
             depthWriteEnabled: false,
-            depthCompare: 'always',
+            depthCompare: 'less',
             format: 'depth24plus'
         }
     });
