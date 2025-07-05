@@ -63,6 +63,12 @@ export const multiplyVec4 = (m: Mat4x4, v: Vec4): Vec4 => [
     m[3] * v[0] + m[7] * v[1] + m[11] * v[2] + m[15] * v[3]
 ];
 
+export const multiplyVec3 = (m: Mat4x4, v: Vec3): Vec3 => [
+    m[0] * v[0] + m[4] * v[1] + m[8] * v[2] + m[12],
+    m[1] * v[0] + m[5] * v[1] + m[9] * v[2] + m[13],
+    m[2] * v[0] + m[6] * v[1] + m[10] * v[2] + m[14]
+];
+
 // Matrix Properties
 export const determinant = (m: Mat4x4): number => {
     const [
@@ -172,9 +178,9 @@ export const rotation_y = (angle: number): Mat4x4 => {
     const c = Math.cos(angle);
     const s = Math.sin(angle);
     return [
-        c, 0, -s, 0,
+        c, 0, s, 0,
         0, 1, 0, 0,
-        s, 0, c, 0,
+        -s, 0, c, 0,
         0, 0, 0, 1
     ];
 };
@@ -183,8 +189,8 @@ export const rotation_z = (angle: number): Mat4x4 => {
     const c = Math.cos(angle);
     const s = Math.sin(angle);
     return [
-        c, s, 0, 0,
-        -s, c, 0, 0,
+        c, -s, 0, 0,
+        s, c, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
     ];
@@ -208,6 +214,22 @@ export const perspective = (fovy: number, aspect: number, near: number, far: num
     ];
 };
 
+export const perspective2 = (
+    fovy: number,
+    aspect: number,
+    near: number,
+    far: number
+  ): Float32Array => {
+    const f = 1 / Math.tan(fovy * 0.5);
+    const ir = 1 / (far - near);           // 1 / range
+    return new Float32Array([
+      f / aspect, 0, 0, 0,
+      0,          f, 0, 0,
+      0,          0,  far * ir, 1,         // z → 0‥1 after divide
+      0,          0, -far * near * ir, 0
+    ]);
+  }
+
 export const orthographic = (
     left: number,
     right: number,
@@ -220,10 +242,10 @@ export const orthographic = (
     const bt = 1 / (bottom - top);
     const nf = 1 / (near - far);
     return [
-        -2 * lr, 0, 0, 0,
-        0, -2 * bt, 0, 0,
-        0, 0, 2 * nf, 0,
-        (left + right) * lr, (bottom + top) * bt, (far + near) * nf, 1
+        -2 * lr, 0, 0, (left + right) * lr,
+        0, -2 * bt, 0, (bottom + top) * bt,
+        0, 0, 2 * nf, (far + near) * nf,
+        0, 0, 0, 1
     ];
 };
 
@@ -241,12 +263,12 @@ export const lookAt = (eye: Vec3, center: Vec3, up: Vec3): Mat4x4 => {
     // Check if up vector is parallel to view direction
     if (vec3.length(s) === 0) throw new Error('Up vector cannot be parallel to view direction');
     
-    const u = vec3.cross(s, f);
+    const u = vec3.normalize(vec3.cross(s, f));
 
     return [
-        s[0], s[1], s[2], 0,
-        u[0], u[1], u[2], 0,
-        -f[0], -f[1], -f[2], 0,
+        s[0], u[0], -f[0], 0,
+        s[1], u[1], -f[1], 0,
+        s[2], u[2], -f[2], 0,
         -vec3.dot(s, eye), -vec3.dot(u, eye), vec3.dot(f, eye), 1
     ];
 }; 

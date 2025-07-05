@@ -68,8 +68,10 @@ type CheckResourcesMissing = Assert<Equal<typeof foo.resources.missing, Graphics
 
 type CheckTransactions = Assert<Equal<typeof foo.transactions.setUpdateFrame, (arg: {
     readonly count: number;
+    readonly deltaTime: number;
 } | AsyncArgsProvider<{
     readonly count: number;
+    readonly deltaTime: number;
 }>) => void>>;
 // @ts-expect-error
 type CheckTransactionsMissing = Assert<Equal<typeof foo.transactions.missing, (arg: {

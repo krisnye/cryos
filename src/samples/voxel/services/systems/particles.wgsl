@@ -75,19 +75,6 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32,
 
 @fragment
 fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
-    let normal = normalize(input.normal);
-    
-    // Use light direction directly since it's already in world space and pointing from light to surface
-    let lightDir = normalize(scene.lightDirection);
-    
-    // Calculate diffuse lighting (no attenuation for directional light)
-    let diff = max(dot(normal, lightDir), 0.0);
-    let diffuse = scene.lightColor * diff;
-    
-    // Add ambient light
-    let ambient = scene.lightColor * scene.ambientStrength;
-    
-    // Combine lighting with vertex color
-    let result = (ambient + diffuse) * input.color;
-    return vec4<f32>(result, 1.0);
+    // Just output the vertex color directly for debugging
+    return vec4<f32>(input.color, 1.0);
 } 

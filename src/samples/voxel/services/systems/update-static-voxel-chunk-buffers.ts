@@ -18,7 +18,7 @@ export const updateStaticVoxelChunkBuffersSystem = ({ store }: MainService): Sys
             const staticVoxelChunkTable = store.archetypes.StaticVoxelChunk;
             for (let row = 0; row < staticVoxelChunkTable.rows; row++) {
                 const chunk = staticVoxelChunkTable.columns.staticVoxelChunk.get(row);
-                const [offsetX, offsetY] = staticVoxelChunkTable.columns.position.get(row);
+                const [offsetX, offsetY, offsetZ] = staticVoxelChunkTable.columns.position.get(row);
                 let voxelRenderCount = 0;
                 for (let y = 0; y < chunk.size; y++) {
                     for (let x = 0; x < chunk.size; x++) {
@@ -26,7 +26,7 @@ export const updateStaticVoxelChunkBuffersSystem = ({ store }: MainService): Sys
                         const tile = chunk.tiles.get(index);
                         for (let i = 0; i < tile.dataLength; i++) {
                             const voxel = chunk.blocks.get(tile.dataIndex + i);
-                            positionsTempBuffer.set(voxelRenderCount, [offsetX + x, offsetY + y, voxel.height]);
+                            positionsTempBuffer.set(voxelRenderCount, [offsetX + x, offsetY + y, offsetZ + voxel.height]);
                             colorsTempBuffer.set(voxelRenderCount, [0.9, 0.6, 0.4, 1]); // TODO color conversion.
                             voxelRenderCount++;
                         }

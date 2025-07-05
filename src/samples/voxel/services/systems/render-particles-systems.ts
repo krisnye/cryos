@@ -47,11 +47,11 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         },
         primitive: {
             topology: 'triangle-list',
-            cullMode: 'back'
+            cullMode: 'none'
         },
         depthStencil: {
-            depthWriteEnabled: true,
-            depthCompare: 'less',
+            depthWriteEnabled: false,
+            depthCompare: 'always',
             format: 'depth24plus'
         }
     });
@@ -73,6 +73,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         phase: "update",
         run: () => {
             const particleTables = store.queryArchetypes(["id", "velocity", "position", "color", "particle"]);
+            
             for (let i = 0; i < bufferSchemas.length; i++) {
                 const [name, schema] = bufferSchemas[i];
                 buffers[i] = copyColumnToGPUBuffer(
@@ -89,6 +90,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         phase: "render",
         run: () => {
             const { renderPassEncoder } = main.database.resources;
+            
             const bindGroup = device.createBindGroup({
                 layout: bindGroupLayout,
                 entries: [
