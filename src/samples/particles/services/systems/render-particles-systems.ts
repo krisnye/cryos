@@ -51,7 +51,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
             cullMode: 'back'
         },
         depthStencil: {
-            depthWriteEnabled: false,
+            depthWriteEnabled: true,
             depthCompare: 'less',
             format: 'depth24plus'
         }

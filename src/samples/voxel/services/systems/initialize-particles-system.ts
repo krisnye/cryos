@@ -57,24 +57,24 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
             })
 
             // create a few adjacent chunks
-            // const size = 4;
-            // for (let i = -1; i < 2; i++) {
-            //     const position: VEC3.Vec3 = [i * size, 0, -4];
-            //     const chunk = createRandomStaticVoxelChunk(size, [position[0], position[1]]);
-            //     store.archetypes.StaticVoxelChunk.insert({
-            //         staticVoxelChunk: chunk,
-            //         position,
-            //         staticVoxelChunkPositionsBuffer: store.resources.graphics.device.createBuffer({
-            //             size: 0, // we will update the size later
-            //             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-            //         }),
-            //         staticVoxelChunkColorsBuffer: store.resources.graphics.device.createBuffer({
-            //             size: 0, // we will update the size later
-            //             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-            //         }),
-            //         staticVoxelChunkRenderCount: 0,
-            //     });
-            // }
+            const size = 16;
+            for (let i = -1; i < 2; i++) {
+                const position: VEC3.Vec3 = [i * size, 0, -4];
+                const chunk = createRandomStaticVoxelChunk(size, [position[0], position[1]]);
+                store.archetypes.StaticVoxelChunk.insert({
+                    staticVoxelChunk: chunk,
+                    position,
+                    staticVoxelChunkPositionsBuffer: store.resources.graphics.device.createBuffer({
+                        size: 0, // we will update the size later
+                        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+                    }),
+                    staticVoxelChunkColorsBuffer: store.resources.graphics.device.createBuffer({
+                        size: 0, // we will update the size later
+                        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+                    }),
+                    staticVoxelChunkRenderCount: 0,
+                });
+            }
         }
     })
 };
