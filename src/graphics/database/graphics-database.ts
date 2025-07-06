@@ -3,7 +3,7 @@ import { AsyncArgsProvider, createDatabaseSchema, DatabaseFromSchema, Entity, St
 import { Frame, FrameSchema } from "graphics/frame.js";
 import { Camera, CameraSchema } from "graphics/camera/camera.js";
 import * as VEC3 from "math/vec3/index.js";
-import { F32Schema, Schema } from "@adobe/data/schema";
+import { F32Schema, Schema, U32Schema } from "@adobe/data/schema";
 import { AabbSchema } from "math/aabb/aabb.js";
 import { Assert, Equal } from "@adobe/data/types";
 
@@ -48,6 +48,12 @@ export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
                 setRenderFrame: (frame: Frame) => {
                     store.resources.renderFrame = frame;
                 },
+                updateCamera: (camera: Partial<Camera>) => {
+                    store.resources.camera = {
+                        ...store.resources.camera,
+                        ...camera
+                    };
+                }
             })
         }
     );

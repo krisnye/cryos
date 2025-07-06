@@ -164,4 +164,67 @@ describe('createRandomStaticVoxelChunk', () => {
         expect(chunk8.tiles.size).toBe(64); // 8 * 8
         expect(chunk16.tiles.size).toBe(256); // 16 * 16
     });
+
+    it('should not have large discontinuities between adjacent size-8 chunks', () => {
+        const size = 8;
+        const chunk1 = createRandomStaticVoxelChunk(size, [0, 0]);
+        const chunk2 = createRandomStaticVoxelChunk(size, [1, 0]); // Adjacent to the right
+
+        let maxDiff = 0;
+        for (let y = 0; y < size; y++) {
+            const tile1Index = y * size + (size - 1); // Right edge of chunk1
+            const tile2Index = y * size + 0; // Left edge of chunk2
+
+            const tile1 = chunk1.tiles.get(tile1Index);
+            const tile2 = chunk2.tiles.get(tile2Index);
+
+            const heightDiff = Math.abs(tile1.height - tile2.height);
+            if (heightDiff > maxDiff) maxDiff = heightDiff;
+            // Print for debugging if discontinuity is large
+            if (heightDiff > 3) {
+                // eslint-disable-next-line no-console
+                console.log(`Discontinuity at y=${y}: chunk1.height=${tile1.height}, chunk2.height=${tile2.height}, diff=${heightDiff}`);
+            }
+            expect(heightDiff).toBeLessThanOrEqual(3);
+        }
+        // eslint-disable-next-line no-console
+        console.log('Max discontinuity between adjacent size-8 chunks:', maxDiff);
+    });
+
+    it('should not have large discontinuities between three adjacent size-16 chunks', () => {
+        const size = 16;
+        const chunkA = createRandomStaticVoxelChunk(size, [0, 0]);
+        const chunkB = createRandomStaticVoxelChunk(size, [1, 0]); // Adjacent to the right of A
+        const chunkC = createRandomStaticVoxelChunk(size, [2, 0]); // Adjacent to the right of B
+
+        let maxDiffAB = 0;
+        let maxDiffBC = 0;
+        for (let y = 0; y < size; y++) {
+            // A vs B
+            const tileA = chunkA.tiles.get(y * size + (size - 1)); // Right edge of A
+            const tileB = chunkB.tiles.get(y * size + 0); // Left edge of B
+            const diffAB = Math.abs(tileA.height - tileB.height);
+            if (diffAB > maxDiffAB) maxDiffAB = diffAB;
+            if (diffAB > 3) {
+                // eslint-disable-next-line no-console
+                console.log(`Discontinuity A-B at y=${y}: A.height=${tileA.height}, B.height=${tileB.height}, diff=${diffAB}`);
+            }
+            expect(diffAB).toBeLessThanOrEqual(3);
+
+            // B vs C
+            const tileB2 = chunkB.tiles.get(y * size + (size - 1)); // Right edge of B
+            const tileC = chunkC.tiles.get(y * size + 0); // Left edge of C
+            const diffBC = Math.abs(tileB2.height - tileC.height);
+            if (diffBC > maxDiffBC) maxDiffBC = diffBC;
+            if (diffBC > 3) {
+                // eslint-disable-next-line no-console
+                console.log(`Discontinuity B-C at y=${y}: B.height=${tileB2.height}, C.height=${tileC.height}, diff=${diffBC}`);
+            }
+            expect(diffBC).toBeLessThanOrEqual(3);
+        }
+        // eslint-disable-next-line no-console
+        console.log('Max discontinuity between A-B:', maxDiffAB);
+        // eslint-disable-next-line no-console
+        console.log('Max discontinuity between B-C:', maxDiffBC);
+    });
 }); 

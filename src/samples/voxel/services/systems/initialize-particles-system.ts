@@ -16,7 +16,7 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
             const velocity = 0.2;
             for (let i = 0; i < 10; i++) {
                 store.archetypes.Particle.insert({
-                    position:  [Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1],
+                    position: [Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1],
                     color: [Math.random(), Math.random(), Math.random(), 1],
                     velocity: VEC3.scale([Math.random() * 0.2 - 0.1, Math.random() * 0.2 - 0.1, Math.random() * 0.2 - 0.1], velocity),
                     boundingBox: AabbSchema.default,
@@ -58,22 +58,31 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
 
             // create a few adjacent chunks
             const size = 16;
-            for (let i = -1; i < 2; i++) {
-                const position: VEC3.Vec3 = [i * size, 0, -4];
-                const chunk = createRandomStaticVoxelChunk(size, [position[0], position[1]]);
-                store.archetypes.StaticVoxelChunk.insert({
-                    staticVoxelChunk: chunk,
-                    position,
-                    staticVoxelChunkPositionsBuffer: store.resources.graphics.device.createBuffer({
-                        size: 0, // we will update the size later
-                        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-                    }),
-                    staticVoxelChunkColorsBuffer: store.resources.graphics.device.createBuffer({
-                        size: 0, // we will update the size later
-                        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-                    }),
-                    staticVoxelChunkRenderCount: 0,
-                });
+            const radius = 15;
+            for (let x = -radius; x < radius; x++) {
+                for (let y = -radius; y < radius; y++) {
+                    if (x === 0 && y === 0) {
+                        continue;
+                    }
+                    const position: VEC3.Vec3 = [x * size, y * size, -4];
+                    const chunk = createRandomStaticVoxelChunk(size, [x, y]);
+                    store.archetypes.StaticVoxelChunk.insert({
+                        staticVoxelChunk: chunk,
+                        position,
+                        staticVoxelChunkPositionsBuffer: store.resources.graphics.device.createBuffer({
+                            size: 0, // we will update the size later
+                            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+                        }),
+                        staticVoxelChunkColorsBuffer: store.resources.graphics.device.createBuffer({
+                            size: 0, // we will update the size later
+                            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+                        }),
+                        staticVoxelChunkRenderCount: 0,
+                        dirtyFrame: store.resources.renderFrame.count,
+                        cleanFrame: -1,
+                        staticVoxelChunkBindGroup: null as unknown as GPUBindGroup,
+                    });
+                }
             }
         }
     })

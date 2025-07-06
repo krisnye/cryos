@@ -2,7 +2,7 @@ import { GraphicsContext } from "graphics/graphics-context.js";
 import { createDatabaseSchema } from "@adobe/data/ecs";
 import { Vec2, Vec2Schema, Vec3Schema, Vec4, Vec4Schema } from "math/index.js";
 import { createGraphicsDatabaseSchema } from "graphics/database/graphics-database.js";
-import { Schema, TrueSchema, U32Schema } from "@adobe/data/schema";
+import { I32Schema, Schema, TrueSchema, U32Schema } from "@adobe/data/schema";
 import { StaticVoxelChunkSchema } from "../types/static-voxel-chunk/static-voxel-chunk.js";
 import { KeyCode } from "../types/key-code.js";
 import { Camera, CameraSchema } from "graphics/camera/camera.js";
@@ -10,6 +10,11 @@ import { Camera, CameraSchema } from "graphics/camera/camera.js";
 const GPUBufferSchema = {
     type: "object",
     default: null as unknown as GPUBuffer,
+} as const satisfies Schema;
+
+export const GPUBindGroupSchema = {
+    type: "object",
+    default: null as unknown as GPUBindGroup,
 } as const satisfies Schema;
 
 export const createVoxelDatabaseSchema = (context: GraphicsContext) => {
@@ -25,7 +30,10 @@ export const createVoxelDatabaseSchema = (context: GraphicsContext) => {
             staticVoxelChunk: StaticVoxelChunkSchema,
             staticVoxelChunkPositionsBuffer: GPUBufferSchema,
             staticVoxelChunkColorsBuffer: GPUBufferSchema,
+            staticVoxelChunkBindGroup: GPUBindGroupSchema,
             staticVoxelChunkRenderCount: U32Schema,
+            dirtyFrame: I32Schema,
+            cleanFrame: I32Schema,
         },
         {
             ...graphicsDatabaseSchema.resources,
@@ -50,7 +58,7 @@ export const createVoxelDatabaseSchema = (context: GraphicsContext) => {
         {
             ...graphicsDatabaseSchema.archetypes,
             Particle: ["particle", "position", "color", "velocity", "boundingBox"],
-            StaticVoxelChunk: ["staticVoxelChunk", "position", "staticVoxelChunkPositionsBuffer", "staticVoxelChunkColorsBuffer", "staticVoxelChunkRenderCount"],
+            StaticVoxelChunk: ["staticVoxelChunk", "position", "staticVoxelChunkPositionsBuffer", "staticVoxelChunkColorsBuffer", "staticVoxelChunkBindGroup", "staticVoxelChunkRenderCount", "dirtyFrame", "cleanFrame"],
         },
         (store) => {
             return ({ 

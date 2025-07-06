@@ -4,15 +4,13 @@ import { KeyCode } from "../../types/key-code.js";
 
 export const keyInputSystem = ({ store, database }: MainService): System => {
 
-    // database.observe.resources.pressedKeys(values => {
-    //     if (Object.entries(values).length > 0) {
-    //         console.log(JSON.stringify(values));
-    //     }
-    // });
-
     const handleKeyDown = (event: KeyboardEvent) => {
         const keyCode = event.code as KeyCode;
-        database.transactions.pressKey(keyCode);
+        
+        // Only register the key if it's not already pressed
+        if (database.resources.pressedKeys[keyCode] === undefined) {
+            database.transactions.pressKey(keyCode);
+        }
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {

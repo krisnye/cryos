@@ -2,79 +2,90 @@ import { System } from "graphics/systems/system.js";
 import { MainService } from "../create-main-service.js";
 import * as VEC3 from "math/vec3/index.js";
 
-export const cameraControlSystem = ({ store }: MainService): System => {
-  const SPEED  = 10; // units · s⁻¹
-  const PITCH  = 2;  // rad  · s⁻¹
-  const ROLL   = 2;  // rad  · s⁻¹
+export const cameraControlSystem = ({ store, database }: MainService): System => {
+  const baseSpeed = 10; // units per second
+  const maximumSpeed = 1500;  // units per second
+  const accelerationPerFrame = 0.2; // slower acceleration factor per frame
+  const pitchRate = 2;  // radians per second
+  const rollRate = 2;   // radians per second
 
   return {
     name: "cameraControlSystem",
     phase: "update",
     run: () => {
-      const { deltaTime }               = store.resources.updateFrame;
-      const { pressedKeys, camera }     = store.resources;
+      const { deltaTime } = store.resources.updateFrame;
+      const { pressedKeys, camera } = store.resources;
 
-      /* ---------- basis vectors ---------- */
-      let forward = VEC3.normalize(VEC3.subtract(camera.target, camera.position));
-      let   up    = VEC3.normalize(camera.up);
-      let   right = VEC3.normalize(VEC3.cross(forward, up));
+      // Basis vectors
+      const forwardVector = VEC3.normalize(VEC3.subtract(camera.target, camera.position));
+      let upVector = VEC3.normalize(camera.up);
+      let rightVector = VEC3.normalize(VEC3.cross(forwardVector, upVector));
 
-      /* ---------- R / F pitch (look up / down) ---------- */
-      let pitch = 0;
-      if (pressedKeys.KeyR) pitch += PITCH * deltaTime; // look up
-      if (pressedKeys.KeyF) pitch -= PITCH * deltaTime; // look down
+      // Pitch (look up/down)
+      let pitchAmount = 0;
+      if (pressedKeys.KeyR) pitchAmount += pitchRate * deltaTime;
+      if (pressedKeys.KeyF) pitchAmount -= pitchRate * deltaTime;
 
-      if (pitch) {
-        // rotate forward + up around right axis
-        const c = Math.cos(pitch), s = Math.sin(pitch);
+      let forward = forwardVector;
+      let up = upVector;
+      let right = rightVector;
+
+      if (pitchAmount) {
+        const cosine = Math.cos(pitchAmount), sine = Math.sin(pitchAmount);
         forward = VEC3.add(
-          VEC3.scale(forward, c),
-          VEC3.scale(up,      s)
+          VEC3.scale(forward, cosine),
+          VEC3.scale(up, sine)
         );
-        up = VEC3.normalize(VEC3.cross(right, forward)); // keep orthogonal
+        up = VEC3.normalize(VEC3.cross(right, forward));
       }
 
-      /* ---------- Q / E roll (rotate around forward) ---------- */
-      let roll = 0;
-      if (pressedKeys.KeyQ) roll -= ROLL * deltaTime; // roll right
-      if (pressedKeys.KeyE) roll += ROLL * deltaTime; // roll left
+      // Roll (rotate around forward)
+      let rollAmount = 0;
+      if (pressedKeys.KeyQ) rollAmount -= rollRate * deltaTime;
+      if (pressedKeys.KeyE) rollAmount += rollRate * deltaTime;
 
-      if (roll) {
-        // rotate up + right around forward axis
-        const c = Math.cos(roll), s = Math.sin(roll);
+      if (rollAmount) {
+        const cosine = Math.cos(rollAmount), sine = Math.sin(rollAmount);
         up = VEC3.add(
-          VEC3.scale(up,    c),
-          VEC3.scale(right, s)
+          VEC3.scale(up, cosine),
+          VEC3.scale(right, sine)
         );
-        right = VEC3.normalize(VEC3.cross(forward, up)); // keep orthogonal
+        right = VEC3.normalize(VEC3.cross(forward, up));
       }
 
-      /* ---------- WASD translation ---------- */
-      const dx = (pressedKeys.KeyD ? 1 : 0) - (pressedKeys.KeyA ? 1 : 0); // ±right
-      const dy = (pressedKeys.KeyW ? 1 : 0) - (pressedKeys.KeyS ? 1 : 0); // ±up
-      const dz = (pressedKeys.ArrowUp ? 1 : 0) - (pressedKeys.ArrowDown ? 1 : 0); // ±forward (zoom)
+      // WASD and arrow translation with acceleration
+      const moveRight = (pressedKeys.KeyD ? 1 : 0) - (pressedKeys.KeyA ? 1 : 0);
+      const moveUp = (pressedKeys.KeyW ? 1 : 0) - (pressedKeys.KeyS ? 1 : 0);
+      const moveForward = (pressedKeys.ArrowUp ? 1 : 0) - (pressedKeys.ArrowDown ? 1 : 0);
 
-      const len = Math.hypot(dx, dy, dz);
-      const step = len ? (SPEED * deltaTime) / len : 0;
+      // Compute acceleration factor for each direction
+      const getAcceleration = (key: keyof typeof pressedKeys) => {
+        const heldFrames = pressedKeys[key] ?? 0;
+        // Acceleration grows with time held, capped at maximumSpeed
+        return Math.min(1 + heldFrames * accelerationPerFrame, maximumSpeed / baseSpeed);
+      };
+      const accelerationX = moveRight > 0 ? getAcceleration('KeyD') : moveRight < 0 ? getAcceleration('KeyA') : 1;
+      const accelerationY = moveUp > 0 ? getAcceleration('KeyW') : moveUp < 0 ? getAcceleration('KeyS') : 1;
+      const accelerationZ = moveForward > 0 ? getAcceleration('ArrowUp') : moveForward < 0 ? getAcceleration('ArrowDown') : 1;
 
-      const move = VEC3.add(
+      // Each direction's speed is independent and always increases as you hold the key
+      const movement = VEC3.add(
         VEC3.add(
-          VEC3.scale(right,  dx * step),
-          VEC3.scale(up,     dy * step)
+          VEC3.scale(right, moveRight * baseSpeed * accelerationX * deltaTime),
+          VEC3.scale(up, moveUp * baseSpeed * accelerationY * deltaTime)
         ),
-        VEC3.scale(forward, dz * step)
+        VEC3.scale(forward, moveForward * baseSpeed * accelerationZ * deltaTime)
       );
 
-      const position = VEC3.add(camera.position, move);
-      const target =   VEC3.add(VEC3.add(camera.position, move), forward); // new position + forward
+      const newPosition = VEC3.add(camera.position, movement);
+      const newTarget = VEC3.add(VEC3.add(camera.position, movement), forward);
 
-      /* ---------- commit ---------- */
-      store.resources.camera = {
-        ...camera,
-        position,
-        target,
+      // Commit
+      database.transactions.updateCamera({
+        position: newPosition,
+        target: newTarget,
         up
-      };
+      });
     }
   };
 };

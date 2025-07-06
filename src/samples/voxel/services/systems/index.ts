@@ -7,3 +7,4 @@ export * from "./compute-particle-bounds-system.js";
 export * from "./update-static-voxel-chunk-buffers.js";
 export * from "./key-input-system.js";
 export * from "./camera-control-system.js";
+export * from "./persist-camera-system.js";
