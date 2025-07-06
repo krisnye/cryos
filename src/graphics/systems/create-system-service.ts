@@ -2,7 +2,7 @@ import { createObservableState } from "@adobe/data/observe";
 import { SystemService } from "./system-service.js";
 import { System } from "./system.js";
 import { SystemPhase, SystemRenderPhaseSchema, SystemUpdatePhaseSchema } from "./system-phase.js";
-import { GraphicsDatabase, GraphicsStore } from "graphics/database/graphics-database.js";
+import { GraphicsStore } from "graphics/database/graphics-database.js";
 
 function groupSystemsByPhase(systems: System[]): Map<SystemPhase, System[]> {
     const systemsByPhase = new Map<SystemPhase, System[]>();
@@ -17,8 +17,8 @@ function groupSystemsByPhase(systems: System[]): Map<SystemPhase, System[]> {
 }
 
 export function createSystemService<T extends GraphicsStore>(store: T): SystemService {
-    let updateFrame = { count: 0 };
-    let renderFrame = { count: 0 };
+    let updateFrame = { count: 0, deltaTime: 1 / 60 };
+    let renderFrame = { count: 0, deltaTime: 1 / 60 };
     let isRunning = false;
     const [updateFrameObserve, setUpdateFrame] = createObservableState(updateFrame);
     const [renderFrameObserve, setRenderFrame] = createObservableState(renderFrame);
@@ -55,25 +55,26 @@ export function createSystemService<T extends GraphicsStore>(store: T): SystemSe
 
     const runFrame = async () => {
         const commandEncoder = store.resources.commandEncoder = store.resources.graphics.device.createCommandEncoder();
-        setUpdateFrame(updateFrame = { count: updateFrame.count + 1 });
+        setUpdateFrame(updateFrame = { count: updateFrame.count + 1, deltaTime: 1 / 60 });
         for (const phase of SystemUpdatePhaseSchema.enum) {
             await runPhase(phase);
         }
         const renderPassEncoder = store.resources.renderPassEncoder = commandEncoder.beginRenderPass({
             colorAttachments: [{
-                clearValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+                clearValue: { r: 0.3, g: 0.3, b: 0.3, a: 1.0 },
                 loadOp: 'clear',
                 storeOp: 'store',
                 view: store.resources.graphics.context.getCurrentTexture().createView(),
             }],
             depthStencilAttachment: {
+                
                 view: depthTexture.createView(),
                 depthClearValue: 1.0,
                 depthLoadOp: 'clear',
                 depthStoreOp: 'store',
             }
         });
-        setRenderFrame(renderFrame = { count: renderFrame.count + 1 });
+        setRenderFrame(renderFrame = { count: renderFrame.count + 1, deltaTime: 1 / 60 });
         for (const phase of SystemRenderPhaseSchema.enum) {
             await runPhase(phase);
         }

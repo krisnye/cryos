@@ -11,6 +11,7 @@ typescript
 - Functional programming, but prefer performance inside functions, functional interface outside.
 - Prefer Immutable data, but mutation allowed for high performance
 - No classes, enums or inheritance
+- Do not subvert readonly objects, instead use ...splats or other approaches.
 
 # Linting
 

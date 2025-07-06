@@ -8,6 +8,8 @@ export const VoxelColumnSchema = {
         staticColumnDataIndex: U32Schema,
         dynamicColumnHeight: U32Schema,
     },
+    required: ["staticColumnBase", "staticColumnHeight", "staticColumnDataIndex", "dynamicColumnHeight"],
+    additionalProperties: false,
 } as const satisfies Schema;
 
 export type VoxelColumn = FromSchema<typeof VoxelColumnSchema>;

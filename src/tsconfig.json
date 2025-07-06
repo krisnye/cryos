@@ -3,7 +3,6 @@
   "include": [],
   "references": [
     { "path": "./graphics" },
-    { "path": "./samples" },
-    { "path": "./physics" }
+    { "path": "./samples" }
   ]
 } 

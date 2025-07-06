@@ -73,6 +73,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         phase: "update",
         run: () => {
             const particleTables = store.queryArchetypes(["id", "velocity", "position", "color", "particle"]);
+
             for (let i = 0; i < bufferSchemas.length; i++) {
                 const [name, schema] = bufferSchemas[i];
                 buffers[i] = copyColumnToGPUBuffer(
@@ -84,11 +85,12 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
             }
             particleCount = particleTables.reduce((acc, table) => acc + table.rows, 0);
         }
-    },{
+    }, {
         name: "renderParticlesSystem",
         phase: "render",
         run: () => {
             const { renderPassEncoder } = main.database.resources;
+
             const bindGroup = device.createBindGroup({
                 layout: bindGroupLayout,
                 entries: [
@@ -98,8 +100,32 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
             });
 
             renderPassEncoder.setPipeline(pipeline);
-            renderPassEncoder.setBindGroup(0, bindGroup);
-            renderPassEncoder.draw(36, particleCount, 0, 0); // 36 vertices (12 triangles), 1 instance per particle row
+            if (particleCount > 0) {
+                renderPassEncoder.setBindGroup(0, bindGroup);
+                renderPassEncoder.draw(36, particleCount, 0, 0); // 36 vertices (12 triangles), 1 instance per particle row
+            }
+
+            // let's also render out our chunks.
+            const staticVoxelChunkTable = store.archetypes.StaticVoxelChunk;
+            for (let i = 0; i < staticVoxelChunkTable.rows; i++) {
+                const positions = staticVoxelChunkTable.columns.staticVoxelChunkPositionsBuffer.get(i);
+                const colors = staticVoxelChunkTable.columns.staticVoxelChunkColorsBuffer.get(i);
+                let staticVoxelChunkBindGroup = staticVoxelChunkTable.columns.staticVoxelChunkBindGroup.get(i);
+                if (staticVoxelChunkBindGroup === null) {
+                    staticVoxelChunkBindGroup = device.createBindGroup({
+                        layout: bindGroupLayout,
+                        entries: [
+                            { binding: 0, resource: { buffer: store.resources.sceneBuffer } },
+                            { binding: 1, resource: { buffer: positions } },
+                            { binding: 2, resource: { buffer: colors } },
+                        ]
+                    });
+                    staticVoxelChunkTable.columns.staticVoxelChunkBindGroup.set(i, staticVoxelChunkBindGroup);
+                }
+                renderPassEncoder.setBindGroup(0, staticVoxelChunkBindGroup);
+                const renderCount = staticVoxelChunkTable.columns.staticVoxelChunkRenderCount.get(i);
+                renderPassEncoder.draw(36, renderCount, 0, 0); // 36 vertices (12 triangles), 1 instance per chunk chunk
+            }
         }
     }]
 };

@@ -3,15 +3,13 @@ import { AsyncArgsProvider, createDatabaseSchema, DatabaseFromSchema, Entity, St
 import { Frame, FrameSchema } from "graphics/frame.js";
 import { Camera, CameraSchema } from "graphics/camera/camera.js";
 import * as VEC3 from "math/vec3/index.js";
-import { F32Schema, Schema } from "@adobe/data/schema";
+import { F32Schema, Schema, U32Schema } from "@adobe/data/schema";
 import { AabbSchema } from "math/aabb/aabb.js";
 import { Assert, Equal } from "@adobe/data/types";
-import { ReadonlyTypedBuffer } from "@adobe/data/typed-buffer";
 
 export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
-    const T =  createDatabaseSchema(
+    const T = createDatabaseSchema(
         {
-            buffer: { default: null as unknown as GPUBuffer, transient: true },
             boundingBox: AabbSchema,
         },
         {
@@ -41,7 +39,6 @@ export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
             renderFrame: FrameSchema,
         },
         {
-            foo: ["buffer", "boundingBox"]
         },
         (store) => {
             return ({
@@ -51,8 +48,11 @@ export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
                 setRenderFrame: (frame: Frame) => {
                     store.resources.renderFrame = frame;
                 },
-                updateBuffer: ({ entity, buffer }: { entity: Entity, buffer: GPUBuffer }) => {
-                    store.update(entity, { buffer });
+                updateCamera: (camera: Partial<Camera>) => {
+                    store.resources.camera = {
+                        ...store.resources.camera,
+                        ...camera
+                    };
                 }
             })
         }
@@ -64,10 +64,6 @@ export type GraphicsDatabase = DatabaseFromSchema<ReturnType<typeof createGraphi
 export type GraphicsStore = StoreFromSchema<ReturnType<typeof createGraphicsDatabaseSchema>>;
 
 declare const foo: GraphicsDatabase;
-type CheckArchetypes = Assert<Equal<typeof foo.archetypes.foo.columns.boundingBox, ReadonlyTypedBuffer<{
-    readonly min: readonly [number, number, number];
-    readonly max: readonly [number, number, number];
-}>>>;
 // @ts-expect-error
 type CheckComponentsMissing = Assert<Equal<typeof foo.componentSchemas.missing, Schema>>;
 type CheckComponents = Assert<Equal<typeof foo.componentSchemas.boundingBox, Schema>>;
@@ -78,8 +74,10 @@ type CheckResourcesMissing = Assert<Equal<typeof foo.resources.missing, Graphics
 
 type CheckTransactions = Assert<Equal<typeof foo.transactions.setUpdateFrame, (arg: {
     readonly count: number;
+    readonly deltaTime: number;
 } | AsyncArgsProvider<{
     readonly count: number;
+    readonly deltaTime: number;
 }>) => void>>;
 // @ts-expect-error
 type CheckTransactionsMissing = Assert<Equal<typeof foo.transactions.missing, (arg: {
