@@ -41,6 +41,18 @@ export const createRandomStaticVoxelChunk = (size: number, position: Vec2): Voxe
                     damage: 0,
                     temp: 0,
                 });
+                const noiseValue2 = perlinNoise2D(worldX + 100, worldY + 100, noiseScale);
+                if (noiseValue2 > 0.25) {
+                    for (let i = 0; i < 10; i++) {
+                        voxels.push({
+                            position: [x, y, height + 1 + i],
+                            type: 2, // Static voxel type
+                            flags: 0,
+                            damage: 0,
+                            temp: 0,
+                        });
+                    }
+                }
             }
         }
     }
