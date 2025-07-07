@@ -7,6 +7,7 @@ export const cameraControlSystem = ({ store, database }: MainService): System =>
   const maximumSpeed = 1500;  // units per second
   const accelerationPerFrame = 0.2; // slower acceleration factor per frame
   const pitchRate = 2;  // radians per second
+  const yawRate = 2;    // radians per second
   const rollRate = 2;   // radians per second
 
   return {
@@ -37,6 +38,20 @@ export const cameraControlSystem = ({ store, database }: MainService): System =>
           VEC3.scale(up, sine)
         );
         up = VEC3.normalize(VEC3.cross(right, forward));
+      }
+
+      // Yaw (turn left/right)
+      let yawAmount = 0;
+      if (pressedKeys.ArrowRight) yawAmount += yawRate * deltaTime;
+      if (pressedKeys.ArrowLeft) yawAmount -= yawRate * deltaTime;
+
+      if (yawAmount) {
+        const cosine = Math.cos(yawAmount), sine = Math.sin(yawAmount);
+        forward = VEC3.add(
+          VEC3.scale(forward, cosine),
+          VEC3.scale(right, sine)
+        );
+        right = VEC3.normalize(VEC3.cross(forward, up));
       }
 
       // Roll (rotate around forward)
