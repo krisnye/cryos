@@ -11,9 +11,7 @@ export const getWebGPUGraphicsContext = async (canvas: HTMLCanvasElement)
         throw new Error('No GPU adapter found');
     }
 
-    const device = await adapter.requestDevice({
-        requiredFeatures: ['timestamp-query']
-    });
+    const device = await adapter.requestDevice();
 
     const context = canvas.getContext('webgpu');
     if (!context) {

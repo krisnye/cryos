@@ -19,7 +19,7 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
                     position: [Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1],
                     color: [Math.random(), Math.random(), Math.random(), 1],
                     velocity: VEC3.scale([Math.random() * 0.2 - 0.1, Math.random() * 0.2 - 0.1, Math.random() * 0.2 - 0.1], velocity),
-                    flags: 0b111111, // All faces visible
+                    flags: 0,
                     boundingBox: AabbSchema.default,
                     particle: true
                 })
@@ -29,7 +29,7 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
                 position: [0, 0, 0],
                 color: [0, 0, 0, 1],
                 velocity: [0, 0, 0],
-                flags: 0b111111, // All faces visible
+                flags: 0,
                 boundingBox: AabbSchema.default,
                 particle: true
             })
@@ -38,7 +38,7 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
                 position: [1, 0, 0],
                 color: [1, 0, 0, 1],
                 velocity: [0, 0, 0],
-                flags: 0b111111, // All faces visible
+                flags: 0,
                 boundingBox: AabbSchema.default,
                 particle: true
             })
@@ -47,7 +47,7 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
                 position: [0, 1, 0],
                 color: [0, 1, 0, 1],
                 velocity: [0, 0, 0],
-                flags: 0b111111, // All faces visible
+                flags: 0,
                 boundingBox: AabbSchema.default,
                 particle: true
             })
@@ -56,7 +56,7 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
                 position: [0, 0, 1],
                 color: [0, 0, 1, 1],
                 velocity: [0, 0, 0],
-                flags: 0b111111, // All faces visible
+                flags: 0,
                 boundingBox: AabbSchema.default,
                 particle: true
             })
