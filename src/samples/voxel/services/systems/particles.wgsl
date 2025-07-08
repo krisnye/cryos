@@ -7,10 +7,12 @@ struct Scene {
 }
 
 const CUBE_SIZE = 0.5;
+const INVISIBLE_POSITION = vec3<f32>(99999.0, 99999.0, 99999.0);
 
 @binding(0) @group(0) var<uniform> scene: Scene;
 @binding(1) @group(0) var<storage, read> positions: array<vec3<f32>>;
 @binding(2) @group(0) var<storage, read> colors: array<vec4<f32>>;
+@binding(3) @group(0) var<storage, read> flags: array<u32>;
 
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
@@ -62,14 +64,21 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32,
         vec3<f32>(0.0, -1.0, 0.0)   // Bottom
     );
     
-    let worldPos = pos[indices[vertexIndex]] + positions[instanceIndex];
-    
+    let faceIndex = vertexIndex / 6u; // 0:Front, 1:Right, 2:Back, 3:Left, 4:Top, 5:Bottom
+    let faceMask = 1u << faceIndex;
+    let invisible = (flags[instanceIndex] & faceMask) != 0u;
+
+    var worldPos = pos[indices[vertexIndex]] + positions[instanceIndex];
+    if (invisible) {
+        worldPos = INVISIBLE_POSITION;
+    }
+
     var output: VertexOutput;
     output.position = scene.viewProjection * vec4<f32>(worldPos, 1.0);
     output.color = colors[instanceIndex].rgb;
     output.worldPos = worldPos;
     // Calculate which face we're on and use appropriate normal
-    output.normal = normals[vertexIndex / 6];
+    output.normal = normals[faceIndex];
     return output;
 }
 

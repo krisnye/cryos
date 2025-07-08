@@ -5,6 +5,8 @@ import { createStructGPUBuffer } from "graphics/create-struct-gpu-buffer.js";
 import { copyColumnToGPUBuffer } from "@adobe/data/table";
 import { Vec3Schema } from "math/vec3/index.js";
 import { Vec4Schema } from "math/vec4/index.js";
+import { U32Schema } from "@adobe/data/schema";
+import { createTypedBuffer } from "@adobe/data/typed-buffer";
 
 export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
     const { graphics: { device, context } } = main.database.resources;
@@ -27,7 +29,12 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
                 binding: index + 1,
                 visibility: GPUShaderStage.VERTEX,
                 buffer: { type: 'read-only-storage' }
-            }) as const)
+            }) as const),
+            {
+                binding: 3,
+                visibility: GPUShaderStage.VERTEX,
+                buffer: { type: 'read-only-storage' }
+            }
         ]
     });
 
@@ -51,7 +58,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         },
         depthStencil: {
             depthWriteEnabled: true,
-            depthCompare: 'less',
+            depthCompare: 'less-equal',
             format: 'depth24plus'
         }
     });
@@ -65,6 +72,13 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         });
     });
 
+    // Create a typed buffer for flags
+    let flagsTypedBuffer = createTypedBuffer({ schema: U32Schema, length: 1 });
+    let flagsBuffer = device.createBuffer({
+        size: 4, // Start with 4 bytes (1 u32)
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+    });
+
     // this is closed over by both systems, written by the first and read by the second
     let particleCount = 0;
 
@@ -72,7 +86,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         name: "copyParticlesToGPUBufferSystem",
         phase: "update",
         run: () => {
-            const particleTables = store.queryArchetypes(["id", "velocity", "position", "color", "particle"]);
+            const particleTables = store.queryArchetypes(["id", "velocity", "position", "color", "flags", "particle"]);
 
             for (let i = 0; i < bufferSchemas.length; i++) {
                 const [name, schema] = bufferSchemas[i];
@@ -83,6 +97,15 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
                     buffers[i]
                 );
             }
+
+            // Handle flags buffer using copyColumnToGPUBuffer
+            flagsBuffer = copyColumnToGPUBuffer(
+                particleTables,
+                "flags",
+                device,
+                flagsBuffer
+            );
+
             particleCount = particleTables.reduce((acc, table) => acc + table.rows, 0);
         }
     }, {
@@ -95,7 +118,8 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
                 layout: bindGroupLayout,
                 entries: [
                     { binding: 0, resource: { buffer: store.resources.sceneBuffer } },
-                    ...buffers.map((buffer, index) => ({ binding: index + 1, resource: { buffer } }) as const)
+                    ...buffers.map((buffer, index) => ({ binding: index + 1, resource: { buffer } }) as const),
+                    { binding: 3, resource: { buffer: flagsBuffer } }
                 ]
             });
 
@@ -110,6 +134,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
             for (let i = 0; i < staticVoxelChunkTable.rows; i++) {
                 const positions = staticVoxelChunkTable.columns.staticVoxelChunkPositionsBuffer.get(i);
                 const colors = staticVoxelChunkTable.columns.staticVoxelChunkColorsBuffer.get(i);
+                const flags = staticVoxelChunkTable.columns.staticVoxelChunkFlagsBuffer.get(i);
                 let staticVoxelChunkBindGroup = staticVoxelChunkTable.columns.staticVoxelChunkBindGroup.get(i);
                 if (staticVoxelChunkBindGroup === null) {
                     staticVoxelChunkBindGroup = device.createBindGroup({
@@ -118,6 +143,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
                             { binding: 0, resource: { buffer: store.resources.sceneBuffer } },
                             { binding: 1, resource: { buffer: positions } },
                             { binding: 2, resource: { buffer: colors } },
+                            { binding: 3, resource: { buffer: flags } },
                         ]
                     });
                     staticVoxelChunkTable.columns.staticVoxelChunkBindGroup.set(i, staticVoxelChunkBindGroup);

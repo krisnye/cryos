@@ -40,17 +40,30 @@ export const cameraControlSystem = ({ store, database }: MainService): System =>
         up = VEC3.normalize(VEC3.cross(right, forward));
       }
 
-      // Yaw (turn left/right)
+      // Yaw (turn left/right) - rotate around world -z axis
       let yawAmount = 0;
-      if (pressedKeys.ArrowRight) yawAmount += yawRate * deltaTime;
-      if (pressedKeys.ArrowLeft) yawAmount -= yawRate * deltaTime;
+      if (pressedKeys.ArrowLeft) yawAmount += yawRate * deltaTime;
+      if (pressedKeys.ArrowRight) yawAmount -= yawRate * deltaTime;
 
       if (yawAmount) {
+        const worldZAxis = [0, 0, -1]; // World -z axis
         const cosine = Math.cos(yawAmount), sine = Math.sin(yawAmount);
-        forward = VEC3.add(
-          VEC3.scale(forward, cosine),
-          VEC3.scale(right, sine)
-        );
+        
+        // Rotate forward vector around world -z axis
+        forward = [
+          forward[0] * cosine - forward[1] * sine,
+          forward[0] * sine + forward[1] * cosine,
+          forward[2]
+        ];
+        
+        // Rotate up vector around world -z axis
+        up = [
+          up[0] * cosine - up[1] * sine,
+          up[0] * sine + up[1] * cosine,
+          up[2]
+        ];
+        
+        // Recompute right vector to maintain orthogonality
         right = VEC3.normalize(VEC3.cross(forward, up));
       }
 
