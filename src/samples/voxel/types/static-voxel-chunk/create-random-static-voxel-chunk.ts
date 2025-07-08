@@ -17,9 +17,9 @@ export const createRandomStaticVoxelChunk = (size: number, position: Vec2): Voxe
     const voxels: Array<Omit<StaticVoxel, "height"> & { position: Vec3 }> = [];
     
     // Noise parameters for terrain generation
-    const noiseScale = 0.1; // Scale factor for the noise
+    const noiseScale = 0.05; // Reduced scale factor for smoother, more seamless terrain
     const baseHeight = 10; // Base height for the terrain
-    const heightRange = 8; // Range of height variation
+    const heightRange = 6; // Reduced range for smaller height variations
     
     // Generate voxels for each position in the chunk
     for (let x = 0; x < size; x++) {
@@ -32,29 +32,15 @@ export const createRandomStaticVoxelChunk = (size: number, position: Vec2): Voxe
             const noiseValue = perlinNoise2D(worldX, worldY, noiseScale);
             const height = Math.floor(baseHeight + noiseValue * heightRange);
             
-            // Only create voxels at the surface level (not buried beneath other voxels)
+            // Only create surface voxels (one per tile at the calculated height)
             if (height >= 0) {
-                for (let i = 0; i < 2; i++) {
-                    voxels.push({
-                        position: [x, y, height + i],
-                        type: 1, // Static voxel type
-                        flags: 0,
-                        damage: 0,
-                        temp: 0,
-                    });
-                }
-                const noiseValue2 = perlinNoise2D(worldX + 100, worldY + 100, noiseScale);
-                if (noiseValue2 > 0.35) {
-                    for (let i = 0; i < 50; i++) {
-                        voxels.push({
-                            position: [x, y, height + 1 + i],
-                            type: 2, // Static voxel type
-                            flags: 0,
-                            damage: 0,
-                            temp: 0,
-                        });
-                    }
-                }
+                voxels.push({
+                    position: [x, y, height],
+                    type: 1, // Static voxel type
+                    flags: 0,
+                    damage: 0,
+                    temp: 0,
+                });
             }
         }
     }
