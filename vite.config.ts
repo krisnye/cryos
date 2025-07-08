@@ -42,7 +42,11 @@ export default defineConfig({
     },
     server: {
         port: 3000,
-        strictPort: true
+        strictPort: true,
+        headers: {
+            'Cross-Origin-Opener-Policy': 'same-origin',
+            'Cross-Origin-Embedder-Policy': 'require-corp'
+        },
     },
     preview: {
         port: 3000,
