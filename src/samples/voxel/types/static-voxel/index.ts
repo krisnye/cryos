@@ -1,11 +1,11 @@
 export type { StaticVoxel } from "./static-voxel.js";
 export { StaticVoxelSchema } from "./static-voxel.js";
 export { 
-    FRONT_FACE_VISIBLE,
-    RIGHT_FACE_VISIBLE,
-    BACK_FACE_VISIBLE,
-    LEFT_FACE_VISIBLE,
-    TOP_FACE_VISIBLE,
-    BOTTOM_FACE_VISIBLE,
-    ALL_FACES_VISIBLE_MASK
+    FRONT_FACE_INVISIBLE,
+    RIGHT_FACE_INVISIBLE,
+    BACK_FACE_INVISIBLE,
+    LEFT_FACE_INVISIBLE,
+    TOP_FACE_INVISIBLE,
+    BOTTOM_FACE_INVISIBLE,
+    ALL_FACES_INVISIBLE_MASK
 } from "./static-voxel-flags.js"; 

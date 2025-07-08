@@ -66,10 +66,10 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32,
     
     let faceIndex = vertexIndex / 6u; // 0:Front, 1:Right, 2:Back, 3:Left, 4:Top, 5:Bottom
     let faceMask = 1u << faceIndex;
-    let visible = (flags[instanceIndex] & faceMask) != 0u;
+    let invisible = (flags[instanceIndex] & faceMask) != 0u;
 
     var worldPos = pos[indices[vertexIndex]] + positions[instanceIndex];
-    if (!visible) {
+    if (invisible) {
         worldPos = INVISIBLE_POSITION;
     }
 

@@ -6,7 +6,7 @@ import { Vec3Schema, Vec4Schema } from "math/index.js";
 import { Vec3Layout } from "math/vec3/vec3.js";
 import { Vec4Layout } from "math/vec4/vec4.js";
 import { calculateInvisibleFlags } from "samples/voxel/types/static-voxel-chunk/calculate-invisible-flags.js";
-import { ALL_FACES_VISIBLE_MASK } from "samples/voxel/types/static-voxel-chunk/index.js";
+import { ALL_FACES_INVISIBLE_MASK } from "samples/voxel/types/static-voxel-chunk/index.js";
 import { U32Schema } from "@adobe/data/schema";
 
 // Height-based color gradient function
@@ -65,8 +65,8 @@ export const updateStaticVoxelChunkBuffersSystem = ({ store }: MainService): Sys
                         const tile = chunk.tiles.get(index);
                         for (let i = 0; i < tile.dataLength; i++) {
                             const voxel = chunk.blocks.get(tile.dataIndex + i);
-                            // Skip voxels with no visible faces (face visibility mask is 0)
-                            if ((voxel.flags & ALL_FACES_VISIBLE_MASK) === 0) {
+                            // Skip voxels with all faces invisible (face invisibility mask is ALL_FACES_INVISIBLE_MASK)
+                            if ((voxel.flags & ALL_FACES_INVISIBLE_MASK) === ALL_FACES_INVISIBLE_MASK) {
                                 continue;
                             }
                             totalVoxels++;
