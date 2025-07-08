@@ -27,9 +27,11 @@ export const createVoxelDatabaseSchema = (context: GraphicsContext) => {
             particle: TrueSchema,
             position: Vec3Schema,
             color: Vec4Schema,
+            flags: U32Schema,
             staticVoxelChunk: StaticVoxelChunkSchema,
             staticVoxelChunkPositionsBuffer: GPUBufferSchema,
             staticVoxelChunkColorsBuffer: GPUBufferSchema,
+            staticVoxelChunkFlagsBuffer: GPUBufferSchema,
             staticVoxelChunkBindGroup: GPUBindGroupSchema,
             staticVoxelChunkRenderCount: U32Schema,
             dirtyFrame: I32Schema,
@@ -57,8 +59,8 @@ export const createVoxelDatabaseSchema = (context: GraphicsContext) => {
         },
         {
             ...graphicsDatabaseSchema.archetypes,
-            Particle: ["particle", "position", "color", "velocity", "boundingBox"],
-            StaticVoxelChunk: ["staticVoxelChunk", "position", "staticVoxelChunkPositionsBuffer", "staticVoxelChunkColorsBuffer", "staticVoxelChunkBindGroup", "staticVoxelChunkRenderCount", "dirtyFrame", "cleanFrame"],
+            Particle: ["particle", "position", "color", "velocity", "flags", "boundingBox"],
+            StaticVoxelChunk: ["staticVoxelChunk", "position", "staticVoxelChunkPositionsBuffer", "staticVoxelChunkColorsBuffer", "staticVoxelChunkFlagsBuffer", "staticVoxelChunkBindGroup", "staticVoxelChunkRenderCount", "dirtyFrame", "cleanFrame"],
         },
         (store) => {
             return ({ 
@@ -85,6 +87,6 @@ export const createVoxelDatabaseSchema = (context: GraphicsContext) => {
             })
         }
     );
-}
+};
 
 

@@ -34,16 +34,18 @@ export const createRandomStaticVoxelChunk = (size: number, position: Vec2): Voxe
             
             // Only create voxels at the surface level (not buried beneath other voxels)
             if (height >= 0) {
-                voxels.push({
-                    position: [x, y, height],
-                    type: 1, // Static voxel type
-                    flags: 0,
-                    damage: 0,
-                    temp: 0,
-                });
+                for (let i = 0; i < 2; i++) {
+                    voxels.push({
+                        position: [x, y, height + i],
+                        type: 1, // Static voxel type
+                        flags: 0,
+                        damage: 0,
+                        temp: 0,
+                    });
+                }
                 const noiseValue2 = perlinNoise2D(worldX + 100, worldY + 100, noiseScale);
-                if (noiseValue2 > 0.25) {
-                    for (let i = 0; i < 10; i++) {
+                if (noiseValue2 > 0.35) {
+                    for (let i = 0; i < 50; i++) {
                         voxels.push({
                             position: [x, y, height + 1 + i],
                             type: 2, // Static voxel type

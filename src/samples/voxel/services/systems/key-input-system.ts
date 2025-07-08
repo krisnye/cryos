@@ -11,11 +11,17 @@ export const keyInputSystem = ({ store, database }: MainService): System => {
         if (database.resources.pressedKeys[keyCode] === undefined) {
             database.transactions.pressKey(keyCode);
         }
+
+        event.preventDefault();
+        event.stopPropagation();
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
         const keyCode = event.code as KeyCode;
         database.transactions.releaseKey(keyCode);
+
+        event.preventDefault();
+        event.stopPropagation();
     };
 
     document.addEventListener('keydown', handleKeyDown);
