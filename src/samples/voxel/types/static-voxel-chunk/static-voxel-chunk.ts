@@ -5,7 +5,6 @@ import { Schema } from "@adobe/data/schema";
 export type VoxelMapChunk = GenericChunk<StaticVoxel>;
 
 export const StaticVoxelChunkSchema = {
-    type: "object",
     // This makes FromSchema<typeof VoxelMapChunkSchema> equal VoxelMapChunk
     default: null as unknown as VoxelMapChunk,
 } as const satisfies Schema;

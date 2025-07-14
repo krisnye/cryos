@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adobe/data':
-        specifier: ^0.2.8
-        version: 0.2.8
+        specifier: ^0.3.0
+        version: 0.3.0
       '@lit/context':
         specifier: ^1.1.5
         version: 1.1.5
@@ -81,8 +81,8 @@ importers:
 
 packages:
 
-  '@adobe/data@0.2.8':
-    resolution: {integrity: sha512-ygHVoBZWnjR7iXna6Ze5KTDJP4J4NMvn4a2NSoB7LaqulLGsrejzZHWwzTO2R9fhVglzGcfziUqMKS6kKATWrg==}
+  '@adobe/data@0.3.0':
+    resolution: {integrity: sha512-h0U9SrPw2sKm4lIDEZ2gBb64SIGSwq9PsDPB36PVeOCpZu0AATCrh42CZyap26GScZfu2QYcPo7nx+YcEyVqKA==}
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -2801,7 +2801,7 @@ packages:
 
 snapshots:
 
-  '@adobe/data@0.2.8':
+  '@adobe/data@0.3.0':
     dependencies:
       '@cfworker/json-schema': 4.1.1
       '@lit/context': 1.1.5

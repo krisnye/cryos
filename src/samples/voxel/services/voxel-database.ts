@@ -8,12 +8,10 @@ import { KeyCode } from "../types/key-code.js";
 import { Camera, CameraSchema } from "graphics/camera/camera.js";
 
 const GPUBufferSchema = {
-    type: "object",
     default: null as unknown as GPUBuffer,
 } as const satisfies Schema;
 
 export const GPUBindGroupSchema = {
-    type: "object",
     default: null as unknown as GPUBindGroup,
 } as const satisfies Schema;
 

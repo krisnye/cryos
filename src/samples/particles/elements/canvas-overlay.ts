@@ -18,15 +18,17 @@ export class CanvasOverlay extends ParticlesElement {
 
     override render() {
         const values = useObservableValues(() => ({
+            // We don't actually need this, but we want to re-render ever frame.
+            // really we only need to re-render if the particles entity array changes.
             renderFrame: this.service.database.observe.resources.renderFrame
         }));
 
-        const particles = this.service.database.archetypes.Particle;
+        const particles = this.service.database.select(this.service.database.archetypes.Particle.components);
 
         return html`
             <div>
                 ${repeat(
-                    Array.from({ length: particles.rows }, (_, i) => i),
+                    particles,
                     (index) => index,
                     (index) => html`<particles-label .particleIndex=${index}></particles-label>`
                 )}

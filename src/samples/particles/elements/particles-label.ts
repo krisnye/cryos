@@ -38,9 +38,12 @@ export class ParticlesLabel extends ParticlesElement {
     override render() {
         // using a particle table directly will only work for particles with this exact archetype
         // a query would find all particle tables including those with additional components
-        const particles = this.service.database.archetypes.Particle;
+        // these particles are updated via a system and not with transactions
+        // and so changes to them are not observable.
+        // This is why we are just doing direct manipulation whenever the renderFrame is updated.
         useEffect(() => {
             return this.service.database.observe.resources.renderFrame(() => {
+                const particles = this.service.database.archetypes.Particle;
                 const particle = particles.columns.particle.get(this.particleIndex);
                 const bottomRightCorner = VEC3.add(particle.position, [0.5, -0.5, 0.5]);
                 const [screenX, screenY, depth] = worldToScreen(
