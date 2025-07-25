@@ -26,14 +26,8 @@ const TestVoxelSchema = {
 function createTestChunk(size: number): GenericChunk<TestVoxel & { height: number }> {
     return {
         size,
-        tiles: createStructBuffer({
-            schema: StructureMapTileSchema,
-            length: size * size,
-        }),
-        blocks: createStructBuffer({
-            schema: TestVoxelSchema,
-            length: size * size,
-        }),
+        tiles: createStructBuffer(StructureMapTileSchema, size * size),
+        blocks: createStructBuffer(TestVoxelSchema, size * size),
     };
 }
 

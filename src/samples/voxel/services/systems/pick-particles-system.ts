@@ -22,15 +22,16 @@ export const pickParticlesSystem = ({ store, database }: MainService): System =>
             // Convert screen position to world space pick line
             const pickLine =  screenToWorldRay(screenPosition, invViewProjection, canvasWidth, canvasHeight);
             
-            const pickedParticleId = pickFromTables({
+            const picked = pickFromTables({
                 tables: particleTables,
                 line: pickLine,
                 radius: 0,
             });
 
-            if (pickedParticleId) {
+            if (picked) {
                 const randomColor = [Math.random(), Math.random(), Math.random(), 1] as const;
-                database.transactions.setColor({ id: pickedParticleId, color: randomColor });
+                database.transactions.setColor({ id: picked.entity, color: randomColor });
+                // picked.position is available if needed
             }
         }
     } as const satisfies System;

@@ -7,12 +7,13 @@ export const computeParticleBoundsSystem = ({ store }: MainService): System => {
         name: "computeParticleBoundsSystem",
         phase: "postUpdate",
         run: () => {
-            for (const table of store.queryArchetypes(["id", "particle", "position", "boundingBox"])) {
-                for (let row = 0; row < table.rows; row++) {
-                    const position = table.columns.position.get(row);
+            for (const table of store.queryArchetypes(["id", "particle", "position_scale", "boundingBox"])) {
+                for (let row = 0; row < table.rowCount; row++) {
+                    const [x, y, z, scale] = table.columns.position_scale.get(row);
+                    const position: VEC3.Vec3 = [x, y, z];
                     table.columns.boundingBox.set(row, {
-                        min: VEC3.subtract(position, [0.5, 0.5, 0.5]),
-                        max: VEC3.add(position, [0.5, 0.5, 0.5])
+                        min: VEC3.subtract(position, [0.5 * scale, 0.5 * scale, 0.5 * scale]),
+                        max: VEC3.add(position, [0.5 * scale, 0.5 * scale, 0.5 * scale])
                     });
                 }
             }

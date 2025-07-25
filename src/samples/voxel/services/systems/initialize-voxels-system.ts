@@ -1,9 +1,8 @@
 import { System } from "graphics/systems/system.js";
 import { MainService } from "../create-main-service.js";
 import { withRunOnce } from "graphics/systems/with-run-once.js";
-import * as VEC3 from "math/vec3/index.js";
+import * as VEC3 from "math/vec3/index.js";import * as VEC4 from "math/vec4/index.js";
 import { AabbSchema } from "math/aabb/aabb.js";
-import { Vec2 } from "math/index.js";
 import { createRandomStaticVoxelChunk } from "samples/voxel/types/static-voxel-chunk/create-random-static-voxel-chunk.js";
 
 export const initializeParticlesSystem = ({ store }: MainService): System => {
@@ -15,8 +14,9 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
             // and with random velocity
             const velocity = 0.2;
             for (let i = 0; i < 10; i++) {
+                const scale = Math.random() * 0.5 + 0.5;
                 store.archetypes.Particle.insert({
-                    position: [Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1],
+                    position_scale: [Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, scale],
                     color: [Math.random(), Math.random(), Math.random(), 1],
                     velocity: VEC3.scale([Math.random() * 0.2 - 0.1, Math.random() * 0.2 - 0.1, Math.random() * 0.2 - 0.1], velocity),
                     flags: 0,
@@ -26,7 +26,7 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
             }
             // create a black particle right at the origin.
             store.archetypes.Particle.insert({
-                position: [0, 0, 0],
+                position_scale: [0, 0, 0, 1],
                 color: [0, 0, 0, 1],
                 velocity: [0, 0, 0],
                 flags: 0,
@@ -35,7 +35,7 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
             })
             // create a red particle right at the origin.
             store.archetypes.Particle.insert({
-                position: [1, 0, 0],
+                position_scale: [1, 0, 0, 1],
                 color: [1, 0, 0, 1],
                 velocity: [0, 0, 0],
                 flags: 0,
@@ -44,7 +44,7 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
             })
             // create a green particle above at the origin.
             store.archetypes.Particle.insert({
-                position: [0, 1, 0],
+                position_scale: [0, 1, 0, 1],
                 color: [0, 1, 0, 1],
                 velocity: [0, 0, 0],
                 flags: 0,
@@ -53,7 +53,7 @@ export const initializeParticlesSystem = ({ store }: MainService): System => {
             })
             // create a blue particle above at the origin.
             store.archetypes.Particle.insert({
-                position: [0, 0, 1],
+                position_scale: [0, 0, 1, 1],
                 color: [0, 0, 1, 1],
                 velocity: [0, 0, 0],
                 flags: 0,

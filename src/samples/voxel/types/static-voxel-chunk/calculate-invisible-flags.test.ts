@@ -21,37 +21,37 @@ describe('calculateInvisibleFlags', () => {
         // Create a simple 3x3x3 cube structure
         const voxels: Array<Omit<StaticVoxel, "height"> & { position: Vec3 }> = [
             // Bottom layer (z=0)
-            { position: [0, 0, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 0, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [2, 0, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [0, 1, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 1, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [2, 1, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [0, 2, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 2, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [2, 2, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 0, 0], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 0, 0], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [2, 0, 0], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 1, 0], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 1, 0], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [2, 1, 0], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 2, 0], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 2, 0], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [2, 2, 0], type: 1, flags: 0, damage: 0, temp: 0 },
             
             // Middle layer (z=1)
-            { position: [0, 0, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 0, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [2, 0, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [0, 1, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 1, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 }, // This should be interior
-            { position: [2, 1, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [0, 2, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 2, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [2, 2, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 0, 1], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 0, 1], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [2, 0, 1], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 1, 1], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 1, 1], type: 1, flags: 0, damage: 0, temp: 0 }, // This should be interior
+            { position: [2, 1, 1], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 2, 1], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 2, 1], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [2, 2, 1], type: 1, flags: 0, damage: 0, temp: 0 },
             
             // Top layer (z=2)
-            { position: [0, 0, 2] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 0, 2] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [2, 0, 2] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [0, 1, 2] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 1, 2] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [2, 1, 2] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [0, 2, 2] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 2, 2] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [2, 2, 2] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 0, 2], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 0, 2], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [2, 0, 2], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 1, 2], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 1, 2], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [2, 1, 2], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 2, 2], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 2, 2], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [2, 2, 2], type: 1, flags: 0, damage: 0, temp: 0 },
         ];
         
         updateStructureMapFromPositionArray(voxels, chunk);
@@ -83,21 +83,21 @@ describe('calculateInvisibleFlags', () => {
         
         // Create a simple 2x2x2 cube (all voxels are surface voxels)
         const voxels: Array<Omit<StaticVoxel, "height"> & { position: Vec3 }> = [
-            { position: [0, 0, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 0, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [0, 1, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 1, 0] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [0, 0, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 0, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [0, 1, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [1, 1, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 0, 0], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 0, 0], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 1, 0], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 1, 0], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 0, 1], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 0, 1], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [0, 1, 1], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 1, 1], type: 1, flags: 0, damage: 0, temp: 0 },
         ];
         
         updateStructureMapFromPositionArray(voxels, chunk);
         calculateInvisibleFlags(chunk);
         
         // Check that all voxels have at least some visible faces (not completely surrounded)
-        for (let i = 0; i < chunk.blocks.size; i++) {
+        for (let i = 0; i < chunk.blocks.capacity; i++) {
             const voxel = chunk.blocks.get(i);
             expect(voxel.flags).toBeLessThan(ALL_FACES_INVISIBLE_MASK);
             expect(voxel.flags & ALL_FACES_INVISIBLE_MASK).toBeLessThan(ALL_FACES_INVISIBLE_MASK);
@@ -117,7 +117,7 @@ describe('calculateInvisibleFlags', () => {
         
         // Create a single voxel at (1, 1, 1) - should have no invisible faces
         const voxels: Array<Omit<StaticVoxel, "height"> & { position: Vec3 }> = [
-            { position: [1, 1, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 1, 1], type: 1, flags: 0, damage: 0, temp: 0 },
         ];
         
         updateStructureMapFromPositionArray(voxels, chunk);
@@ -143,8 +143,8 @@ describe('calculateInvisibleFlags', () => {
         
         // Create two adjacent voxels - each should have some faces covered
         const voxels: Array<Omit<StaticVoxel, "height"> & { position: Vec3 }> = [
-            { position: [1, 1, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
-            { position: [2, 1, 1] as Vec3, type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [1, 1, 1], type: 1, flags: 0, damage: 0, temp: 0 },
+            { position: [2, 1, 1], type: 1, flags: 0, damage: 0, temp: 0 },
         ];
         
         updateStructureMapFromPositionArray(voxels, chunk);
@@ -174,7 +174,7 @@ describe('calculateInvisibleFlags', () => {
         
         // Create a single voxel at (1, 1, 1) with additional flags
         const voxels: Array<Omit<StaticVoxel, "height"> & { position: Vec3 }> = [
-            { position: [1, 1, 1] as Vec3, type: 1, flags: 0b1000000, damage: 0, temp: 0 }, // Has additional flag
+            { position: [1, 1, 1], type: 1, flags: 0b1000000, damage: 0, temp: 0 }, // Has additional flag
         ];
         
         updateStructureMapFromPositionArray(voxels, chunk);

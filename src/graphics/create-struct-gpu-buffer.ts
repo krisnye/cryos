@@ -21,7 +21,7 @@ export const createStructGPUBuffer = <S extends Schema>(
         usage: usage,
         mappedAtCreation: true,
     });
-    const typedBuffer = createStructBuffer({schema, arrayBuffer: buffer.getMappedRange()});
+    const typedBuffer = createStructBuffer(schema, buffer.getMappedRange());
     for (let i = 0; i < elements.length; i++) {
         typedBuffer.set(i, elements[i]);
     }

@@ -41,7 +41,8 @@ export class ParticlesLabel extends ParticlesElement {
         const particles = this.service.database.archetypes.Particle;
         useEffect(() => {
             return this.service.database.observe.resources.renderFrame(() => {
-                const position = particles.columns.position.get(this.particleIndex);
+                const position_scale = particles.columns.position_scale.get(this.particleIndex);
+                const position: VEC3.Vec3 = [position_scale[0], position_scale[1], position_scale[2]];
                 const bottomRightCorner = VEC3.add(position, [0.5, -0.5, 0.5]);
                 const [screenX, screenY, depth] = worldToScreen(
                     bottomRightCorner,

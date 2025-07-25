@@ -6,13 +6,7 @@ import { VoxelMapChunk } from "./static-voxel-chunk.js";
 export const createStaticVoxelChunk = (size: number): VoxelMapChunk => {
     return {
         size,
-        tiles: createStructBuffer({
-            schema: StructureMapTileSchema,
-            length: size * size,
-        }),
-        blocks: createStructBuffer({
-            schema: StaticVoxelSchema,
-            length: size * size, // may grow larger.
-        }),
+        tiles: createStructBuffer(StructureMapTileSchema, size * size),
+        blocks: createStructBuffer(StaticVoxelSchema, size * size),
     }
 }

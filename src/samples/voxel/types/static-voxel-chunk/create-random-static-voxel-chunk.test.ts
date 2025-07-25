@@ -26,8 +26,8 @@ describe('createRandomStaticVoxelChunk', () => {
         }
         
         // Check all blocks are identical
-        const totalBlocks1 = chunk1.blocks.size;
-        const totalBlocks2 = chunk2.blocks.size;
+        const totalBlocks1 = chunk1.blocks.capacity;
+        const totalBlocks2 = chunk2.blocks.capacity;
         expect(totalBlocks1).toBe(totalBlocks2);
         
         for (let i = 0; i < totalBlocks1; i++) {
@@ -160,9 +160,9 @@ describe('createRandomStaticVoxelChunk', () => {
         expect(chunk16.size).toBe(16);
         
         // All chunks should have the correct number of tiles
-        expect(chunk4.tiles.size).toBe(16); // 4 * 4
-        expect(chunk8.tiles.size).toBe(64); // 8 * 8
-        expect(chunk16.tiles.size).toBe(256); // 16 * 16
+        expect(chunk4.tiles.capacity).toBe(16); // 4 * 4
+        expect(chunk8.tiles.capacity).toBe(64); // 8 * 8
+        expect(chunk16.tiles.capacity).toBe(256); // 16 * 16
     });
 
     it('should not have large discontinuities between adjacent size-8 chunks', () => {
