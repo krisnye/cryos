@@ -24,6 +24,7 @@ export const createVoxelDatabaseSchema = (context: GraphicsContext) => {
             velocity: Vec3Schema,
             particle: TrueSchema,
             position: Vec3Schema,
+            position_scale: Vec4Schema,
             color: Vec4Schema,
             flags: U32Schema,
             staticVoxelChunk: StaticVoxelChunkSchema,
@@ -57,7 +58,7 @@ export const createVoxelDatabaseSchema = (context: GraphicsContext) => {
         },
         {
             ...graphicsDatabaseSchema.archetypes,
-            Particle: ["particle", "position", "color", "velocity", "flags", "boundingBox"],
+            Particle: ["particle", "position_scale", "color", "velocity", "flags", "boundingBox"],
             StaticVoxelChunk: ["staticVoxelChunk", "position", "staticVoxelChunkPositionsBuffer", "staticVoxelChunkColorsBuffer", "staticVoxelChunkFlagsBuffer", "staticVoxelChunkBindGroup", "staticVoxelChunkRenderCount", "dirtyFrame", "cleanFrame"],
         },
         (store) => {

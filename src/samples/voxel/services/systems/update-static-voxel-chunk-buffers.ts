@@ -36,9 +36,9 @@ const getHeightColor = (height: number, type: number): [number, number, number, 
 
 export const updateStaticVoxelChunkBuffersSystem = ({ store }: MainService): System => {
     const { device } = store.resources.graphics;
-    const positionsTempBuffer = createStructBuffer({ schema: Vec3Schema, length: 16 * 16 * 16 });
-    const colorsTempBuffer = createStructBuffer({ schema: Vec4Schema, length: 16 * 16 * 16 });
-    const flagsTempBuffer = createTypedBuffer({ schema: U32Schema, length: 16 * 16 * 16 });
+    const positionsTempBuffer = createStructBuffer(Vec4Schema, 16 * 16 * 16 );
+    const colorsTempBuffer = createStructBuffer(Vec4Schema, 16 * 16 * 16 );
+    const flagsTempBuffer = createTypedBuffer(U32Schema, 16 * 16 * 16 );
 
     return {
         name: "updateStaticVoxelChunkBuffersSystem",
@@ -46,7 +46,7 @@ export const updateStaticVoxelChunkBuffersSystem = ({ store }: MainService): Sys
         run: () => {
             let totalVoxels = 0;
             const staticVoxelChunkTable = store.archetypes.StaticVoxelChunk;
-            for (let row = 0; row < staticVoxelChunkTable.rows; row++) {
+            for (let row = 0; row < staticVoxelChunkTable.rowCount; row++) {
                 const chunk = staticVoxelChunkTable.columns.staticVoxelChunk.get(row);
                 const dirtyFrame = staticVoxelChunkTable.columns.dirtyFrame.get(row);
                 const cleanFrame = staticVoxelChunkTable.columns.cleanFrame.get(row);
@@ -71,7 +71,7 @@ export const updateStaticVoxelChunkBuffersSystem = ({ store }: MainService): Sys
                             }
                             totalVoxels++;
                             const worldHeight = offsetZ + voxel.height;
-                            positionsTempBuffer.set(voxelRenderCount, [offsetX + x, offsetY + y, worldHeight]);
+                            positionsTempBuffer.set(voxelRenderCount, [offsetX + x, offsetY + y, worldHeight, 1.0]);
                             colorsTempBuffer.set(voxelRenderCount, getHeightColor(worldHeight, voxel.type));
                             flagsTempBuffer.set(voxelRenderCount, voxel.flags);
                             voxelRenderCount++;

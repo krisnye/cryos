@@ -13,7 +13,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
     const { store } = main;
 
     const bufferSchemas = [
-        ["position", Vec3Schema],
+        ["position_scale", Vec3Schema],
         ["color", Vec4Schema]
     ] as const;
 
@@ -73,7 +73,6 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
     });
 
     // Create a typed buffer for flags
-    let flagsTypedBuffer = createTypedBuffer({ schema: U32Schema, length: 1 });
     let flagsBuffer = device.createBuffer({
         size: 4, // Start with 4 bytes (1 u32)
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
@@ -86,7 +85,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         name: "copyParticlesToGPUBufferSystem",
         phase: "update",
         run: () => {
-            const particleTables = store.queryArchetypes(["id", "velocity", "position", "color", "flags", "particle"]);
+            const particleTables = store.queryArchetypes(["id", "velocity", "position_scale", "color", "flags", "particle"]);
 
             for (let i = 0; i < bufferSchemas.length; i++) {
                 const [name, schema] = bufferSchemas[i];
@@ -106,7 +105,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
                 flagsBuffer
             );
 
-            particleCount = particleTables.reduce((acc, table) => acc + table.rows, 0);
+            particleCount = particleTables.reduce((acc, table) => acc + table.rowCount, 0);
         }
     }, {
         name: "renderParticlesSystem",
@@ -131,7 +130,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
 
             // let's also render out our chunks.
             const staticVoxelChunkTable = store.archetypes.StaticVoxelChunk;
-            for (let i = 0; i < staticVoxelChunkTable.rows; i++) {
+            for (let i = 0; i < staticVoxelChunkTable.rowCount; i++) {
                 const positions = staticVoxelChunkTable.columns.staticVoxelChunkPositionsBuffer.get(i);
                 const colors = staticVoxelChunkTable.columns.staticVoxelChunkColorsBuffer.get(i);
                 const flags = staticVoxelChunkTable.columns.staticVoxelChunkFlagsBuffer.get(i);

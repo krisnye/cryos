@@ -71,7 +71,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
                 device,
                 particlesBuffer
             );
-            particleCount = particleTables.reduce((acc, table) => acc + table.rows, 0);
+            particleCount = particleTables.reduce((acc, table) => acc + table.rowCount, 0);
         }
     },{
         name: "renderParticlesSystem",

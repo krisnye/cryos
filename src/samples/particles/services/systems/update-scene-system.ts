@@ -7,7 +7,7 @@ import { toViewProjection } from "graphics/camera/to-view-projection.js";
 
 export const updateSceneSystem = ({ store }: MainService): System => {
     const { device } = store.resources.graphics;
-    const sceneTypedBuffer = createStructBuffer({ schema: SceneSchema, length: 1, maxLength: 1 });
+    const sceneTypedBuffer = createStructBuffer(SceneSchema, 1);
     const sceneGPUBuffer = device.createBuffer({
         size: sceneTypedBuffer.getTypedArray().byteLength,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,

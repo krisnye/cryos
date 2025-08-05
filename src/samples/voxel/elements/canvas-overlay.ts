@@ -24,7 +24,7 @@ export class CanvasOverlay extends ParticlesElement {
         return html`
             <div>
                 ${repeat(
-                    Array.from({ length: this.service.database.archetypes.Particle.rows }, (_, i) => i),
+                    Array.from({ length: this.service.database.archetypes.Particle.rowCount }, (_, i) => i),
                     (index) => index,
                     (index) => html`<voxel-particles-label .particleIndex=${index}></voxel-particles-label>`
                 )}

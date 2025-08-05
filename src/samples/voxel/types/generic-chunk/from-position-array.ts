@@ -63,9 +63,9 @@ export function updateStructureMapFromPositionArray<T>(
         totalElements += column.length;
     }
     // then we will update the structure map with the new columns while writing to the blocks buffer
-    if (totalElements > blocks.size) {
+    if (totalElements > blocks.capacity) {
         // ensure the blocks buffer is large enough
-        blocks.size = totalElements;
+        blocks.capacity = blocks.capacity = totalElements;
     }
     let index = 0;
     for (let i = 0; i < size * size; i++) {

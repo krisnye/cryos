@@ -8,7 +8,7 @@ export const computeParticleBoundsSystem = ({ store }: MainService): System => {
         phase: "postUpdate",
         run: () => {
             for (const table of store.queryArchetypes(["id", "particle", "boundingBox"])) {
-                for (let row = 0; row < table.rows; row++) {
+                for (let row = 0; row < table.rowCount; row++) {
                     const particle = table.columns.particle.get(row);
                     table.columns.boundingBox.set(row, {
                         min: VEC3.subtract(particle.position, [0.5, 0.5, 0.5]),
