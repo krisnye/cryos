@@ -4,7 +4,6 @@ import { winner } from "./dependent-state/winner.js";
 import { boardSize } from "./dependent-state/board-size.js";
 import { currentPlayer } from "./dependent-state/current-player.js";
 import { BoardLink, BoardPoint } from "./state-service.js";
-import { applyArg } from "@adobe/data/functions";
 
 export function createTwixtStore() {
     return createStore({} as const, {
@@ -20,7 +19,7 @@ export type TwixtReadonlyStore = ToReadonlyStore<TwixtStore>;
 export function createTwixtDatabase() {
     return createDatabase(
         createTwixtStore(),
-        (store) => applyArg(store, transactions)
+        transactions
     );
 }
 

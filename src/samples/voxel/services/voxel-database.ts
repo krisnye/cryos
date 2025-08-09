@@ -61,29 +61,27 @@ export const createVoxelDatabaseSchema = (context: GraphicsContext) => {
             Particle: ["particle", "position_scale", "color", "velocity", "flags", "boundingBox"],
             StaticVoxelChunk: ["staticVoxelChunk", "position", "staticVoxelChunkPositionsBuffer", "staticVoxelChunkColorsBuffer", "staticVoxelChunkFlagsBuffer", "staticVoxelChunkBindGroup", "staticVoxelChunkRenderCount", "dirtyFrame", "cleanFrame"],
         },
-        (store) => {
-            return ({ 
-                ...graphicsDatabaseSchema.transactions(store),
-                setMousePosition: (position: Vec2) => {
-                    store.resources.mousePosition = position;
-                },
-                setColor: ({ id, color }: { id: number, color: Vec4 }) => {
-                    store.update(id, { color });
-                },
-                pressKey: (key: KeyCode) => {
-                    store.resources.pressedKeys = { ...store.resources.pressedKeys, [key]: 0 };
-                },
-                releaseKey: (key: KeyCode) => {
-                    const copy = { ...store.resources.pressedKeys };
-                    delete copy[key];
-                    store.resources.pressedKeys = copy;
-                },
-                incrementPressedKeys: () => {
-                    store.resources.pressedKeys = Object.fromEntries(
-                        Object.entries(store.resources.pressedKeys).map(([key, value]) => [key, value + 1])
-                    );
-                },
-            })
+        { 
+            ...graphicsDatabaseSchema.transactions,
+            setMousePosition: (t, position: Vec2) => {
+                t.resources.mousePosition = position;
+            },
+            setColor: (t, { id, color }: { id: number, color: Vec4 }) => {
+                t.update(id, { color });
+            },
+            pressKey: (t, key: KeyCode) => {
+                t.resources.pressedKeys = { ...t.resources.pressedKeys, [key]: 0 };
+            },
+            releaseKey: (t, key: KeyCode) => {
+                const copy = { ...t.resources.pressedKeys };
+                delete copy[key];
+                t.resources.pressedKeys = copy;
+            },
+            incrementPressedKeys: (t) => {
+                t.resources.pressedKeys = Object.fromEntries(
+                    Object.entries(t.resources.pressedKeys).map(([key, value]) => [key, value + 1])
+                );
+            },
         }
     );
 };

@@ -1,9 +1,9 @@
 import { GraphicsContext } from "graphics/graphics-context.js";
-import { AsyncArgsProvider, createDatabaseSchema, DatabaseFromSchema, Entity, StoreFromSchema } from "@adobe/data/ecs";
+import { AsyncArgsProvider, createDatabaseSchema, DatabaseFromSchema, StoreFromSchema } from "@adobe/data/ecs";
 import { Frame, FrameSchema } from "graphics/frame.js";
 import { Camera, CameraSchema } from "graphics/camera/camera.js";
 import * as VEC3 from "math/vec3/index.js";
-import { F32Schema, Schema, U32Schema } from "@adobe/data/schema";
+import { F32Schema, Schema } from "@adobe/data/schema";
 import { AabbSchema } from "math/aabb/aabb.js";
 import { Assert, Equal } from "@adobe/data/types";
 
@@ -40,21 +40,19 @@ export const createGraphicsDatabaseSchema = (context: GraphicsContext) => {
         },
         {
         },
-        (store) => {
-            return ({
-                setUpdateFrame: (frame: Frame) => {
-                    store.resources.updateFrame = frame;
-                },
-                setRenderFrame: (frame: Frame) => {
-                    store.resources.renderFrame = frame;
-                },
-                updateCamera: (camera: Partial<Camera>) => {
-                    store.resources.camera = {
-                        ...store.resources.camera,
-                        ...camera
-                    };
-                }
-            })
+        {
+            setUpdateFrame: (t, frame: Frame) => {
+                t.resources.updateFrame = frame;
+            },
+            setRenderFrame: (t, frame: Frame) => {
+                t.resources.renderFrame = frame;
+            },
+            updateCamera: (t, camera: Partial<Camera>) => {
+                t.resources.camera = {
+                    ...t.resources.camera,
+                    ...camera
+                };
+            }
         }
     );
     return T;
@@ -72,13 +70,7 @@ type CheckResources = Assert<Equal<typeof foo.resources.graphics, GraphicsContex
 // @ts-expect-error
 type CheckResourcesMissing = Assert<Equal<typeof foo.resources.missing, GraphicsContext>>;
 
-type CheckTransactions = Assert<Equal<typeof foo.transactions.setUpdateFrame, (arg: {
-    readonly count: number;
-    readonly deltaTime: number;
-} | AsyncArgsProvider<{
-    readonly count: number;
-    readonly deltaTime: number;
-}>) => void>>;
+type CheckTransactions = Assert<Equal<typeof foo.transactions.setUpdateFrame, (arg: Frame | AsyncArgsProvider<Frame>) => void>>;
 // @ts-expect-error
 type CheckTransactionsMissing = Assert<Equal<typeof foo.transactions.missing, (arg: {
     readonly count: number;

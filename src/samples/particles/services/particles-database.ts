@@ -21,15 +21,15 @@ export const createParticleDatabaseSchema = (context: GraphicsContext) => {
             ...graphicsDatabaseSchema.archetypes,
             Particle: ["particle", "velocity", "boundingBox"],
         },
-        (store) => ({
-            ...graphicsDatabaseSchema.transactions(store),
-            setMousePosition: (position: Vec2) => {
-                store.resources.mousePosition = position;
+        {
+            ...graphicsDatabaseSchema.transactions,
+            setMousePosition: (t, position: Vec2) => {
+                t.resources.mousePosition = position;
             },
-            setParticleColor: ({ id, color }: { id: number, color: Vec4 }) => {
-                const entityValues  = store.read(id);
+            setParticleColor: (t, { id, color }: { id: number, color: Vec4 }) => {
+                const entityValues  = t.read(id);
                 if (entityValues) {
-                    store.update(id, {
+                    t.update(id, {
                         particle: {
                             ...entityValues.particle!,
                             color
@@ -37,7 +37,7 @@ export const createParticleDatabaseSchema = (context: GraphicsContext) => {
                     });
                 }
             }
-        })
+        }
     );
 }
 
