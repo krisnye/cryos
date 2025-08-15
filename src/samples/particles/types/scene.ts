@@ -9,8 +9,9 @@ export const SceneSchema = {
         lightDirection: Vec3Schema,
         lightColor: Vec3Schema,
         ambientStrength: F32Schema,
+        time: F32Schema, // Add time for animation
     },
-    required: ["viewProjection", "lightDirection", "lightColor", "ambientStrength"],
+    required: ["viewProjection", "lightDirection", "lightColor", "ambientStrength", "time"],
     additionalProperties: false,
 } as const satisfies Schema;
 

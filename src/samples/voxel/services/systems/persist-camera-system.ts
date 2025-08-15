@@ -1,5 +1,5 @@
 import { System } from "graphics/systems/system.js";
-import { MainService } from "../create-main-service.js";
+import { MainService } from "../main-service.js";
 import { createPersistedState, toPromise } from "@adobe/data/observe";
 import type { Camera } from "graphics/camera/camera.js";
 

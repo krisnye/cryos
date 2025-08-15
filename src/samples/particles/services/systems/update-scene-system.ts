@@ -22,6 +22,7 @@ export const updateSceneSystem = ({ store }: MainService): System => {
                 lightDirection: store.resources.lightDirection,
                 lightColor: store.resources.lightColor,
                 ambientStrength: store.resources.ambientStrength,
+                time: store.resources.updateFrame.count / 60.0,
             });
             store.resources.sceneBuffer = sceneGPUBuffer;
             device.queue.writeBuffer(sceneGPUBuffer, 0, sceneTypedBuffer.getTypedArray());

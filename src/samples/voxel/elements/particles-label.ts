@@ -8,44 +8,49 @@ import * as VEC3 from "math/vec3/index.js";
 @customElement("voxel-particles-label")
 export class ParticlesLabel extends ParticlesElement {
 
+    @property({ type: String })
+    archetype = '';
+
     @property({ type: Number })
     particleIndex = 0;
+
+    @property({ type: String })
+    labelText = '';
 
     static override styles = [
         css`
             :host {
                 position: absolute;
                 pointer-events: none;
-                background: rgba(0, 0, 0, 0.8);
+                background: rgba(0, 0, 0, 0.9);
                 color: white;
-                padding: 2px 6px;
-                border: white solid 1px;
-                border-radius: 6px;
-                border-top-left-radius: 0;
-                font-size: 12px;
+                padding: 3px 8px;
+                border: white solid 2px;
+                border-radius: 8px;
+                font-size: 14px;
                 font-family: monospace;
-                /* transform: translate(-50%, -50%); */
+                font-weight: bold;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
                 /* Optimize for frequent movement */
                 will-change: transform, left, top, z-index;
                 /* Force hardware acceleration */
-                /* transform: translate(-50%, -50%) translateZ(0); */
-                /* Alternative: use backface-visibility to force compositing */
                 backface-visibility: hidden;
             }
         `
     ];
 
     override render() {
-        // using a particle table directly will only work for particles with this exact archetype
-        // a query would find all particle tables including those with additional components
-        const particles = this.service.database.archetypes.Particle;
+        // Get the appropriate archetype based on the archetype property
+        const particles = this.service.database.archetypes[this.archetype as keyof typeof this.service.database.archetypes] as any;
+        
         useEffect(() => {
             return this.service.database.observe.resources.renderFrame(() => {
                 const position_scale = particles.columns.position_scale.get(this.particleIndex);
                 const position: VEC3.Vec3 = [position_scale[0], position_scale[1], position_scale[2]];
-                const bottomRightCorner = VEC3.add(position, [0.5, -0.5, 0.5]);
+                // Position label slightly offset from the particle for better visibility
+                const labelOffset = VEC3.add(position, [0.6, 0.6, 0.6]);
                 const [screenX, screenY, depth] = worldToScreen(
-                    bottomRightCorner,
+                    labelOffset,
                     this.service.store.resources.camera,
                     this.service.store.resources.graphics.canvas.width,
                     this.service.store.resources.graphics.canvas.height
@@ -65,7 +70,7 @@ export class ParticlesLabel extends ParticlesElement {
                 this.style.display = 'block';
             })
         })
-        return html`${this.particleIndex}`;
+        return html`${this.labelText}`;
     }
 
 }

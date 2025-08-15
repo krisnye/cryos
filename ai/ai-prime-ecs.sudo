@@ -1,0 +1,19 @@
+Please answer the following questions to ensure you understand our ecs.
+Search for examples in the "transactions" folders as they all use the ecs.
+
+1. What is the difference between archetypes, components, and entities in this ECS implementation?
+2. How does store.select() work and what does it return?,
+3. What is the difference between store.select() and store.queryArchetypes()?,
+4. When should I use t.update() vs direct archetype column access?,
+5. How do I efficiently iterate over all entities with a specific component?,
+6. What is the performance difference between queryArchetypes and select?,
+7. How do I access component data directly from archetype columns?,
+8. What makes a transaction efficient vs inefficient in this ECS?,
+9. How do transactions integrate with the undo/redo system?,
+10. When should I use transactions vs systems for bulk operations?,
+11. How does this ECS handle memory layout for components?,
+12. What are the performance implications of creating entity objects vs direct column access?,
+13. How do I optimize bulk operations on large numbers of entities?,
+14. What are the anti-patterns to avoid when working with this ECS?,
+15. How should I structure transactions for maximum efficiency?,
+16. What's the proper way to handle component updates vs entity creation/deletion?

@@ -9,6 +9,37 @@ import { Vec3 } from "math/vec3/vec3.js";
 import { Entity } from "@adobe/data/ecs";
 import { PickResult } from "./pick-result.js";
 
+/**
+ * Determines which face of a cube was hit based on the intersection point
+ * @param position World position of the intersection
+ * @param aabb Bounding box of the cube
+ * @returns Face index: 0=POS_Z, 1=POS_X, 2=NEG_Z, 3=NEG_X, 4=POS_Y, 5=NEG_Y
+ */
+function determineFaceFromPosition(position: Vec3, aabb: Aabb): number {
+    const aabbCenter = center(aabb);
+    const localPos = [
+        position[0] - aabbCenter[0],
+        position[1] - aabbCenter[1],
+        position[2] - aabbCenter[2]
+    ];
+    
+    // Find the face with the largest absolute coordinate (closest to cube surface)
+    const absX = Math.abs(localPos[0]);
+    const absY = Math.abs(localPos[1]);
+    const absZ = Math.abs(localPos[2]);
+    
+    if (absX >= absY && absX >= absZ) {
+        // X-axis face (NEG_X or POS_X)
+        return localPos[0] > 0 ? 1 : 3; // 1=POS_X, 3=NEG_X
+    } else if (absY >= absZ) {
+        // Y-axis face (NEG_Y or POS_Y)
+        return localPos[1] > 0 ? 4 : 5; // 4=POS_Y, 5=NEG_Y
+    } else {
+        // Z-axis face (NEG_Z or POS_Z)
+        return localPos[2] > 0 ? 0 : 2; // 0=POS_Z, 2=NEG_Z
+    }
+}
+
 function getIntersectingEntities<T extends Table<{ id: Entity, boundingBox: Aabb }>>(options: {
     tables: readonly T[],
     line: Line3,
@@ -48,6 +79,7 @@ function getClosestEntityToPoint(rows: Map<Entity, Aabb>, point: Vec3): PickResu
         return {
             entity: closestRow,
             position: point,
+            face: determineFaceFromPosition(point, closestAabb),
         };
     }
     return null;
@@ -77,6 +109,7 @@ function getClosestEntityToLine(rows: Map<Entity, Aabb>, line: Line3): PickResul
         return {
             entity: closestEntity,
             position: pickedPosition,
+            face: determineFaceFromPosition(pickedPosition, rows.get(closestEntity)!),
         };
     }
     return null;
@@ -107,6 +140,7 @@ export function pickFromTables<T extends Table<{ id: Entity, boundingBox: Aabb }
             return {
                 entity: best.id,
                 position: interpolate(line, best.alpha),
+                face: determineFaceFromPosition(interpolate(line, best.alpha), rows.get(best.id)!),
             };
         }
         // fallback (should not happen):

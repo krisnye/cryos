@@ -1,5 +1,5 @@
-import { TwixtTransaction } from "../state-service.js";
+import { TwixtStore } from "../state-service.js";
 
-export const setHoverIndex = (t: TwixtTransaction, index: number | null) => {
+export const setHoverIndex = (t: TwixtStore, index: number | null) => {
     t.resources.hoverIndex = index;
 };

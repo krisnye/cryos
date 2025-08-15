@@ -1,5 +1,5 @@
 import { System } from "graphics/systems/system.js";
-import { MainService } from "../create-main-service.js";
+import { MainService } from "../main-service.js";
 import * as VEC3 from "math/vec3/index.js";
 
 export const cameraControlSystem = ({ store, database }: MainService): System => {

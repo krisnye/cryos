@@ -2,8 +2,9 @@
 struct Scene {
     viewProjection: mat4x4<f32>,
     lightDirection: vec3<f32>,
-    lightColor: vec3<f32>,
     ambientStrength: f32,
+    lightColor: vec3<f32>,
+    time: f32,
 }
 
 const CUBE_SIZE = 0.5;
@@ -19,6 +20,7 @@ struct VertexOutput {
     @location(0) color: vec3<f32>,
     @location(1) normal: vec3<f32>,
     @location(2) worldPos: vec3<f32>,
+    @location(3) isSelected: f32, // Pass selection state to fragment shader
 }
 
 @vertex
@@ -66,7 +68,13 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32,
     
     let faceIndex = vertexIndex / 6u; // 0:Front, 1:Right, 2:Back, 3:Left, 4:Top, 5:Bottom
     let faceMask = 1u << faceIndex;
+    
+    // Check if face is invisible (bits 0-5)
     let invisible = (flags[instanceIndex] & faceMask) != 0u;
+    
+    // Check if face is selected (bits 6-11)
+    let selectedFaceMask = 1u << (faceIndex + 6u);
+    let isSelected = (flags[instanceIndex] & selectedFaceMask) != 0u;
 
     var scale = position_scales[instanceIndex].w;
     var worldPos = pos[indices[vertexIndex]] * scale + position_scales[instanceIndex].xyz;
@@ -80,6 +88,14 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32,
     output.worldPos = worldPos;
     // Calculate which face we're on and use appropriate normal
     output.normal = normals[faceIndex];
+    
+    // Set selection state based on face selection
+    if (isSelected) {
+        output.isSelected = 1.0;
+    } else {
+        output.isSelected = 0.0;
+    }
+    
     return output;
 }
 
@@ -97,7 +113,29 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     // Add ambient light
     let ambient = scene.lightColor * scene.ambientStrength;
     
-    // Combine lighting with vertex color
-    let result = (ambient + diffuse) * input.color;
+    // Modify color based on selection state
+    var finalColor = input.color;
+    if (input.isSelected > 0.5) {
+        // Create checkerboard pattern for selected faces
+        let checkerSize = 0.1; // Size of each checker square in world units
+        
+        // Get world position and create checkerboard pattern
+        let worldPos = input.worldPos;
+        let checkerX = floor(worldPos.x / checkerSize);
+        let checkerY = floor(worldPos.y / checkerSize);
+        let checkerZ = floor(worldPos.z / checkerSize);
+        
+        // Create alternating pattern based on position
+        let checkerPattern = (checkerX + checkerY + checkerZ) % 2.0;
+        
+        // Apply black checkerboard (0.0 = black, 1.0 = original color)
+        if (checkerPattern < 0.5) {
+            finalColor = vec3<f32>(0.0, 0.0, 0.0); // Black squares
+        }
+        // else keep original color for white squares
+    }
+    
+    // Combine lighting with modified vertex color
+    let result = (ambient + diffuse) * finalColor;
     return vec4<f32>(result, 1.0);
 } 

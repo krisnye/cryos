@@ -1,10 +1,10 @@
 import { mutableClone } from "@adobe/data";
-import { TwixtTransaction } from "../state-service.js";
+import { TwixtStore } from "../state-service.js";
 import { calculateNewLinks } from "../../../functions/calculate-new-links.js";
 import { currentPlayer } from "../dependent-state/current-player.js";
 import { validHoverIndex } from "../dependent-state/valid-hover-index.js";
 
-export const clickPoint = (t: TwixtTransaction) => {
+export const clickPoint = (t: TwixtStore) => {
     const index = validHoverIndex(t);
     if (index) {
         const player = currentPlayer(t);

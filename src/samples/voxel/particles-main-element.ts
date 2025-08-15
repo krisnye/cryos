@@ -1,7 +1,7 @@
 import { ServiceApplication } from "@adobe/data/lit";
 import { customElement, property } from "lit/decorators.js";
 import { css, html } from "lit";
-import { createMainService, MainService } from "./services/create-main-service.js";
+import { createMainService, MainService } from "./services/main-service.js";
 import { getWebGPUGraphicsContext } from "graphics/get-web-gpu-device-and-context.js";
 import { when } from "lit/directives/when.js";
 import "./elements/particles-label.js";
@@ -38,11 +38,22 @@ export class ParticlesMainElement extends ServiceApplication<MainService> {
         // we have to render the canvas first because we use it to create the service.
         // we don't render any other children until the service is created.
         return html`
-            <div @pointermove=${(e: PointerEvent) => this.service.database.transactions.setMousePosition([e.clientX, e.clientY])}>
+            <div @pointermove=${(e: PointerEvent) => this.service.database.transactions.setMousePosition([e.clientX, e.clientY])}
+                 @keydown=${(e: KeyboardEvent) => this.handleKeyDown(e)}
+                 tabindex="0"
+                 style="outline: none;">
                 <canvas width=${this.width} height=${this.height}></canvas>
                 ${when(this.service, () => html`<voxel-canvas-overlay style="width: ${this.width}px; height: ${this.height}px;"></voxel-canvas-overlay>`)}
             </div>
         `;
+    }
+
+    private handleKeyDown(e: KeyboardEvent) {
+        console.log("key down", e.key);
+        if (e.key === "Escape") {
+            // Clear selection when escape key is pressed
+            this.service.database.transactions.clearSelection();
+        }
     }
 
 }

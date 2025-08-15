@@ -1,4 +1,3 @@
-import { TransactionFromStore } from "@adobe/data/ecs";
 import { createTwixtStateService, TwixtStore } from "./create-state-service.js";
 
 export type Player = "red" | "black";
@@ -8,5 +7,3 @@ export type BoardLink = readonly [number, number]; // [fromIndex, toIndex]
 export { createTwixtStateService, createTwixtStore, createTwixtDatabase } from "./create-state-service.js";
 export type { TwixtStore, TwixtReadonlyStore } from "./create-state-service.js";
 export type TwixtStateService = ReturnType<typeof createTwixtStateService>;
-
-export type TwixtTransaction = TransactionFromStore<TwixtStore>;

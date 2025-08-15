@@ -1,5 +1,5 @@
 import { System } from "graphics/systems/system.js";
-import { MainService } from "../create-main-service.js";
+import { MainService } from "../main-service.js";
 import { KeyCode } from "../../types/key-code.js";
 
 export const keyInputSystem = ({ store, database }: MainService): System => {

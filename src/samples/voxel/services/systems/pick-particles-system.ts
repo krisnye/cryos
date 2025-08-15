@@ -1,8 +1,9 @@
 import { System } from "graphics/systems/system.js";
-import { MainService } from "../create-main-service.js";
+import { MainService } from "../main-service.js";
 import { pickFromTables } from "math/index.js";
 import { screenToWorldRay, toViewProjection } from "graphics/camera/index.js";
 import * as MAT4 from "math/mat4x4/functions.js";
+import { FaceMeta } from "samples/voxel/types/face.js";
 
 export const pickParticlesSystem = ({ store, database }: MainService): System => {
     return {
@@ -29,9 +30,10 @@ export const pickParticlesSystem = ({ store, database }: MainService): System =>
             });
 
             if (picked) {
+                console.log(`Picked particle ${picked.entity} at face ${picked.face} (${FaceMeta[picked.face].name})`);
                 const randomColor = [Math.random(), Math.random(), Math.random(), 1] as const;
                 database.transactions.setColor({ id: picked.entity, color: randomColor });
-                // picked.position is available if needed
+                // picked.position and picked.face are now available
             }
         }
     } as const satisfies System;
