@@ -1,10 +1,11 @@
 import { GraphicsContext } from "graphics/graphics-context.js";
-import { createStore, createStoreSchema } from "@adobe/data/ecs";
+import { createStore, createStoreSchema, Entity } from "@adobe/data/ecs";
 import { Vec2Schema, Vec3Schema, Vec4Schema } from "math/index.js";
 import { createGraphicsStoreSchema } from "graphics/database/graphics-database.js";
 import { Schema, TrueSchema, U32Schema } from "@adobe/data/schema";
 import { KeyCode } from "../types/key-code.js";
 import { Camera, CameraSchema } from "graphics/camera/camera.js";
+import { SpatialMap } from "../types/spatial-map/spatial-map.js";
 
 export const GPUBindGroupSchema = {
     default: null as unknown as GPUBindGroup,
@@ -18,7 +19,7 @@ const createVoxelStoreSchema = (context: GraphicsContext) => {
             ...graphicsStoreSchema.components,
             velocity: Vec3Schema,
             particle: TrueSchema,
-            position: Vec3Schema,
+            static: TrueSchema,
             position_scale: Vec4Schema,
             color: Vec4Schema,
             flags: U32Schema,
@@ -43,11 +44,20 @@ const createVoxelStoreSchema = (context: GraphicsContext) => {
                 type: "object", 
                 default: {} as Partial<Record<KeyCode, number>>,
             } as const satisfies Schema,
+            mapSize: {
+                ...Vec2Schema,
+                default: [256, 256],
+            },
+            mapColumns: {
+                default: new Map<number, Array<Entity | Entity[]>>() as SpatialMap,
+                transient: true,
+                mutable: true,
+            }
         },
         {
             ...graphicsStoreSchema.archetypes,
             Particle: ["particle", "position_scale", "color", "velocity", "flags", "boundingBox"],
-            LabeledParticle: ["particle", "position_scale", "color", "velocity", "flags", "boundingBox", "label"],
+            StaticParticle: ["particle", "position_scale", "color", "flags", "boundingBox", "static"],
         },
     );
 };

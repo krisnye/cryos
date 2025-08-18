@@ -7,11 +7,17 @@ struct Scene {
     time: f32,
 }
 
+// in Javascript we use position_scale a vec4, but this WGSL struct layout is same shape, scale packed after vec3 position.
+struct PositionScale {
+    position: vec3<f32>,
+    scale: f32,
+}
+
 const CUBE_SIZE = 0.5;
 const INVISIBLE_POSITION = vec3<f32>(99999.0, 99999.0, 99999.0);
 
 @binding(0) @group(0) var<uniform> scene: Scene;
-@binding(1) @group(0) var<storage, read> position_scales: array<vec4<f32>>;
+@binding(1) @group(0) var<storage, read> position_scales: array<PositionScale>;
 @binding(2) @group(0) var<storage, read> colors: array<vec4<f32>>;
 @binding(3) @group(0) var<storage, read> flags: array<u32>;
 
@@ -76,8 +82,8 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32,
     let selectedFaceMask = 1u << (faceIndex + 6u);
     let isSelected = (flags[instanceIndex] & selectedFaceMask) != 0u;
 
-    var scale = position_scales[instanceIndex].w;
-    var worldPos = pos[indices[vertexIndex]] * scale + position_scales[instanceIndex].xyz;
+    var scale = position_scales[instanceIndex].scale;
+    var worldPos = position_scales[instanceIndex].position + pos[indices[vertexIndex]] * scale;
     if (invisible) {
         worldPos = INVISIBLE_POSITION;
     }

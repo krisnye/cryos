@@ -83,7 +83,7 @@ export const copyParticlesToGPUBufferSystem = (main: MainService): System[] => {
         name: "copyParticlesToGPUBufferSystem",
         phase: "update",
         run: () => {
-            const particleTables = store.queryArchetypes(["id", "velocity", "position_scale", "color", "flags", "particle"]);
+            const particleTables = store.queryArchetypes(["id", "position_scale", "color", "flags", "particle"]);
 
             for (let i = 0; i < bufferSchemas.length; i++) {
                 const [name, schema] = bufferSchemas[i];

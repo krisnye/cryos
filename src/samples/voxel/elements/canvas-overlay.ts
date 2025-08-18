@@ -22,25 +22,23 @@ export class CanvasOverlay extends ParticlesElement {
         }));
 
         // Get all labeled particles from both archetypes
-        const labeledParticles: Array<{ archetype: string, index: number, label: string }> = [];
+        const labeledParticles: Array<{ id: number, label: string }> = [];
         
         // Check LabeledParticle archetype
-        const labeledArchetype = this.service.database.archetypes.LabeledParticle;
-        for (let i = 0; i < labeledArchetype.rowCount; i++) {
-            const label = labeledArchetype.columns.label.get(i);
-            labeledParticles.push({ archetype: 'LabeledParticle', index: i, label });
+        for (const archetype of this.service.database.queryArchetypes(["position_scale", "label"])) {
+            for (let i = 0; i < archetype.rowCount; i++) {
+                const id = archetype.columns.id.get(i);
+                const label = archetype.columns.label.get(i);
+                labeledParticles.push({ id, label });
+            }
         }
 
         return html`
             <div>
                 ${repeat(
                     labeledParticles,
-                    (item) => `${item.archetype}-${item.index}`,
-                    (item) => html`<voxel-particles-label 
-                        .archetype=${item.archetype} 
-                        .particleIndex=${item.index}
-                        .labelText=${item.label}>
-                    </voxel-particles-label>`
+                    (item) => `${item.id}`,
+                    (item) => html`<voxel-particles-label .entity=${item.id} .label=${item.label}></voxel-particles-label>`
                 )}
             </div>
         `;

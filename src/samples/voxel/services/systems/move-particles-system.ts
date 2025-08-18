@@ -9,10 +9,14 @@ export const moveParticlesSystem = ({ store }: MainService): System => {
         run: () => {
             const timeScale = store.resources.timeScale;
             for (const table of store.queryArchetypes(["id", "velocity", "position_scale", "particle"])) {
-                for (let i = 0; i < table.rowCount; i++) {
+                for (let i = table.rowCount - 1; i >= 0; i--) {
+                    const velocity = table.columns.velocity.get(i);
+                    if (velocity[0] === 0 && velocity[1] === 0 && velocity[2] === 0) {
+                        store.update(table.columns.id.get(i), { velocity: undefined });
+                        continue;
+                    }
                     const [x, y, z, scale] = table.columns.position_scale.get(i);
                     const position: VEC3.Vec3 = [x, y, z];
-                    const velocity = table.columns.velocity.get(i);
                     const newPosition = VEC3.add(position, VEC3.scale(velocity, timeScale));
                     const maxRange = 10;
                     if (newPosition[0] < -maxRange || newPosition[0] > maxRange || newPosition[1] < -maxRange || newPosition[1] > maxRange || newPosition[2] < -maxRange || newPosition[2] > maxRange) {
