@@ -3,6 +3,7 @@ import { pickFromSpatialMap } from "./pick-from-spatial-map.js";
 import { Line3 } from "math/line3/line3.js";
 import { SpatialMap } from "./spatial-map.js";
 import { Aabb } from "math/aabb/aabb.js";
+import { Entity } from "@adobe/data/ecs";
 
 describe("pickFromSpatialMap", () => {
     // Default bounds for unit-sized voxels
@@ -180,6 +181,52 @@ describe("pickFromSpatialMap", () => {
         
         expect(result).not.toBeNull();
         expect(result!.entity).toBe(42); // should pick the first entity in the array
+    });
+
+    it("should pick the closest entity when multiple entities exist in the same voxel", () => {
+        const spatialMap = new Map();
+        const column = new Array(10);
+        // Place entities at different heights in the same X,Y column
+        column[0] = [100, 200]; // Entities at Z=0
+        spatialMap.set(0, column);
+        
+        // Ray starts at origin and goes straight up
+        const pickLine = { a: [0, 0, -0.5], b: [0, 0, 1.5] } as Line3;
+        const result = pickFromSpatialMap(spatialMap, pickLine, 0, getDefaultBounds);
+        
+        expect(result).toBeDefined();
+        // Should pick entity 100 (first in array) since both are at same distance
+        // but we iterate through the array in order
+        expect(result!.entity).toBe(100);
+    });
+
+    it("should pick the closest entity based on actual intersection distance", () => {
+        const spatialMap = new Map();
+        const column = new Array(10);
+        
+        // Create mock bounds that will result in different intersection distances
+        const mockGetVoxelBounds = (entity: Entity): Aabb => {
+            if (entity === 100) {
+                // Entity 100: bounds that intersect closer to ray start
+                return { min: [-0.1, -0.1, -0.1], max: [0.1, 0.1, 0.1] };
+            } else if (entity === 200) {
+                // Entity 200: bounds that intersect further from ray start
+                return { min: [0.4, 0.4, 0.4], max: [0.6, 0.6, 0.6] };
+            }
+            return defaultBounds;
+        };
+        
+        // Place both entities in the same voxel
+        column[0] = [100, 200];
+        spatialMap.set(0, column);
+        
+        // Ray goes from origin through the voxel
+        const pickLine = { a: [0, 0, 0], b: [1, 1, 1] } as Line3;
+        const result = pickFromSpatialMap(spatialMap, pickLine, 0, mockGetVoxelBounds);
+        
+        expect(result).toBeDefined();
+        // Should pick entity 100 since it intersects closer to the ray start
+        expect(result!.entity).toBe(100);
     });
 
     it("should skip empty entity arrays", () => {

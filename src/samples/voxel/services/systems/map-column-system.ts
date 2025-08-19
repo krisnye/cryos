@@ -16,7 +16,7 @@ export const mapColumnSystem = ({ store }: MainService): System => {
                 for (let i = archetype.rowCount - 1; i >= 0; i--) {
                     const id = idColumn.get(i);
                     const positionScale = positionScaleColumn.get(i);
-                    addToSpatialMap(store.resources.mapColumns, positionScale, id);
+                    addToSpatialMap(store.resources.mapColumns, positionScale[0], positionScale[1], positionScale[2], id);
                     store.update(id, { static: true });
                 }
             }

@@ -2,7 +2,6 @@ import { Line3 } from "math/line3/line3.js";
 import { SpatialMap } from "./spatial-map.js";
 import { Entity } from "@adobe/data/ecs";
 import { getFromSpatialMap } from "./get-from-spatial-map.js";
-import { Vec3, Vec4 } from "math/index.js";
 import { Aabb } from "math/aabb/aabb.js";
 
 export interface PickResult {
@@ -50,17 +49,6 @@ function calculateRayProperties(pickLine: Line3): RayProperties {
 }
 
 /**
- * Find the voxel containing a given position
- */
-function findVoxelContaining(position: readonly [number, number, number]): [number, number, number] {
-    return [
-        Math.round(position[0]),
-        Math.round(position[1]),
-        Math.round(position[2])
-    ];
-}
-
-/**
  * Find the next voxel boundary intersection along the ray
  */
 function findNextVoxelIntersection(
@@ -68,9 +56,19 @@ function findNextVoxelIntersection(
     rayDirNorm: readonly [number, number, number],
     currentVoxel: readonly [number, number, number]
 ): VoxelIntersection | null {
+    // Pre-allocate reusable arrays to avoid allocations in the loop
+    const voxelMin: [number, number, number] = [0, 0, 0];
+    const voxelMax: [number, number, number] = [0, 0, 0];
+    const position: [number, number, number] = [0, 0, 0];
+    const nextVoxel: [number, number, number] = [0, 0, 0];
+    
     // Calculate the current voxel boundaries
-    const voxelMin = [currentVoxel[0] - 0.5, currentVoxel[1] - 0.5, currentVoxel[2] - 0.5];
-    const voxelMax = [currentVoxel[0] + 0.5, currentVoxel[1] + 0.5, currentVoxel[2] + 0.5];
+    voxelMin[0] = currentVoxel[0] - 0.5;
+    voxelMin[1] = currentVoxel[1] - 0.5;
+    voxelMin[2] = currentVoxel[2] - 0.5;
+    voxelMax[0] = currentVoxel[0] + 0.5;
+    voxelMax[1] = currentVoxel[1] + 0.5;
+    voxelMax[2] = currentVoxel[2] + 0.5;
     
     let nextIntersection: VoxelIntersection | null = null;
     let minAlpha = Infinity;
@@ -89,31 +87,37 @@ function findNextVoxelIntersection(
             if (alpha > 0 && alpha < minAlpha) {
                 minAlpha = alpha;
                 
-                // Calculate the intersection position
-                const position: [number, number, number] = [
-                    rayStart[0] + rayDirNorm[0] * alpha,
-                    rayStart[1] + rayDirNorm[1] * alpha,
-                    rayStart[2] + rayDirNorm[2] * alpha
-                ];
+                // Calculate the intersection position (reuse existing array)
+                position[0] = rayStart[0] + rayDirNorm[0] * alpha;
+                position[1] = rayStart[1] + rayDirNorm[1] * alpha;
+                position[2] = rayStart[2] + rayDirNorm[2] * alpha;
                 
-                // Determine which face was hit
-                const face = rayDirNorm[axis] > 0 ? 
-                    (axis === 0 ? 1 : axis === 1 ? 4 : 0) : // POS_X, POS_Y, POS_Z
-                    (axis === 0 ? 3 : axis === 1 ? 5 : 2);  // NEG_X, NEG_Y, NEG_Z
-                
-                // Calculate the next voxel (step in the direction of the ray)
-                const nextVoxel: [number, number, number] = [...currentVoxel];
+                // Calculate the next voxel (reuse existing array)
+                nextVoxel[0] = currentVoxel[0];
+                nextVoxel[1] = currentVoxel[1];
+                nextVoxel[2] = currentVoxel[2];
                 if (rayDirNorm[axis] > 0) {
                     nextVoxel[axis] += 1;
                 } else {
                     nextVoxel[axis] -= 1;
                 }
                 
-                nextIntersection = {
-                    voxel: nextVoxel,
-                    position,
-                    face
-                };
+                // Create or update the intersection result (avoid object allocation)
+                if (!nextIntersection) {
+                    nextIntersection = {
+                        voxel: [nextVoxel[0], nextVoxel[1], nextVoxel[2]],
+                        position: [position[0], position[1], position[2]],
+                        face: 0 // Placeholder, not used in main loop
+                    };
+                } else {
+                    // Reuse existing object by updating its properties
+                    nextIntersection.voxel[0] = nextVoxel[0];
+                    nextIntersection.voxel[1] = nextVoxel[1];
+                    nextIntersection.voxel[2] = nextVoxel[2];
+                    nextIntersection.position[0] = position[0];
+                    nextIntersection.position[1] = position[1];
+                    nextIntersection.position[2] = position[2];
+                }
             }
         }
     }
@@ -123,42 +127,64 @@ function findNextVoxelIntersection(
 
 /**
  * Calculate intersection point of ray with voxel boundary
+ * OPTIMIZED: Reuses provided position array to avoid allocation
  */
 function calculateRayIntersection(
     rayStart: readonly [number, number, number],
     rayDirNorm: readonly [number, number, number],
     entityBounds: Aabb,
-    radius: number
-): [number, number, number] {
+    radius: number,
+    position: [number, number, number] // Reuse this array
+): void {
     let intersectionAlpha = 0;
     
-    // Check each axis to find the entry point
-    for (let axis = 0; axis < 3; axis++) {
-        if (rayDirNorm[axis] !== 0) {
-            // Calculate intersection with the min and max planes of this axis
-            // Apply radius expansion inline to avoid array allocation
-            const minBound = entityBounds.min[axis] - radius;
-            const maxBound = entityBounds.max[axis] + radius;
-            
-            const alphaMin = (minBound - rayStart[axis]) / rayDirNorm[axis];
-            const alphaMax = (maxBound - rayStart[axis]) / rayDirNorm[axis];
-            
-            // Use the appropriate alpha based on ray direction
-            const alpha = rayDirNorm[axis] > 0 ? alphaMin : alphaMax;
-            
-            // Update intersection alpha if this is the latest entry point
-            if (alpha > intersectionAlpha) {
-                intersectionAlpha = alpha;
-            }
+    // OPTIMIZATION: Cache ray start and direction values to reduce array access
+    const startX = rayStart[0];
+    const startY = rayStart[1];
+    const startZ = rayStart[2];
+    const dirX = rayDirNorm[0];
+    const dirY = rayDirNorm[1];
+    const dirZ = rayDirNorm[2];
+    
+    // Check each axis for the next boundary intersection
+    // OPTIMIZATION: Unroll the loop to avoid array access overhead
+    if (dirX !== 0) {
+        const minBoundX = entityBounds.min[0] - radius;
+        const maxBoundX = entityBounds.max[0] + radius;
+        const alphaMinX = (minBoundX - startX) / dirX;
+        const alphaMaxX = (maxBoundX - startX) / dirX;
+        const alphaX = dirX > 0 ? alphaMinX : alphaMaxX;
+        if (alphaX > intersectionAlpha) {
+            intersectionAlpha = alphaX;
         }
     }
     
-    // Calculate the actual intersection point
-    return [
-        rayStart[0] + rayDirNorm[0] * intersectionAlpha,
-        rayStart[1] + rayDirNorm[1] * intersectionAlpha,
-        rayStart[2] + rayDirNorm[2] * intersectionAlpha
-    ];
+    if (dirY !== 0) {
+        const minBoundY = entityBounds.min[1] - radius;
+        const maxBoundY = entityBounds.max[1] + radius;
+        const alphaMinY = (minBoundY - startY) / dirY;
+        const alphaMaxY = (maxBoundY - startY) / dirY;
+        const alphaY = dirY > 0 ? alphaMinY : alphaMaxY;
+        if (alphaY > intersectionAlpha) {
+            intersectionAlpha = alphaY;
+        }
+    }
+    
+    if (dirZ !== 0) {
+        const minBoundZ = entityBounds.min[2] - radius;
+        const maxBoundZ = entityBounds.max[2] + radius;
+        const alphaMinZ = (minBoundZ - startZ) / dirZ;
+        const alphaMaxZ = (maxBoundZ - startZ) / dirZ;
+        const alphaZ = dirZ > 0 ? alphaMinZ : alphaMaxZ;
+        if (alphaZ > intersectionAlpha) {
+            intersectionAlpha = alphaZ;
+        }
+    }
+    
+    // Calculate the actual intersection point (reuse provided array)
+    position[0] = startX + dirX * intersectionAlpha;
+    position[1] = startY + dirY * intersectionAlpha;
+    position[2] = startZ + dirZ * intersectionAlpha;
 }
 
 /**
@@ -180,8 +206,29 @@ export function pickFromSpatialMap(
     // Calculate ray properties
     const rayProps = calculateRayProperties(pickLine);
     
+    // Cache ray properties for faster comparisons (avoid repeated calculations)
+    const rayStart = rayProps.start;
+    const rayDirNorm = rayProps.directionNormalized;
+    const rayLengthSquared = rayProps.length * rayProps.length;
+    
+    // OPTIMIZATION: Cache ray start values to reduce array access overhead
+    const startX = rayStart[0];
+    const startY = rayStart[1];
+    const startZ = rayStart[2];
+    
+    // Pre-calculate face determination once (avoid function calls in inner loop)
+    const hitFace = determineFaceFromRayDirection(rayDirNorm);
+    
     // Start with the voxel containing the ray start
-    let currentVoxel = findVoxelContaining(rayProps.start);
+    let currentVoxel: [number, number, number] = [
+        Math.round(rayStart[0]),
+        Math.round(rayStart[1]),
+        Math.round(rayStart[2])
+    ];
+    
+    // Pre-allocate reusable arrays to avoid allocations in the hot path
+    const tempPosition: [number, number, number] = [0, 0, 0];
+    const resultPosition: [number, number, number] = [0, 0, 0];
     
     // Safety limit to prevent infinite loops (should never be hit with correct math)
     const maxIterations = 1000;
@@ -193,64 +240,96 @@ export function pickFromSpatialMap(
         // Check for entities at this voxel
         const entityData = getFromSpatialMap(spatialMap, currentVoxel);
         
-        if (entityData !== undefined) {
-            // Extract entity ID from entity data (single entity or array)
-            let entityId: number;
-            if (Array.isArray(entityData)) {
-                if (entityData.length === 0) {
-                    // Continue to next voxel
-                } else {
-                    entityId = entityData[0];
-                    
-                    // Get the actual voxel bounds for this entity
-                    const entityBounds = getVoxelBounds(entityId);
-                    
-                    // Calculate intersection point directly with radius expansion
-                    const intersectionPoint = calculateRayIntersection(rayProps.start, rayProps.directionNormalized, entityBounds, radius);
-                    
-                    return {
-                        entity: entityId,
-                        position: intersectionPoint,
-                        face: determineFaceFromRayDirection(rayProps.directionNormalized)
-                    };
-                }
-            } else {
-                entityId = entityData;
+        // Early exit optimization: skip processing if no entities
+        if (entityData === undefined) {
+            // Find the next voxel boundary intersection
+            const nextIntersection = findNextVoxelIntersection(rayStart, rayDirNorm, currentVoxel);
+            
+            if (!nextIntersection) {
+                break; // No more intersections
+            }
+            
+            // Check if we've gone beyond the ray length using squared distance
+            const distanceFromStartSquared = 
+                (nextIntersection.position[0] - startX) * (nextIntersection.position[0] - startX) +
+                (nextIntersection.position[1] - startY) * (nextIntersection.position[1] - startY) +
+                (nextIntersection.position[2] - startZ) * (nextIntersection.position[2] - startZ);
+            
+            if (distanceFromStartSquared > rayLengthSquared) {
+                break; // Beyond ray length
+            }
+            
+            // Move to the next voxel (reuse existing array to avoid allocation)
+            currentVoxel[0] = nextIntersection.voxel[0];
+            currentVoxel[1] = nextIntersection.voxel[1];
+            currentVoxel[2] = nextIntersection.voxel[2];
+            continue;
+        }
+        
+        let closestEntity: number | null = null;
+        let closestDistanceSquared = Infinity;
+        
+        // Handle both single entity and array of entities
+        const entities = Array.isArray(entityData) ? entityData : [entityData];
+        
+        // OPTIMIZED INNER LOOP: No object allocation, reuse arrays
+        for (const entityId of entities) {
+            if (entityId === undefined) continue;
+            
+            // Get the actual voxel bounds for this entity
+            const entityBounds = getVoxelBounds(entityId);
+            
+            // Calculate intersection point directly with radius expansion (reuse tempPosition)
+            calculateRayIntersection(rayStart, rayDirNorm, entityBounds, radius, tempPosition);
+            
+            // Calculate squared distance from ray start to intersection point
+            const dx = tempPosition[0] - startX;
+            const dy = tempPosition[1] - startY;
+            const dz = tempPosition[2] - startZ;
+            const distanceSquared = dx * dx + dy * dy + dz * dz;
+            
+            // Update closest entity if this one is closer
+            if (distanceSquared < closestDistanceSquared) {
+                closestDistanceSquared = distanceSquared;
+                closestEntity = entityId;
                 
-                // Get the actual voxel bounds for this entity
-                const entityBounds = getVoxelBounds(entityId);
-                
-                // Calculate intersection point directly with radius expansion
-                const intersectionPoint = calculateRayIntersection(rayProps.start, rayProps.directionNormalized, entityBounds, radius);
-                
-                return {
-                    entity: entityId,
-                    position: intersectionPoint,
-                    face: determineFaceFromRayDirection(rayProps.directionNormalized)
-                };
+                // Copy position to result array (avoid allocation)
+                resultPosition[0] = tempPosition[0];
+                resultPosition[1] = tempPosition[1];
+                resultPosition[2] = tempPosition[2];
             }
         }
         
+        // Return the closest entity if we found one
+        if (closestEntity !== null) {
+            return {
+                entity: closestEntity,
+                position: resultPosition,
+                face: hitFace
+            };
+        }
+        
         // Find the next voxel boundary intersection
-        const nextIntersection = findNextVoxelIntersection(rayProps.start, rayProps.directionNormalized, currentVoxel);
+        const nextIntersection = findNextVoxelIntersection(rayStart, rayDirNorm, currentVoxel);
         
         if (!nextIntersection) {
             break; // No more intersections
         }
         
-        // Check if we've gone beyond the ray length
-        const distanceFromStart = Math.sqrt(
-            Math.pow(nextIntersection.position[0] - rayProps.start[0], 2) +
-            Math.pow(nextIntersection.position[1] - rayProps.start[1], 2) +
-            Math.pow(nextIntersection.position[2] - rayProps.start[2], 2)
-        );
+        // Check if we've gone beyond the ray length using squared distance
+        const distanceFromStartSquared = 
+            (nextIntersection.position[0] - startX) * (nextIntersection.position[0] - startX) +
+            (nextIntersection.position[1] - startY) * (nextIntersection.position[1] - startY) +
+            (nextIntersection.position[2] - startZ) * (nextIntersection.position[2] - startZ);
         
-        if (distanceFromStart > rayProps.length) {
+        if (distanceFromStartSquared > rayLengthSquared) {
             break; // Beyond ray length
         }
         
-        // Move to the next voxel
-        currentVoxel = nextIntersection.voxel;
+        // Move to the next voxel (reuse existing array to avoid allocation)
+        currentVoxel[0] = nextIntersection.voxel[0];
+        currentVoxel[1] = nextIntersection.voxel[1];
+        currentVoxel[2] = nextIntersection.voxel[2];
     }
     
     return null;

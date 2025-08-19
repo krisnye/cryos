@@ -22,7 +22,7 @@ export function getFromSpatialMap(
     const voxelZ = Math.floor(z);
     
     // Get the 2D spatial hash key
-    const mapIndex = getSpatialMapKey([voxelX, voxelY]);
+    const mapIndex = getSpatialMapKey(voxelX, voxelY);
     
     // Get the column for this 2D position
     const column = spatialMap.get(mapIndex);

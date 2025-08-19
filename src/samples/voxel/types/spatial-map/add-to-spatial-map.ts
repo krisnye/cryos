@@ -1,11 +1,10 @@
 import { Entity } from "@adobe/data/ecs";
-import { Vec3, Vec4 } from "math/index.js";
 import { SpatialMap } from "./spatial-map.js";
 import { getSpatialMapColumn } from "./get-spatial-map-column.js";
 
-export const addToSpatialMap = (spatialMap: SpatialMap, position: Vec3 | Vec4, entity: Entity) => {
-    const column = getSpatialMapColumn(spatialMap, position, true);
-    const zIndex = Math.floor(position[2]);
+export const addToSpatialMap = (spatialMap: SpatialMap, x: number, y: number, z: number, entity: Entity) => {
+    const column = getSpatialMapColumn(spatialMap, x, y, true);
+    const zIndex = Math.floor(z);
     const value = column[zIndex];
     if (!value) {
         column[zIndex] = entity;
