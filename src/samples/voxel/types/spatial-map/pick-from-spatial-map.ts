@@ -128,6 +128,7 @@ function findNextVoxelIntersection(
 /**
  * Calculate intersection point of ray with voxel boundary
  * OPTIMIZED: Reuses provided position array to avoid allocation
+ * @returns The face index that was hit: 0=POS_Z, 1=POS_X, 2=NEG_Z, 3=NEG_X, 4=POS_Y, 5=NEG_Y
  */
 function calculateRayIntersection(
     rayStart: readonly [number, number, number],
@@ -135,8 +136,9 @@ function calculateRayIntersection(
     entityBounds: Aabb,
     radius: number,
     position: [number, number, number] // Reuse this array
-): void {
+): number {
     let intersectionAlpha = 0;
+    let hitFace = 0; // Default to POS_Z
     
     // OPTIMIZATION: Cache ray start and direction values to reduce array access
     const startX = rayStart[0];
@@ -156,6 +158,10 @@ function calculateRayIntersection(
         const alphaX = dirX > 0 ? alphaMinX : alphaMaxX;
         if (alphaX > intersectionAlpha) {
             intersectionAlpha = alphaX;
+            // Determine which X face was hit based on ray direction
+            // When dirX > 0, ray hits left boundary (min X) = Left face (normal -X, face 3)
+            // When dirX < 0, ray hits right boundary (max X) = Right face (normal +X, face 1)
+            hitFace = dirX > 0 ? 3 : 1; // 3=Left (NEG_X), 1=Right (POS_X)
         }
     }
     
@@ -167,6 +173,10 @@ function calculateRayIntersection(
         const alphaY = dirY > 0 ? alphaMinY : alphaMaxY;
         if (alphaY > intersectionAlpha) {
             intersectionAlpha = alphaY;
+            // Determine which Y face was hit based on ray direction
+            // When dirY > 0, ray hits bottom boundary (min Y) = Bottom face (normal -Y, face 5)
+            // When dirY < 0, ray hits top boundary (max Y) = Top face (normal +Y, face 4)
+            hitFace = dirY > 0 ? 5 : 4; // 5=Bottom (NEG_Y), 4=Top (POS_Y)
         }
     }
     
@@ -178,6 +188,10 @@ function calculateRayIntersection(
         const alphaZ = dirZ > 0 ? alphaMinZ : alphaMaxZ;
         if (alphaZ > intersectionAlpha) {
             intersectionAlpha = alphaZ;
+            // Determine which Z face was hit based on ray direction
+            // When dirZ > 0, ray hits back boundary (min Z) = Back face (normal -Z, face 2)
+            // When dirZ < 0, ray hits front boundary (max Z) = Front face (normal +Z, face 0)
+            hitFace = dirZ > 0 ? 2 : 0; // 2=Back (NEG_Z), 0=Front (POS_Z)
         }
     }
     
@@ -185,6 +199,8 @@ function calculateRayIntersection(
     position[0] = startX + dirX * intersectionAlpha;
     position[1] = startY + dirY * intersectionAlpha;
     position[2] = startZ + dirZ * intersectionAlpha;
+    
+    return hitFace;
 }
 
 /**
@@ -215,9 +231,6 @@ export function pickFromSpatialMap(
     const startX = rayStart[0];
     const startY = rayStart[1];
     const startZ = rayStart[2];
-    
-    // Pre-calculate face determination once (avoid function calls in inner loop)
-    const hitFace = determineFaceFromRayDirection(rayDirNorm);
     
     // Start with the voxel containing the ray start
     let currentVoxel: [number, number, number] = [
@@ -268,6 +281,7 @@ export function pickFromSpatialMap(
         
         let closestEntity: number | null = null;
         let closestDistanceSquared = Infinity;
+        let closestHitFace = 0; // Track the face for the closest entity
         
         // Handle both single entity and array of entities
         const entities = Array.isArray(entityData) ? entityData : [entityData];
@@ -280,7 +294,7 @@ export function pickFromSpatialMap(
             const entityBounds = getVoxelBounds(entityId);
             
             // Calculate intersection point directly with radius expansion (reuse tempPosition)
-            calculateRayIntersection(rayStart, rayDirNorm, entityBounds, radius, tempPosition);
+            const hitFace = calculateRayIntersection(rayStart, rayDirNorm, entityBounds, radius, tempPosition);
             
             // Calculate squared distance from ray start to intersection point
             const dx = tempPosition[0] - startX;
@@ -292,6 +306,7 @@ export function pickFromSpatialMap(
             if (distanceSquared < closestDistanceSquared) {
                 closestDistanceSquared = distanceSquared;
                 closestEntity = entityId;
+                closestHitFace = hitFace; // Store the face for the closest entity
                 
                 // Copy position to result array (avoid allocation)
                 resultPosition[0] = tempPosition[0];
@@ -305,7 +320,7 @@ export function pickFromSpatialMap(
             return {
                 entity: closestEntity,
                 position: resultPosition,
-                face: hitFace
+                face: closestHitFace
             };
         }
         
@@ -333,27 +348,4 @@ export function pickFromSpatialMap(
     }
     
     return null;
-}
-
-/**
- * Determines which face of a voxel was hit based on ray direction
- * @param rayDir Normalized ray direction vector
- * @returns Face index: 0=POS_Z, 1=POS_X, 2=NEG_Z, 3=NEG_X, 4=POS_Y, 5=NEG_Y
- */
-function determineFaceFromRayDirection(rayDir: readonly [number, number, number]): number {
-    // Find the component with the largest absolute value (dominant axis)
-    const absX = Math.abs(rayDir[0]);
-    const absY = Math.abs(rayDir[1]);
-    const absZ = Math.abs(rayDir[2]);
-    
-    if (absX >= absY && absX >= absZ) {
-        // X-axis face (NEG_X or POS_X)
-        return rayDir[0] > 0 ? 1 : 3; // 1=POS_X, 3=NEG_X
-    } else if (absY >= absZ) {
-        // Y-axis face (NEG_Y or POS_Y)
-        return rayDir[1] > 0 ? 4 : 5; // 4=POS_Y, 5=NEG_Y
-    } else {
-        // Z-axis face (NEG_Z or POS_Z)
-        return rayDir[2] > 0 ? 0 : 2; // 0=POS_Z, 2=NEG_Z
-    }
 } 

@@ -1,4 +1,4 @@
-import { F32Schema, FromSchema, Schema } from "@adobe/data/schema";
+import { F32Schema, FromSchema, Schema, U32Schema } from "@adobe/data/schema";
 import { Mat4x4Schema, Vec3Schema } from "math/index.js";
 
 export const SceneSchema = {
@@ -10,8 +10,10 @@ export const SceneSchema = {
         ambientStrength: F32Schema, // this will be packed right after lightDirection
         lightColor: Vec3Schema,
         time: F32Schema,  // this will be packed right after lightColor
+        hoverPosition: Vec3Schema,
+        hoverFace: U32Schema,
     },
-    required: ["viewProjection", "lightDirection", "lightColor", "ambientStrength", "time"],
+    required: ["viewProjection", "lightDirection", "lightColor", "ambientStrength", "time", "hoverPosition", "hoverFace"],
     additionalProperties: false,
 } as const satisfies Schema;
 

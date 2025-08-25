@@ -3,7 +3,7 @@ import { MainService } from "../main-service.js";
 import { screenToWorldRay, toViewProjection } from "graphics/camera/index.js";
 import * as MAT4 from "math/mat4x4/functions.js";
 import { pickFromSpatialMap } from "samples/voxel/types/spatial-map/index.js";
-import { FaceMeta } from "samples/voxel/types/face.js";
+import { Vec3 } from "math/index.js";
 
 export const pickParticlesSystem = ({ store, database }: MainService): System => {
     return {
@@ -31,12 +31,17 @@ export const pickParticlesSystem = ({ store, database }: MainService): System =>
                 (entity) => store.get(entity, "boundingBox")!
             );
 
-            if (picked) {
-                // console.log(`Picked particle ${picked.entity} at face ${picked.face} (${FaceMeta[picked.face].name})`);
-                const randomColor = [Math.random(), Math.random(), Math.random(), 1] as const;
-                database.transactions.setColor({ id: picked.entity, color: randomColor });
-                // picked.position and picked.face are now available
-            }
+            // weirdness from storing position and scale together.
+            const position: Vec3 = picked ? store.read(picked.entity)!.position_scale.slice(0, 3) as unknown as Vec3 : [-1000, -1000, -1000];
+            store.resources.hoverPosition = position;
+            store.resources.hoverFace = picked?.face ?? 10;
+            console.log("picked", JSON.stringify(position), picked?.face);
+            // if (picked) {
+            //     // console.log(`Picked particle ${picked.entity} at face ${picked.face} (${FaceMeta[picked.face].name})`);
+            //     // const randomColor = [Math.random(), Math.random(), Math.random(), 1] as const;
+            //     // database.transactions.setColor({ id: picked.entity, color: randomColor });
+            //     // picked.position and picked.face are now available
+            // }
         }
     } as const satisfies System;
 };

@@ -3,10 +3,7 @@
     "include": ["**/*"],
     "references": [
         {
-            "path": "../graphics"
-        },
-        {
-            "path": "../physics"
+            "path": "../math"
         }
     ]
 }

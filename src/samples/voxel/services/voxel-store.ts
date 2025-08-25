@@ -39,6 +39,8 @@ const createVoxelStoreSchema = (context: GraphicsContext) => {
                     up: [0, 1, 0],
                 } satisfies Camera
             },
+            hoverPosition: { ...Vec3Schema, default: [-1000, -1000, -1000] },
+            hoverFace: { ...U32Schema, default: 0 },
             mousePosition: Vec2Schema,
             pressedKeys: { 
                 type: "object", 

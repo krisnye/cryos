@@ -5,6 +5,8 @@ struct Scene {
     ambientStrength: f32,
     lightColor: vec3<f32>,
     time: f32,
+    hoverPosition: vec3<f32>,
+    hoverFace: u32,
 }
 
 // in Javascript we use position_scale a vec4, but this WGSL struct layout is same shape, scale packed after vec3 position.
@@ -27,6 +29,8 @@ struct VertexOutput {
     @location(1) normal: vec3<f32>,
     @location(2) worldPos: vec3<f32>,
     @location(3) isSelected: f32, // Pass selection state to fragment shader
+    @location(4) instancePos: vec3<f32>, // Pass instance position for hover comparison
+    @location(5) faceIndex: f32, // Pass face index for hover face comparison
 }
 
 @vertex
@@ -92,8 +96,10 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32,
     output.position = scene.viewProjection * vec4<f32>(worldPos, 1.0);
     output.color = colors[instanceIndex].rgb;
     output.worldPos = worldPos;
+    output.instancePos = position_scales[instanceIndex].position;
     // Calculate which face we're on and use appropriate normal
     output.normal = normals[faceIndex];
+    output.faceIndex = f32(faceIndex);
     
     // Set selection state based on face selection
     if (isSelected) {
@@ -121,10 +127,21 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     
     // Modify color based on selection state
     var finalColor = input.color;
-    if (input.isSelected > 0.5) {
+    let isHovering = all(scene.hoverPosition == input.instancePos) && (scene.hoverFace == u32(input.faceIndex));
+    let isSelected = input.isSelected > 0.5;
+    if (isHovering || isSelected) {
         // Create checkerboard pattern for selected faces
-        let checkerSize = 0.1; // Size of each checker square in world units
-        
+        var checkerSize: f32;
+        if (isHovering) {
+            if (isSelected) {
+                checkerSize = 0.06;
+            } else {
+                checkerSize = 0.08;
+            }
+        } else {
+            checkerSize = 0.1;
+        }
+
         // Get world position and create checkerboard pattern
         let worldPos = input.worldPos;
         let checkerX = floor(worldPos.x / checkerSize);
@@ -140,6 +157,12 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
         }
         // else keep original color for white squares
     }
+    
+    // let r = select(0.0, 1.0, scene.hoverFace == 0); // Red for front
+    // let g = select(0.0, 1.0, scene.hoverFace == 1); // Green for right  
+    // let b = select(0.0, 1.0, scene.hoverFace == 2); // Blue for back
+    
+    // return vec4<f32>(r, g, b, 1.0);
     
     // Combine lighting with modified vertex color
     let result = (ambient + diffuse) * finalColor;
