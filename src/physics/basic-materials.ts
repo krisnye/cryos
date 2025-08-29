@@ -1,4 +1,4 @@
-import { Material } from "./material.js";
+import { Material, MaterialIndex } from "./material.js";
 
 const rawMaterials = [
     {
@@ -83,26 +83,26 @@ const rawMaterials = [
         thermalConductivity: 0.12,
     },
     {
-        name: "infiniteHeatCapacity",
+        name: "meta",
+        meta: true,
         phase: "solid",
-        color: [1.0, 1.0, 1.0, 1.0],
+        color: [0.2, 0.6, 0.7, 1.0],
         density: 10.0,
         viscosity: 0,
         specificHeatCapacity: Number.POSITIVE_INFINITY,
         thermalConductivity: 100.0,
     },
-] as const satisfies Material[];
+] as const satisfies Omit<Material, "index">[];
 
 // Derive the type from the const assertion
-type RawMaterial = typeof rawMaterials[number];
+type RawMaterial = { index: MaterialIndex } & typeof rawMaterials[number];
 type BasicMaterials = readonly RawMaterial[] & {
     [K in RawMaterial['name']]: Extract<RawMaterial, { name: K }>;
 };
 
 // Create the materials object that satisfies both array and named property access
 export const materials: BasicMaterials = Object.assign([...rawMaterials], {} as any);
-
-for (const material of rawMaterials) {
-    (materials as any)[material.name] = material;
+for (let i = 0; i < materials.length; i++) {
+    materials[i].index = i;
+    (materials as any)[materials[i].name] = materials[i];
 }
-

@@ -1,8 +1,12 @@
 import { Phase } from "./phase.js";
 import { Vec4 } from "../math/vec4/vec4.js";
 
+export type MaterialIndex = number;
+
 export type Material = {
+    index: MaterialIndex;
     name: string;
+    meta?: boolean;
     phase: Phase;
     color: Vec4;
     /** Density in kg/m³ (kilograms per cubic meter) */

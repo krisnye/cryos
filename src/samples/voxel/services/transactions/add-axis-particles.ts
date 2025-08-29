@@ -9,6 +9,7 @@ export const addAxisParticles = (t: VoxelStore) => {
         velocity: [0, 0, 0],
         flags: 0,
         boundingBox: AabbSchema.default,
+        material: t.resources.materials.meta.index,
         particle: true
     });
     
@@ -20,6 +21,7 @@ export const addAxisParticles = (t: VoxelStore) => {
             velocity: [0, 0, 0],
             flags: 0,
             boundingBox: AabbSchema.default,
+            material: t.resources.materials.meta.index,
             particle: true,
         }),
         {
@@ -35,6 +37,7 @@ export const addAxisParticles = (t: VoxelStore) => {
         velocity: [0, 0, 0],
         flags: 0,
         boundingBox: AabbSchema.default,
+        material: t.resources.materials.meta.index,
         particle: true,
         }),
         {
@@ -50,6 +53,7 @@ export const addAxisParticles = (t: VoxelStore) => {
         velocity: [0, 0, 0],
         flags: 0,
         boundingBox: AabbSchema.default,
+        material: t.resources.materials.meta.index,
         particle: true,
         }),
         {

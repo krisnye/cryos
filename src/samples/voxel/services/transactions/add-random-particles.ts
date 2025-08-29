@@ -16,6 +16,7 @@ export const addRandomParticles = (t: VoxelStore, count: number) => {
             velocity: VEC3.scale([Math.random() * 0.2 - 0.1, Math.random() * 0.2 - 0.1, Math.random() * 0.2 - 0.1], velocity),
             flags: 0,
             boundingBox: AabbSchema.default,
+            material: t.resources.materials.meta.index,
             particle: true
         });
     }

@@ -39,7 +39,7 @@ export class ParticlesMainElement extends ServiceApplication<MainService> {
         // we don't render any other children until the service is created.
         return html`
             <div @pointermove=${(e: PointerEvent) => this.service.database.transactions.setMousePosition([e.clientX, e.clientY])}
-                 @keydown=${(e: KeyboardEvent) => this.handleKeyDown(e)}
+                 @click=${() => this.service.database.transactions.click()}
                  tabindex="0"
                  style="outline: none;">
                 <canvas width=${this.width} height=${this.height}></canvas>
@@ -47,13 +47,4 @@ export class ParticlesMainElement extends ServiceApplication<MainService> {
             </div>
         `;
     }
-
-    private handleKeyDown(e: KeyboardEvent) {
-        console.log("key down", e.key);
-        if (e.key === "Escape") {
-            // Clear selection when escape key is pressed
-            this.service.database.transactions.clearSelection();
-        }
-    }
-
 }

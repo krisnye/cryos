@@ -7,9 +7,14 @@ export const keyInputSystem = ({ store, database }: MainService): System => {
     const handleKeyDown = (event: KeyboardEvent) => {
         const keyCode = event.code as KeyCode;
         
-        // Only register the key if it's not already pressed
-        if (database.resources.pressedKeys[keyCode] === undefined) {
-            database.transactions.pressKey(keyCode);
+        if (event.repeat) {
+            // This is a repeat event - increment repeat count
+            database.transactions.incrementRepeat(keyCode);
+        } else {
+            // This is a new press - only register if not already pressed
+            if (database.resources.pressedKeys[keyCode] === undefined) {
+                database.transactions.pressKey(keyCode);
+            }
         }
 
         event.preventDefault();
@@ -31,7 +36,7 @@ export const keyInputSystem = ({ store, database }: MainService): System => {
         name: "keyInputSystem",
         phase: "input",
         run: () => {
-            // Increment pressed keys by 1 each frame
+            // Increment frame counters and update lastRepeatCount
             database.transactions.incrementPressedKeys();
         }
     };

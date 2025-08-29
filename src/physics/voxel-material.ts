@@ -1,9 +1,11 @@
-import { Material } from "./material.js";
+import { Material, MaterialIndex } from "./material.js";
 import { Phase } from "./phase.js";
 import { Vec4 } from "../math/vec4/vec4.js";
 
 export type VoxelMaterial = {
     phase: Phase;
+    index: MaterialIndex;
+    meta: boolean;
     color: Vec4;
     /** Mass of the voxel in kg */
     mass: number;
@@ -29,6 +31,8 @@ export function createVoxelMaterial(material: Material, voxelSideLength: number)
     
     return {
         phase: material.phase,
+        index: material.index,
+        meta: material.meta ?? false,
         color: material.color,
         mass,
         viscosity: material.viscosity,

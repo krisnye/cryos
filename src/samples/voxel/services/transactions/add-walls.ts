@@ -16,10 +16,11 @@ export const addWalls = (t: VoxelStore, length: number) => {
             const isSelected = (y + z) % 3 === 0;
             t.archetypes.Particle.insert({
                 position_scale: [0, y * spacing, z * spacing, size],
-                color: [0.8, 0.8, 0.8, 0.7], // Light gray, semi-transparent
+                color: t.resources.materials.meta.color,
                 velocity: [0, 0, 0], // Static wall
                 flags: isSelected ? SELECTED_MASK : 0,
                 boundingBox: AabbSchema.default,
+                material: t.resources.materials.meta.index,
                 particle: true
             });
         }
@@ -32,10 +33,11 @@ export const addWalls = (t: VoxelStore, length: number) => {
             const isSelected = (x + z) % 4 === 0;
             t.archetypes.Particle.insert({
                 position_scale: [x * spacing, 0, z * spacing, size],
-                color: [0.7, 0.8, 0.7, 0.7], // Light green, semi-transparent
+                color: t.resources.materials.meta.color,
                 velocity: [0, 0, 0], // Static wall
                 flags: isSelected ? SELECTED_MASK : 0,
                 boundingBox: AabbSchema.default,
+                material: t.resources.materials.meta.index,
                 particle: true
             });
         }
@@ -48,10 +50,11 @@ export const addWalls = (t: VoxelStore, length: number) => {
             const isSelected = (x + y) % 5 === 0;
             t.archetypes.Particle.insert({
                 position_scale: [x * spacing, y * spacing, 0, size],
-                color: [0.7, 0.7, 0.8, 0.7], // Light blue, semi-transparent
+                material: t.resources.materials.meta.index,
                 velocity: [0, 0, 0], // Static wall
                 flags: isSelected ? SELECTED_MASK : 0,
                 boundingBox: AabbSchema.default,
+                color: t.resources.materials.meta.color,
                 particle: true
             });
         }
