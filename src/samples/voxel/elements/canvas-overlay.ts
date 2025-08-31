@@ -1,7 +1,7 @@
 import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
 import { ParticlesElement } from "../particles-element.js";
-import { useObservableValues } from "@adobe/data/lit";
+import { useDragTransaction, useObservableValues } from "@adobe/data/lit";
 import { repeat } from "lit/directives/repeat.js";
 import "./particles-label.js";
 
@@ -20,6 +20,17 @@ export class CanvasOverlay extends ParticlesElement {
         const values = useObservableValues(() => ({
             renderFrame: this.service.database.observe.resources.renderFrame
         }));
+
+        // useDragTransaction(() => {
+        //     console.log("useDragTransaction!!!!!!");
+        //     return {
+        //         transaction: this.service?.database.transactions.dragMouse,
+        //         update: (drag) => {
+        //             return drag;
+        //         }
+        //     }
+        // }, [this.service])
+
 
         // Get all labeled particles from both archetypes
         const labeledParticles: Array<{ id: number, label: string }> = [];

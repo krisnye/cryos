@@ -5,20 +5,15 @@ import { createQueryState } from "@adobe/data/observe";
 
 interface SampleDefinition {
     name: string;
-    load: () => Promise<unknown>;
+    load?: () => Promise<unknown>;
     render: () => TemplateResult;
 }
 
 const samples: Record<string, SampleDefinition> = {
-    "service": {
-        name: "Service Sample",
-        load: () => import("./service-sample/index.js"),
-        render: () => html`<service-sample-main-element></service-sample-main-element>`
-    },
     "twixt": {
         name: "Twixt",
-        load: () => import("./twixt/index.js"),
-        render: () => html`<twixt-main-element></twixt-main-element>`
+        load: () => import("./twixt/twixt-application.js"),
+        render: () => html`<twixt-application></twixt-application>`
     },
     "particle-sample": {
         name: "Particle Sample",
@@ -107,7 +102,7 @@ export class SampleContainer extends LitElement {
 
         const { load, render } = samples[values.sample];
         // we don't await the load, it just ensures the module is loaded
-        load();
+        load?.();
 
         return render();
     }

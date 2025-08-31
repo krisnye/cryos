@@ -63,7 +63,7 @@ export class TwixtTurnIndicator extends TwixtElement {
         }
     `;
 
-    protected override render() {
+    override render() {
         const values = useObservableValues(() => ({
             player: this.service.state.observe.currentPlayer,
             winner: this.service.state.observe.winner,

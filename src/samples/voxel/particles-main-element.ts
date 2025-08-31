@@ -4,6 +4,7 @@ import { css, html } from "lit";
 import { createMainService, MainService } from "./services/main-service.js";
 import { getWebGPUGraphicsContext } from "graphics/get-web-gpu-device-and-context.js";
 import { when } from "lit/directives/when.js";
+import { useDragTransaction } from "@adobe/data/lit";
 import "./elements/particles-label.js";
 import "./elements/canvas-overlay.js";
 
@@ -37,6 +38,7 @@ export class ParticlesMainElement extends ServiceApplication<MainService> {
     override render() {
         // we have to render the canvas first because we use it to create the service.
         // we don't render any other children until the service is created.
+
         return html`
             <div @pointermove=${(e: PointerEvent) => this.service.database.transactions.setMousePosition([e.clientX, e.clientY])}
                  @click=${() => this.service.database.transactions.click()}

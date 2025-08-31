@@ -12,3 +12,4 @@ export * from "./move-camera.js";
 export * from "./clear-selection.js";
 export * from "./click.js";
 export * from "./toggle-selection.js";
+export * from "./drag-mouse.js";

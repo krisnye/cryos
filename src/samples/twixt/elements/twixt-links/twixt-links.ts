@@ -22,7 +22,7 @@ export class TwixtLinks extends TwixtElement {
     @property({ type: Array })
     links: BoardLink[] = [];
 
-    protected override render() {
+    override render() {
         const values = useObservableValues(() => ({
             hoverIndex: this.service.state.database.observe.resources.hoverIndex,
             currentPlayer: this.service.state.observe.currentPlayer,
