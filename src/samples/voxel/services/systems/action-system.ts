@@ -53,8 +53,8 @@ export const actionSystem = ({ store, database }: MainService): System => {
         "ArrowDown": () => moveCamera({ forward: -1 }), // Backward
         
         // Camera rotation
-        "KeyR": () => rotateCamera('pitch', 2),    // Pitch up
-        "KeyF": () => rotateCamera('pitch', -2),   // Pitch down
+        "KeyF": () => rotateCamera('pitch', 2),    // Pitch up
+        "KeyR": () => rotateCamera('pitch', -2),   // Pitch down
         "ArrowLeft": () => rotateCamera('yaw', 2), // Yaw left
         "ArrowRight": () => rotateCamera('yaw', -2), // Yaw right
         "KeyQ": () => rotateCamera('roll', -2),    // Roll left
