@@ -1,12 +1,12 @@
 import { customElement, property } from "lit/decorators.js";
 import { css, html } from "lit";
-import { ParticlesElement } from "../particles-element.js";
+import { VoxelElement } from "../voxel-element.js";
 import { worldToScreen } from "graphics/camera/world-to-screen.js";
 import { useEffect, useObservableValues } from "@adobe/data/lit";
 import * as VEC3 from "math/vec3/index.js";
 
-@customElement("voxel-particles-label")
-export class ParticlesLabel extends ParticlesElement {
+@customElement("voxel-particle-label")
+export class ParticleLabel extends VoxelElement {
 
     @property({ type: Number })
     entity = 0;

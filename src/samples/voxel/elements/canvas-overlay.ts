@@ -1,12 +1,10 @@
 import { customElement } from "lit/decorators.js";
 import { css, html } from "lit";
-import { ParticlesElement } from "../particles-element.js";
-import { useDragTransaction, useObservableValues } from "@adobe/data/lit";
-import { repeat } from "lit/directives/repeat.js";
-import "./particles-label.js";
+import { VoxelElement } from "../voxel-element.js";
+import "./particle-labels.js";
 
 @customElement("voxel-canvas-overlay")
-export class CanvasOverlay extends ParticlesElement {
+export class CanvasOverlay extends VoxelElement {
 
     static override styles = [
         css`
@@ -17,41 +15,8 @@ export class CanvasOverlay extends ParticlesElement {
     ];
 
     override render() {
-        const values = useObservableValues(() => ({
-            renderFrame: this.service.database.observe.resources.renderFrame
-        }));
-
-        // useDragTransaction(() => {
-        //     console.log("useDragTransaction!!!!!!");
-        //     return {
-        //         transaction: this.service?.database.transactions.dragMouse,
-        //         update: (drag) => {
-        //             return drag;
-        //         }
-        //     }
-        // }, [this.service])
-
-
-        // Get all labeled particles from both archetypes
-        const labeledParticles: Array<{ id: number, label: string }> = [];
-        
-        // Check LabeledParticle archetype
-        for (const archetype of this.service.database.queryArchetypes(["position_scale", "label"])) {
-            for (let i = 0; i < archetype.rowCount; i++) {
-                const id = archetype.columns.id.get(i);
-                const label = archetype.columns.label.get(i);
-                labeledParticles.push({ id, label });
-            }
-        }
-
         return html`
-            <div>
-                ${repeat(
-                    labeledParticles,
-                    (item) => `${item.id}`,
-                    (item) => html`<voxel-particles-label .entity=${item.id} .label=${item.label}></voxel-particles-label>`
-                )}
-            </div>
+            <voxel-particle-labels></voxel-particle-labels>
         `;
     }
 

@@ -1,6 +1,6 @@
 import { GraphicsContext } from "graphics/graphics-context.js";
 import { createStore, createStoreSchema, Entity } from "@adobe/data/ecs";
-import { Vec2Schema, Vec3Schema, Vec4Schema } from "math/index.js";
+import { Vec2, Vec2Schema, Vec3Schema, Vec4Schema } from "math/index.js";
 import { createGraphicsStoreSchema } from "graphics/database/graphics-database.js";
 import { Schema, TrueSchema, U32Schema } from "@adobe/data/schema";
 import { KeyCode } from "../types/key-code.js";
@@ -13,7 +13,13 @@ export const GPUBindGroupSchema = {
     default: null as unknown as GPUBindGroup,
 } as const satisfies Schema;
 
-console.log("materials", createBasicVoxelMaterials(VOXEL_MODEL_SIZE));
+export type PointerState = {
+    position: Vec2,
+    entity: { id: Entity, flags: number } | null,
+    face: number,
+}
+
+export type DragMode = "select" | "unselect" | null;
 
 const createVoxelStoreSchema = (context: GraphicsContext) => {
     const graphicsStoreSchema = createGraphicsStoreSchema(context);
@@ -46,7 +52,8 @@ const createVoxelStoreSchema = (context: GraphicsContext) => {
             },
             hoverPosition: { ...Vec3Schema, default: [-1000, -1000, -1000] },
             hoverFace: { ...U32Schema, default: 0 },
-            mousePosition: Vec2Schema,
+            pointerState: { default: {} as { [pointerId: number]: PointerState } },
+            dragMode: { default: null as DragMode },
             pressedKeys: { 
                 type: "object", 
                 default: {} as Partial<Record<KeyCode, { frames: number, repeat: number, lastRepeatCount: number }>>,

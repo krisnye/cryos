@@ -4,12 +4,12 @@ import { css, html } from "lit";
 import { createMainService, MainService } from "./services/main-service.js";
 import { getWebGPUGraphicsContext } from "graphics/get-web-gpu-device-and-context.js";
 import { when } from "lit/directives/when.js";
-import { useDragTransaction } from "@adobe/data/lit";
-import "./elements/particles-label.js";
+import "./elements/particle-label.js";
+import "./elements/particle-labels.js";
 import "./elements/canvas-overlay.js";
 
 @customElement("voxel-main-element")
-export class ParticlesMainElement extends ServiceApplication<MainService> {
+export class VoxelMainElement extends ServiceApplication<MainService> {
 
     @property({ type: Number })
     width = 1600;
@@ -40,8 +40,22 @@ export class ParticlesMainElement extends ServiceApplication<MainService> {
         // we don't render any other children until the service is created.
 
         return html`
-            <div @pointermove=${(e: PointerEvent) => this.service.database.transactions.setMousePosition([e.clientX, e.clientY])}
-                 @click=${() => this.service.database.transactions.click()}
+            <div
+                @pointermove=${(e: PointerEvent) => {
+                    this.service.database.transactions.pointerMove({
+                        pointerId: e.pointerId,
+                        position: [e.clientX, e.clientY],
+                    });
+                }}
+                @pointerdown=${(e: PointerEvent) => {
+                    this.service.database.transactions.pointerDown({
+                        pointerId: e.pointerId,
+                        position: [e.clientX, e.clientY],
+                    });
+                }}
+                 @pointerup=${(e: PointerEvent) => this.service.database.transactions.pointerUp({
+                     pointerId: e.pointerId
+                 })}
                  tabindex="0"
                  style="outline: none;">
                 <canvas width=${this.width} height=${this.height}></canvas>
