@@ -12,7 +12,7 @@ export const keyInputSystem = ({ store, database }: MainService): System => {
             database.transactions.incrementRepeat(keyCode);
         } else {
             // This is a new press - only register if not already pressed
-            if (database.resources.pressedKeys[keyCode] === undefined) {
+            if ((database.resources.pressedKeys as Partial<Record<KeyCode, { frames: number, repeat: number, lastRepeatCount: number }>>)[keyCode] === undefined) {
                 database.transactions.pressKey(keyCode);
             }
         }

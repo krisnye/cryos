@@ -5,9 +5,9 @@ export const incrementPressedKeys = (t: VoxelStore) => {
         Object.entries(t.resources.pressedKeys).map(([key, state]) => [
             key, 
             { 
-                ...state, 
-                frames: state.frames + 1,
-                lastRepeatCount: state.repeat
+                ...(state as { frames: number, repeat: number, lastRepeatCount: number }), 
+                frames: (state as { frames: number, repeat: number, lastRepeatCount: number }).frames + 1,
+                lastRepeatCount: (state as { frames: number, repeat: number, lastRepeatCount: number }).repeat
             }
         ])
     );

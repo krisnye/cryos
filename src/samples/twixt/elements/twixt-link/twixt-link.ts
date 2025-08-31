@@ -40,7 +40,7 @@ export class TwixtLink extends TwixtElement {
     @property({ type: Boolean })
     isPotential = false;
 
-    protected override render() {
+    public override render() {
         const values = useObservableValues(() => ({
             size: this.service.state.observe.boardSize,
             currentPlayer: this.service.state.observe.currentPlayer,

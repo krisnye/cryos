@@ -3,6 +3,8 @@ import { MainService } from "../main-service.js";
 import { KeyCode } from "../../types/key-code.js";
 import { CameraMovement } from "../transactions/move-camera.js";
 
+type KeyState = { frames: number, repeat: number, lastRepeatCount: number };
+
 export const actionSystem = ({ store, database }: MainService): System => {
     // Higher-order functions for camera operations
     const moveCamera = (movementParams: CameraMovement) => {
@@ -16,7 +18,7 @@ export const actionSystem = ({ store, database }: MainService): System => {
         
         // Find the maximum frame count from any movement key to calculate acceleration
         const movementKeys = ["KeyW", "KeyS", "KeyA", "KeyD", "ArrowUp", "ArrowDown"];
-        const maxFrames = Math.max(...movementKeys.map(key => pressedKeys[key]?.frames ?? 0));
+        const maxFrames = Math.max(...movementKeys.map(key => (pressedKeys as Partial<Record<KeyCode, KeyState>>)[key as KeyCode]?.frames ?? 0));
         
         const acceleration = Math.min(1 + maxFrames * accelerationPerFrame, maximumSpeed / baseSpeed);
         const movementAmount = baseSpeed * acceleration * deltaTime;
@@ -79,9 +81,10 @@ export const actionSystem = ({ store, database }: MainService): System => {
             // Execute actions for each pressed key
             Object.entries(pressedKeys).forEach(([keyCode, keyState]) => {
                 const key = keyCode as KeyCode;
+                const state = keyState as KeyState;
                 
                 // Execute immediate actions only on first press
-                if (keyState.repeat === 0) {
+                if (state.repeat === 0) {
                     const immediateHandler = immediateHandlers[key];
                     if (immediateHandler) immediateHandler();
                 }
@@ -91,7 +94,7 @@ export const actionSystem = ({ store, database }: MainService): System => {
                 if (frameHandler) frameHandler();
                 
                 // Execute repeat-based actions if new repeat occurred
-                if (keyState.repeat > keyState.lastRepeatCount) {
+                if (state.repeat > state.lastRepeatCount) {
                     const repeatHandler = repeatHandlers[key];
                     if (repeatHandler) repeatHandler();
                 }
