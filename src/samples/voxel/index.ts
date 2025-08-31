@@ -1,1 +1,1 @@
-export * from "./particles-main-element.js";
+export * from "./voxel-main-element.js";

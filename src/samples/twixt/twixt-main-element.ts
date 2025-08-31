@@ -1,12 +1,18 @@
-import { ServiceApplication, withHooks } from "@adobe/data/lit";
-import { MainService } from "./services/main-service/main-service.js";
-import { createMainService } from "./services/main-service/create-main-service.js";
+import { withHooks } from "@adobe/data/lit";
 import { customElement } from "lit/decorators.js";
 import { html, css } from "lit";
+import { TwixtElement } from "./twixt-element.js";
 import "./elements/index.js";
 
-@customElement("twixt-main-element")
-export class TwixtGame extends ServiceApplication<MainService> {
+export const tagName = "twixt-main-element";
+
+declare global {
+    interface HTMLElementTagNameMap {
+        [tagName]: TwixtGame;
+    }
+}
+@customElement(tagName)
+export class TwixtGame extends TwixtElement {
     static override styles = css`
         .rules-link {
             position: absolute;
@@ -35,15 +41,8 @@ export class TwixtGame extends ServiceApplication<MainService> {
         }
     `;
 
-    protected override async createService(): Promise<MainService> {
-        return createMainService();
-    }
-
     @withHooks
     override render() {
-        if (!this.service) {
-            return html`<div>Loading...</div>`;
-        }
         return html`
             <div class="game-container">
                 <a

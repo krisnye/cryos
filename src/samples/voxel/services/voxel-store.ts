@@ -1,14 +1,25 @@
 import { GraphicsContext } from "graphics/graphics-context.js";
-import { createStore, createStoreSchema } from "@adobe/data/ecs";
-import { Vec2Schema, Vec3Schema, Vec4Schema } from "math/index.js";
+import { createStore, createStoreSchema, Entity } from "@adobe/data/ecs";
+import { Vec2, Vec2Schema, Vec3Schema, Vec4Schema } from "math/index.js";
 import { createGraphicsStoreSchema } from "graphics/database/graphics-database.js";
 import { Schema, TrueSchema, U32Schema } from "@adobe/data/schema";
 import { KeyCode } from "../types/key-code.js";
 import { Camera, CameraSchema } from "graphics/camera/camera.js";
+import { SpatialMap } from "../types/spatial-map/spatial-map.js";
+import { createBasicVoxelMaterials } from "physics/basic-voxel-materials.js";
+import { VOXEL_MODEL_SIZE } from "./voxel-constants.js";
 
 export const GPUBindGroupSchema = {
     default: null as unknown as GPUBindGroup,
 } as const satisfies Schema;
+
+export type PointerState = {
+    position: Vec2,
+    entity: { id: Entity, flags: number } | null,
+    face: number,
+}
+
+export type DragMode = "select" | "unselect" | null;
 
 const createVoxelStoreSchema = (context: GraphicsContext) => {
     const graphicsStoreSchema = createGraphicsStoreSchema(context);
@@ -18,10 +29,11 @@ const createVoxelStoreSchema = (context: GraphicsContext) => {
             ...graphicsStoreSchema.components,
             velocity: Vec3Schema,
             particle: TrueSchema,
-            position: Vec3Schema,
+            static: TrueSchema,
             position_scale: Vec4Schema,
             color: Vec4Schema,
             flags: U32Schema,
+            material: U32Schema,
             label: { type: 'string' },
         },
         {
@@ -38,16 +50,33 @@ const createVoxelStoreSchema = (context: GraphicsContext) => {
                     up: [0, 1, 0],
                 } satisfies Camera
             },
-            mousePosition: Vec2Schema,
+            hoverPosition: { ...Vec3Schema, default: [-1000, -1000, -1000] },
+            hoverFace: { ...U32Schema, default: 0 },
+            pointerState: { default: {} as { [pointerId: number]: PointerState } },
+            dragMode: { default: null as DragMode },
             pressedKeys: { 
                 type: "object", 
-                default: {} as Partial<Record<KeyCode, number>>,
+                default: {} as Partial<Record<KeyCode, { frames: number, repeat: number, lastRepeatCount: number }>>,
             } as const satisfies Schema,
+            mapSize: {
+                ...Vec2Schema,
+                default: [256, 256],
+            },
+            mapColumns: {
+                default: new Map<number, Array<Entity | Entity[]>>() as SpatialMap,
+                transient: true,
+                mutable: true,
+            },
+            materials: {
+                default: createBasicVoxelMaterials(VOXEL_MODEL_SIZE),
+                transient: true,
+                mutable: true,
+            }
         },
         {
             ...graphicsStoreSchema.archetypes,
-            Particle: ["particle", "position_scale", "color", "velocity", "flags", "boundingBox"],
-            LabeledParticle: ["particle", "position_scale", "color", "velocity", "flags", "boundingBox", "label"],
+            Particle: ["particle", "position_scale", "color", "velocity", "flags", "boundingBox", "material"],
+            StaticParticle: ["particle", "position_scale", "color", "flags", "boundingBox", "static", "material"],
         },
     );
 };

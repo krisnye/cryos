@@ -1,21 +1,18 @@
 import { customElement, property } from "lit/decorators.js";
 import { css, html } from "lit";
-import { ParticlesElement } from "../particles-element.js";
+import { VoxelElement } from "../voxel-element.js";
 import { worldToScreen } from "graphics/camera/world-to-screen.js";
-import { useEffect } from "@adobe/data/lit";
+import { useEffect, useObservableValues } from "@adobe/data/lit";
 import * as VEC3 from "math/vec3/index.js";
 
-@customElement("voxel-particles-label")
-export class ParticlesLabel extends ParticlesElement {
-
-    @property({ type: String })
-    archetype = '';
+@customElement("voxel-particle-label")
+export class ParticleLabel extends VoxelElement {
 
     @property({ type: Number })
-    particleIndex = 0;
+    entity = 0;
 
     @property({ type: String })
-    labelText = '';
+    label = '';
 
     static override styles = [
         css`
@@ -40,12 +37,19 @@ export class ParticlesLabel extends ParticlesElement {
     ];
 
     override render() {
-        // Get the appropriate archetype based on the archetype property
-        const particles = this.service.database.archetypes[this.archetype as keyof typeof this.service.database.archetypes] as any;
+        const values = useObservableValues(() => ({
+            entity: this.service.database.observe.entity(this.entity),
+        }));
         
         useEffect(() => {
             return this.service.database.observe.resources.renderFrame(() => {
-                const position_scale = particles.columns.position_scale.get(this.particleIndex);
+                if (!values?.entity) {
+                    return;
+                }
+                const { position_scale, label } = values?.entity;
+                if (!position_scale || !label) {
+                    return;
+                }
                 const position: VEC3.Vec3 = [position_scale[0], position_scale[1], position_scale[2]];
                 // Position label slightly offset from the particle for better visibility
                 const labelOffset = VEC3.add(position, [0.6, 0.6, 0.6]);
@@ -70,7 +74,7 @@ export class ParticlesLabel extends ParticlesElement {
                 this.style.display = 'block';
             })
         })
-        return html`${this.labelText}`;
+        return html`${this.label}`;
     }
 
 }

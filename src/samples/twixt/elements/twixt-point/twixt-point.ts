@@ -83,7 +83,7 @@ export class TwixtPoint extends TwixtElement {
     @property({ type: Number })
     index = 0;
 
-    protected override render() {
+    public override render() {
         const values = useObservableValues(() => ({
             piece: boardPointPiece(this.service, this.index),
             hover: boardPointHover(this.service, this.index),
