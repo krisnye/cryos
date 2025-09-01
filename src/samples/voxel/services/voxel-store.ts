@@ -21,6 +21,18 @@ export type PointerState = {
 
 export type DragMode = "select" | "unselect" | null;
 
+export type KeyState = {
+    repeatCount: number;
+    executeCount: number;
+    frameCount: number;
+    modifiers: {
+        ctrl: boolean;
+        shift: boolean;
+        alt: boolean;
+        meta: boolean;
+    };
+};
+
 const createVoxelStoreSchema = (context: GraphicsContext) => {
     const graphicsStoreSchema = createGraphicsStoreSchema(context);
 
@@ -54,9 +66,9 @@ const createVoxelStoreSchema = (context: GraphicsContext) => {
             hoverFace: { ...U32Schema, default: 0 },
             pointerState: { default: {} as { [pointerId: number]: PointerState } },
             dragMode: { default: null as DragMode },
-            pressedKeys: { 
-                type: "object", 
-                default: {} as Partial<Record<KeyCode, { frames: number, repeat: number, lastRepeatCount: number }>>,
+            pressedKeys: {
+                mutable: true,
+                default: {} as Partial<Record<KeyCode, KeyState>>,
             } as const satisfies Schema,
             mapSize: {
                 ...Vec2Schema,

@@ -2,7 +2,8 @@ import { VoxelStore } from "../voxel-store.js";
 import { AabbSchema } from "math/aabb/aabb.js";
 import * as VEC3 from "math/vec3/index.js";
 
-export const addRandomParticles = (t: VoxelStore, count: number) => {
+export const addRandomParticles = (t: VoxelStore, args: { count: number }) => {
+    const { count } = args;
     // add N random particles positioned from -1 to +1
     // and with random velocity
     const velocity = 0.5;

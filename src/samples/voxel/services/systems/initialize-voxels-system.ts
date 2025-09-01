@@ -9,13 +9,13 @@ export const initializeParticlesSystem = (main: MainService): System => {
         phase: "update",
         run: () => {
             // Add random particles (configurable count)
-            database.transactions.addRandomParticles(10);
+            database.transactions.addRandomParticles({ count: 10 });
             
             // Add axis reference particles
             database.transactions.addAxisParticles();
             
             // Add walls extending from origin
-            database.transactions.addWalls(16);
+            database.transactions.addWalls({ length: 16 });
         }
     })
 };

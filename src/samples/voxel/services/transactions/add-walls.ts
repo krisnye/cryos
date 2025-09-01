@@ -2,7 +2,8 @@ import { VoxelStore } from "../voxel-store.js";
 import { AabbSchema } from "math/aabb/aabb.js";
 import { SELECTED_MASK } from "../../types/flags.js";
 
-export const addWalls = (t: VoxelStore, length: number) => {
+export const addWalls = (t: VoxelStore, args: { length: number }) => {
+    const { length } = args;
     // Create 3 walls/floors extending from origin
     // Each wall is a grid of particles with spacing of 0.5 units
     
@@ -10,8 +11,8 @@ export const addWalls = (t: VoxelStore, length: number) => {
     const size = 1.0;
     
     // X-direction wall (YZ plane at x=0)
-    for (let y = 0; y < length; y++) {
-        for (let z = 0; z < length; z++) {
+    for (let y = 1; y < length; y++) {
+        for (let z = 1; z < length; z++) {
             // Select every 3rd particle in the X wall
             const isSelected = (y + z) % 3 === 0;
             t.archetypes.Particle.insert({
@@ -27,8 +28,8 @@ export const addWalls = (t: VoxelStore, length: number) => {
     }
     
     // Y-direction wall (XZ plane at y=0)
-    for (let x = 0; x < length; x++) {
-        for (let z = 0; z < length; z++) {
+    for (let x = 1; x < length; x++) {
+        for (let z = 1; z < length; z++) {
             // Select every 4th particle in the Y wall
             const isSelected = (x + z) % 4 === 0;
             t.archetypes.Particle.insert({
@@ -44,8 +45,8 @@ export const addWalls = (t: VoxelStore, length: number) => {
     }
     
     // Z-direction wall (XY plane at z=0)
-    for (let x = 0; x < length; x++) {
-        for (let y = 0; y < length; y++) {
+    for (let x = 1; x < length; x++) {
+        for (let y = 1; y < length; y++) {
             // Select every 5th particle in the Z wall
             const isSelected = (x + y) % 5 === 0;
             t.archetypes.Particle.insert({
