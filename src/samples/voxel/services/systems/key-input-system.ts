@@ -1,20 +1,35 @@
 import { System } from "graphics/systems/system.js";
 import { MainService } from "../main-service.js";
 import { KeyCode } from "../../types/key-code.js";
+import { KeyState } from "../voxel-store.js";
 
 export const keyInputSystem = ({ store, database }: MainService): System => {
 
     const handleKeyDown = (event: KeyboardEvent) => {
         const keyCode = event.code as KeyCode;
         
-        if (event.repeat) {
-            // This is a repeat event - increment repeat count
-            database.transactions.incrementRepeat(keyCode);
+        // Capture modifier states
+        const modifiers = {
+            ctrl: event.ctrlKey,
+            shift: event.shiftKey,
+            alt: event.altKey,
+            meta: event.metaKey
+        };
+        
+        // Handle key press directly
+        const existingState = store.resources.pressedKeys[keyCode];
+        
+        if (existingState) {
+            // Key already pressed - increment repeat count
+            existingState.repeatCount += 1;
         } else {
-            // This is a new press - only register if not already pressed
-            if ((database.resources.pressedKeys as Partial<Record<KeyCode, { frames: number, repeat: number, lastRepeatCount: number }>>)[keyCode] === undefined) {
-                database.transactions.pressKey(keyCode);
-            }
+            // New key press
+            store.resources.pressedKeys[keyCode] = { 
+                repeatCount: 1, 
+                executeCount: 0,
+                frameCount: 0,
+                modifiers
+            };
         }
 
         event.preventDefault();
@@ -23,7 +38,9 @@ export const keyInputSystem = ({ store, database }: MainService): System => {
 
     const handleKeyUp = (event: KeyboardEvent) => {
         const keyCode = event.code as KeyCode;
-        database.transactions.releaseKey(keyCode);
+        
+        // Remove key directly
+        delete store.resources.pressedKeys[keyCode];
 
         event.preventDefault();
         event.stopPropagation();
@@ -36,8 +53,10 @@ export const keyInputSystem = ({ store, database }: MainService): System => {
         name: "keyInputSystem",
         phase: "input",
         run: () => {
-            // Increment frame counters and update lastRepeatCount
-            database.transactions.incrementPressedKeys();
+            // Increment frame count for all pressed keys
+            Object.values(store.resources.pressedKeys).forEach(keyState => {
+                keyState.frameCount += 1;
+            });
         }
     };
 }; 

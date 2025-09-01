@@ -11,3 +11,11 @@ export type KeyCode =
   | "AltLeft" | "AltRight" | "MetaLeft" | "MetaRight"
   | "CapsLock" | "F1" | "F2" | "F3" | "F4" | "F5" | "F6"
   | "F7" | "F8" | "F9" | "F10" | "F11" | "F12";
+
+export type ModifierKey = "Ctrl" | "Shift" | "Alt" | "Meta";
+
+export type KeyCombination = 
+  | KeyCode 
+  | `${ModifierKey}+${KeyCode}`
+  | `${ModifierKey}+${ModifierKey}+${KeyCode}`
+  | `${ModifierKey}+${ModifierKey}+${ModifierKey}+${KeyCode}`;

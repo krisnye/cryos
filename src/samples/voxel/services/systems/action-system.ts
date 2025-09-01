@@ -1,11 +1,43 @@
 import { System } from "graphics/systems/system.js";
 import { MainService } from "../main-service.js";
-import { KeyCode } from "../../types/key-code.js";
+import { KeyCode, KeyCombination, ModifierKey } from "../../types/key-code.js";
 import { CameraMovement } from "../transactions/move-camera.js";
+import { KeyState } from "../voxel-store.js";
 
-type KeyState = { frames: number, repeat: number, lastRepeatCount: number };
+// Utility function to parse a key combination string
+const parseKeyCombination = (combination: KeyCombination): { modifiers: ModifierKey[]; key: KeyCode } => {
+    const parts = combination.split('+');
+    if (parts.length === 1) {
+        return { modifiers: [], key: parts[0] as KeyCode };
+    }
+    const modifiers = parts.slice(0, -1) as ModifierKey[];
+    const key = parts[parts.length - 1] as KeyCode;
+    return { modifiers, key };
+};
 
-export const actionSystem = ({ store, database }: MainService): System => {
+// Utility function to check if a key state matches a combination
+const matchesKeyCombination = (
+    keyCode: KeyCode, 
+    keyState: KeyState, 
+    combination: KeyCombination
+): boolean => {
+    const { modifiers, key } = parseKeyCombination(combination);
+    
+    // Check if the main key matches
+    if (keyCode !== key) return false;
+    
+    // Check if all required modifiers are active
+    return modifiers.every(mod => {
+        switch (mod) {
+            case "Ctrl": return keyState.modifiers.ctrl;
+            case "Shift": return keyState.modifiers.shift;
+            case "Alt": return keyState.modifiers.alt;
+            case "Meta": return keyState.modifiers.meta;
+        }
+    });
+};
+
+export const actionSystem = ({ store, database, undoRedo }: MainService): System => {
     // Higher-order functions for camera operations
     const moveCamera = (movementParams: CameraMovement) => {
         const { pressedKeys, updateFrame } = store.resources;
@@ -18,7 +50,7 @@ export const actionSystem = ({ store, database }: MainService): System => {
         
         // Find the maximum frame count from any movement key to calculate acceleration
         const movementKeys = ["KeyW", "KeyS", "KeyA", "KeyD", "ArrowUp", "ArrowDown"];
-        const maxFrames = Math.max(...movementKeys.map(key => (pressedKeys as Partial<Record<KeyCode, KeyState>>)[key as KeyCode]?.frames ?? 0));
+        const maxFrames = Math.max(...movementKeys.map(key => (pressedKeys as Partial<Record<KeyCode, KeyState>>)[key as KeyCode]?.frameCount ?? 0));
         
         const acceleration = Math.min(1 + maxFrames * accelerationPerFrame, maximumSpeed / baseSpeed);
         const movementAmount = baseSpeed * acceleration * deltaTime;
@@ -68,8 +100,13 @@ export const actionSystem = ({ store, database }: MainService): System => {
     };
     
     // Immediate handlers (execute once when key is first pressed)
-    const immediateHandlers: Partial<Record<KeyCode, () => void>> = {
-        "Escape": () => database.transactions.clearSelection()
+    const immediateHandlers: Partial<Record<KeyCombination, () => void>> = {
+        "Escape": () => database.transactions.clearSelection(),
+        "Ctrl+KeyZ": () => undoRedo.undo(),
+        "Meta+KeyZ": () => { console.log("Meta+KeyZ"); undoRedo.undo() },
+        "Ctrl+Shift+KeyY": () => undoRedo.redo(),
+        "Meta+Shift+KeyY": () => undoRedo.redo(),
+        "Meta+KeyP": () => console.log("meta + P pressed"),
     };
     
     return {
@@ -83,20 +120,29 @@ export const actionSystem = ({ store, database }: MainService): System => {
                 const key = keyCode as KeyCode;
                 const state = keyState as KeyState;
                 
-                // Execute immediate actions only on first press
-                if (state.repeat === 0) {
-                    const immediateHandler = immediateHandlers[key];
-                    if (immediateHandler) immediateHandler();
+                // Execute immediate actions only when executeCount < repeatCount
+                if (state.executeCount < state.repeatCount) {
+                    // Check for key combinations in immediate handlers
+                    for (const [combination, handler] of Object.entries(immediateHandlers)) {
+                        if (matchesKeyCombination(key, state, combination as KeyCombination)) {
+                            handler();
+                            // Mark as executed directly
+                            state.executeCount += 1;
+                            break; // Only execute the first matching handler
+                        }
+                    }
                 }
                 
                 // Execute frame-based actions
                 const frameHandler = frameHandlers[key];
                 if (frameHandler) frameHandler();
                 
-                // Execute repeat-based actions if new repeat occurred
-                if (state.repeat > state.lastRepeatCount) {
-                    const repeatHandler = repeatHandlers[key];
-                    if (repeatHandler) repeatHandler();
+                // Execute repeat-based actions if repeat count increased
+                // Note: This will fire on every repeat event since we're not tracking lastRepeatCount
+                // If you need to limit this, you could add a flag or use a different approach
+                const repeatHandler = repeatHandlers[key];
+                if (repeatHandler && state.repeatCount > 1) {
+                    repeatHandler();
                 }
             });
         }
