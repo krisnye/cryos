@@ -1,8 +1,4 @@
-import type { Vec2 } from "math/index.js";
-import type { Mat4x4, Vec3 } from "math/index.js";
-import type { Line3 } from "math/line3/line3.js";
-import * as VEC3 from "math/vec3/functions.js";
-import * as MAT4 from "math/mat4x4/functions.js";
+import { Vec2, Mat4x4, Vec3, Line3 } from "@adobe/data/math";
 
 /**
  * Converts screen coordinates to a world space pick line for ray casting.
@@ -33,8 +29,8 @@ export const screenToWorldRay = (
     const farPoint = [ndcX, ndcY, 1, 1] as const;
 
     // Transform to world space
-    const nearWorld = MAT4.multiplyVec4(invViewProjection, nearPoint);
-    const farWorld = MAT4.multiplyVec4(invViewProjection, farPoint);
+    const nearWorld = Mat4x4.multiplyVec4(invViewProjection, nearPoint);
+    const farWorld = Mat4x4.multiplyVec4(invViewProjection, farPoint);
 
     // Perform perspective divide and ensure Vec3 type
     const nearWorldPos: Vec3 = [
@@ -49,7 +45,7 @@ export const screenToWorldRay = (
     ];
 
     // Calculate ray direction (from near to far, which should point towards negative Z)
-    const rayDirection = VEC3.normalize(VEC3.subtract(nearWorldPos, farWorldPos));
+    const rayDirection = Vec3.normalize(Vec3.subtract(nearWorldPos, farWorldPos));
 
     // Create the ray end point at the specified length from the near plane point
     const rayEnd: Vec3 = [

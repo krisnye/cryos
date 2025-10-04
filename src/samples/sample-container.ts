@@ -1,39 +1,37 @@
-import { html, LitElement, TemplateResult, css } from "lit";
+import { html, LitElement, TemplateResult, css, CSSResult } from "lit";
 import { customElement } from "lit/decorators.js";
-import { withHooks, useObservableValues } from "@adobe/data/lit";
+import { withHooks, useObservableValues, useEffect, useState } from "@adobe/data/lit";
 import { createQueryState } from "@adobe/data/observe";
 
 interface SampleDefinition {
     name: string;
-    load?: () => Promise<unknown>;
     render: () => TemplateResult;
 }
 
 const samples: Record<string, SampleDefinition> = {
+    "hello-model": {
+        name: "Hello Model",
+        render: () => {
+            import("./hello-model/hello-model-application.js");
+            return html`<hello-model-application></hello-model-application>`;
+        }
+    },
     "twixt": {
         name: "Twixt",
-        load: () => import("./twixt/twixt-application.js"),
-        render: () => html`<twixt-application></twixt-application>`
+        render: () => {
+            import("./twixt/twixt-application.js");
+            return html`<twixt-application></twixt-application>`;
+        }
     },
-    "particle-sample": {
-        name: "Particle Sample",
-        load: () => import("./particles/index.js"),
-        render: () => html`<particles-main-element></particles-main-element>`
-    },
-    "voxels": {
-        name: "Voxels",
-        load: () => import("./voxel/index.js"),
-        render: () => html`<voxel-main-element></voxel-main-element>`
-    }
 } as const;
 
 type SampleKeys = keyof typeof samples;
 
 const [sample, setSample] = createQueryState<SampleKeys | null>("sample", null);
 
-@customElement("cryos-sample-container")
+@customElement("voxel-sample-container")
 export class SampleContainer extends LitElement {
-    static override styles = css`
+    static override styles: CSSResult = css`
         :host {
             display: block;
             padding: 2rem;
@@ -81,14 +79,14 @@ export class SampleContainer extends LitElement {
     `;
 
     @withHooks
-    override render() {
+    override render(): TemplateResult {
         const values = useObservableValues(() => ({
             sample
         })) ?? { sample: null };
 
         if (!values.sample) {
             return html`
-                <h1 class="title">Cryos Samples</h1>
+                <h1 class="title">Voxel Samples</h1>
                 <nav>
                     ${Object.entries(samples).map(([key, value]) => 
                         html`<a href="#" @click=${(e: Event) => {
@@ -100,10 +98,7 @@ export class SampleContainer extends LitElement {
             `;
         }
 
-        const { load, render } = samples[values.sample];
-        // we don't await the load, it just ensures the module is loaded
-        load?.();
-
+        const { render } = samples[values!.sample!];
         return render();
     }
 }

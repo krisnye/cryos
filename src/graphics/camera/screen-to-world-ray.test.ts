@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { screenToWorldRay } from "./screen-to-world-ray.js";
 import { toViewProjection } from "./to-view-projection.js";
 import type { Camera } from "./camera.js";
-import * as MAT4 from "math/mat4x4/functions.js";
+import { Mat4x4 } from "@adobe/data/math";
 
 describe("screenToWorldRay", () => {
     const createTestCamera = (): Camera => ({
@@ -13,6 +13,7 @@ describe("screenToWorldRay", () => {
         position: [0, 0, 5],
         target: [0, 0, 0],
         up: [0, 1, 0],
+        orthographic: 0,
     });
 
     it("converts screen center to ray pointing forward", () => {
@@ -23,7 +24,7 @@ describe("screenToWorldRay", () => {
 
         // Compute the inverse view-projection matrix
         const viewProjection = toViewProjection(camera);
-        const invViewProjection = MAT4.inverse(viewProjection);
+        const invViewProjection = Mat4x4.inverse(viewProjection);
 
         const ray = screenToWorldRay(screenCenter, invViewProjection, canvasWidth, canvasHeight);
 
@@ -61,7 +62,7 @@ describe("screenToWorldRay", () => {
 
         // Compute the inverse view-projection matrix
         const viewProjection = toViewProjection(camera);
-        const invViewProjection = MAT4.inverse(viewProjection);
+        const invViewProjection = Mat4x4.inverse(viewProjection);
 
         const ray = screenToWorldRay(screenTopLeft, invViewProjection, canvasWidth, canvasHeight);
 
@@ -97,7 +98,7 @@ describe("screenToWorldRay", () => {
 
         // Compute the inverse view-projection matrix
         const viewProjection = toViewProjection(camera);
-        const invViewProjection = MAT4.inverse(viewProjection);
+        const invViewProjection = Mat4x4.inverse(viewProjection);
 
         const ray = screenToWorldRay(screenBottomRight, invViewProjection, canvasWidth, canvasHeight);
 
@@ -134,7 +135,7 @@ describe("screenToWorldRay", () => {
 
         // Compute the inverse view-projection matrix
         const viewProjection = toViewProjection(camera);
-        const invViewProjection = MAT4.inverse(viewProjection);
+        const invViewProjection = Mat4x4.inverse(viewProjection);
 
         const ray = screenToWorldRay(screenCenter, invViewProjection, canvasWidth, canvasHeight, customLength);
 
@@ -160,6 +161,7 @@ describe("screenToWorldRay", () => {
             position: [10, 5, 15],
             target: [0, 0, 0],
             up: [0, 1, 0],
+            orthographic: 0,
         };
         const canvasWidth = 1600;
         const canvasHeight = 900;
@@ -167,7 +169,7 @@ describe("screenToWorldRay", () => {
 
         // Compute the inverse view-projection matrix
         const viewProjection = toViewProjection(camera);
-        const invViewProjection = MAT4.inverse(viewProjection);
+        const invViewProjection = Mat4x4.inverse(viewProjection);
 
         const ray = screenToWorldRay(screenCenter, invViewProjection, canvasWidth, canvasHeight);
 

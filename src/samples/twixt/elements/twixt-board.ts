@@ -1,5 +1,5 @@
 import { TwixtElement } from "../twixt-element.js";
-import { css, html } from "lit";
+import { css, html, type CSSResult, type TemplateResult } from "lit";
 import { customElement } from "lit/decorators.js";
 import { useObservableValues } from "@adobe/data/lit";
 import "./twixt-point";
@@ -9,21 +9,21 @@ const range = (size: number) => Array.from({ length: size }, (_, i) => i);
 
 @customElement("twixt-board")
 export class TwixtBoard extends TwixtElement {
-    static override styles = css`
+    static override styles: CSSResult = css`
         .board-container {
             display: grid;
             position: relative;
         }
     `;
 
-    override render() {
+    override render(): TemplateResult {
         const values = useObservableValues(() => ({
             size: this.service.state.observe.boardSize,
             links: this.service.state.database.observe.resources.links,
         }));
 
         if (!values)
-            return;
+            return html``;
 
         return html`
             <div class="board-container" style="grid-template-columns: repeat(${values.size}, 1fr);">

@@ -1,7 +1,7 @@
 {
-  "name": "cryos",
+  "name": "viper",
   "version": "0.3.0",
-  "description": "Declarative Web Components in 1Kb",
+  "description": "Voxel Physics and Rendering Engine",
   "type": "module",
   "scripts": {
     "build": "tsc --build && tsc-alias && vite build",

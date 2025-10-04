@@ -1,5 +1,5 @@
 import { TwixtElement } from "../../twixt-element.js";
-import { css, html } from "lit";
+import { css, html, type CSSResult, type TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { useObservableValues } from "@adobe/data/lit";
 import { boardPointValue as boardPointPiece } from "../../dependent-state/board-point-value.js";
@@ -59,7 +59,7 @@ const isValidMove = (index: number, size: number, value: string | null, player: 
 
 @customElement("twixt-point")
 export class TwixtPoint extends TwixtElement {
-    static override styles = css`
+    static override styles: CSSResult = css`
         .point {
             aspect-ratio: 1;
             display: grid;
@@ -83,7 +83,7 @@ export class TwixtPoint extends TwixtElement {
     @property({ type: Number })
     index = 0;
 
-    public override render() {
+    public override render(): TemplateResult {
         const values = useObservableValues(() => ({
             piece: boardPointPiece(this.service, this.index),
             hover: boardPointHover(this.service, this.index),
@@ -93,7 +93,7 @@ export class TwixtPoint extends TwixtElement {
         }));
 
         if (!values)
-            return;
+            return html``;
 
         // Don't render corner points
         if (isCornerPoint(this.index, values.size)) {

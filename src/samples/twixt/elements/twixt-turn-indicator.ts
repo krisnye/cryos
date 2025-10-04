@@ -1,5 +1,5 @@
 import { TwixtElement } from "../twixt-element.js";
-import { css, html } from "lit";
+import { css, html, type CSSResult, type TemplateResult } from "lit";
 import { customElement } from "lit/decorators.js";
 import { useObservableValues } from "@adobe/data/lit";
 import redCircle from "../assets/red-circle.svg";
@@ -7,7 +7,7 @@ import blackCircle from "../assets/black-circle.svg";
 
 @customElement("twixt-turn-indicator")
 export class TwixtTurnIndicator extends TwixtElement {
-    static override styles = css`
+    static override styles: CSSResult = css`
         :host {
             display: block;
             width: 100%;
@@ -63,13 +63,13 @@ export class TwixtTurnIndicator extends TwixtElement {
         }
     `;
 
-    override render() {
+    override render(): TemplateResult {
         const values = useObservableValues(() => ({
             player: this.service.state.observe.currentPlayer,
             winner: this.service.state.observe.winner,
         }));
 
-        if (!values) return;
+        if (!values) return html``;
 
         if (values.winner) {
             return html`
