@@ -1,5 +1,4 @@
-import { Line2, subLine } from "../../../math/line2/index.js";
-import { intersects } from "../../../math/line2/intersects.js";
+import { Line2 } from "@adobe/data/math";
 import { boardSize } from "../services/state-service/dependent-state/board-size.js";
 import { Player, BoardLink, BoardPoint } from "../services/state-service/state-service.js";
 
@@ -22,7 +21,7 @@ const linkToLine2 = (link: BoardLink, size: number): Line2 => {
     const [from, to] = link;
     const [x1, y1] = indexToCoords(from, size);
     const [x2, y2] = indexToCoords(to, size);
-    return subLine({
+    return Line2.subLine({
         a: [x1, y1],
         b: [x2, y2]
     }, 0.01, 0.99); // shorten the line to avoid counting endpoints as intersections
@@ -74,7 +73,7 @@ export const calculateNewLinks = (
         // Check if this line intersects with any existing lines
         const hasIntersection = links.some(existingLink => {
             const existingLine = linkToLine2(existingLink, size);
-            return intersects(potentialLine, existingLine);
+            return Line2.intersects(potentialLine, existingLine);
         });
         
         if (!hasIntersection) {

@@ -11,6 +11,7 @@ const createTestCamera = (): Camera => ({
     position: [0, 0, 10],
     target: [0, 0, 0],
     up: [0, 1, 0],
+    orthographic: 0,
 });
 
 describe("worldToScreen", () => {

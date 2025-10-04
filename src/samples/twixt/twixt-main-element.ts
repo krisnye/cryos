@@ -1,6 +1,6 @@
 import { withHooks } from "@adobe/data/lit";
 import { customElement } from "lit/decorators.js";
-import { html, css } from "lit";
+import { html, css, type CSSResult, type TemplateResult } from "lit";
 import { TwixtElement } from "./twixt-element.js";
 import "./elements/index.js";
 
@@ -13,7 +13,7 @@ declare global {
 }
 @customElement(tagName)
 export class TwixtGame extends TwixtElement {
-    static override styles = css`
+    static override styles: CSSResult = css`
         .rules-link {
             position: absolute;
             top: 1rem;
@@ -42,7 +42,7 @@ export class TwixtGame extends TwixtElement {
     `;
 
     @withHooks
-    override render() {
+    override render(): TemplateResult {
         return html`
             <div class="game-container">
                 <a

@@ -1,5 +1,5 @@
 import { TwixtElement } from "../../twixt-element.js";
-import { css, html } from "lit";
+import { css, html, type CSSResult, type TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { useObservableValues } from "@adobe/data/lit";
 import { indexToPoint } from "../../functions/index.js";
@@ -7,7 +7,7 @@ import { BoardLink } from "../../services/index.js";
 
 @customElement("twixt-link")
 export class TwixtLink extends TwixtElement {
-    static override styles = css`
+    static override styles: CSSResult = css`
         :host {
             position: absolute;
             pointer-events: none;
@@ -40,13 +40,13 @@ export class TwixtLink extends TwixtElement {
     @property({ type: Boolean })
     isPotential = false;
 
-    public override render() {
+    public override render(): TemplateResult {
         const values = useObservableValues(() => ({
             size: this.service.state.observe.boardSize,
             currentPlayer: this.service.state.observe.currentPlayer,
         }));
 
-        if (!values) return;
+        if (!values) return html``;
 
         const [from, to] = this.link;
         const fromCoords = indexToPoint(from, values.size);

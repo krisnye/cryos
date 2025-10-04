@@ -1,7 +1,5 @@
-import type { Vec2, Vec3 } from "math/index.js";
+import { Vec3, Mat4x4 } from "@adobe/data/math";
 import type { Camera } from "./camera.js";
-import * as MAT4 from "math/mat4x4/functions.js";
-import * as VEC3 from "math/vec3/functions.js";
 
 /**
  * Converts a world space coordinate to screen space coordinates and depth.
@@ -19,12 +17,12 @@ export const worldToScreen = (
     canvasHeight: number
 ): [number, number, number] => {
     // Create the view-projection matrix (same as used in the shader)
-    const perspective = MAT4.perspective(camera.fieldOfView, camera.aspect, camera.nearPlane, camera.farPlane);
-    const lookAt = MAT4.lookAt(camera.position, camera.target, camera.up);
-    const viewProjection = MAT4.multiply(perspective, lookAt);
+    const perspective = Mat4x4.perspective(camera.fieldOfView, camera.aspect, camera.nearPlane, camera.farPlane);
+    const lookAt = Mat4x4.lookAt(camera.position, camera.target, camera.up);
+    const viewProjection = Mat4x4.multiply(perspective, lookAt);
     
     // Transform world position to clip space
-    const clipSpace = MAT4.multiplyVec4(viewProjection, [...worldPosition, 1]);
+    const clipSpace = Mat4x4.multiplyVec4(viewProjection, [...worldPosition, 1]);
     
     // Check if point is behind camera (W < 0)
     if (clipSpace[3] <= 0) {

@@ -1,5 +1,5 @@
 import { TwixtElement } from "../../twixt-element.js";
-import { css, html } from "lit";
+import { css, html, type CSSResult, type TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { useObservableValues } from "@adobe/data/lit";
 import { calculateNewLinks } from "../../functions/index.js";
@@ -8,7 +8,7 @@ import { BoardLink } from "../../services/index.js";
 
 @customElement("twixt-links")
 export class TwixtLinks extends TwixtElement {
-    static override styles = css`
+    static override styles: CSSResult = css`
         :host {
             position: absolute;
             top: 8px;
@@ -22,13 +22,13 @@ export class TwixtLinks extends TwixtElement {
     @property({ type: Array })
     links: BoardLink[] = [];
 
-    override render() {
+    override render(): TemplateResult {
         const values = useObservableValues(() => ({
             hoverIndex: this.service.state.database.observe.resources.hoverIndex,
             currentPlayer: this.service.state.observe.currentPlayer,
         }));
 
-        if (!values) return;
+        if (!values) return html``;
 
         const potentialLinks = values.hoverIndex !== null && values.currentPlayer
             ? calculateNewLinks(

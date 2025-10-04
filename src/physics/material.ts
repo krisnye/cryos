@@ -1,5 +1,5 @@
 import { Phase } from "./phase.js";
-import { Vec4 } from "../math/vec4/vec4.js";
+import { Vec4 } from "@adobe/data/math";
 
 export type MaterialIndex = number;
 
