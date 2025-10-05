@@ -1,6 +1,6 @@
 {
-  "name": "viper",
-  "version": "0.3.0",
+  "name": "cryos",
+  "version": "0.4.0",
   "description": "Voxel Physics and Rendering Engine",
   "type": "module",
   "scripts": {
@@ -15,6 +15,7 @@
     "deploy": "npm run clean && npm run build && npm publish --access public",
     "test:debug": "node --inspect ./node_modules/vitest/vitest.mjs run --no-browser"
   },
+  "files": ["lib/**/*", "package.json", "README.md", "LICENSE"],
   "exports": {
     "./*": "./lib/*.js"
   },
@@ -44,7 +45,7 @@
   "author": "krisnye@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "@adobe/data": "^0.4.5",
+    "@adobe/data": "^0.5.13",
     "@lit/context": "^1.1.5"
   }
 }

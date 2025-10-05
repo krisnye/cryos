@@ -89,7 +89,7 @@ export const graphicsStoreSchema = createStoreSchema(
         timeScale: { ...F32.schema, default: 1.0 },
         lightDirection: { ...Vec3.schema, default: Vec3.normalize([-1, -3, -10]) },
         ambientStrength: { ...F32.schema, default: 0.5 },
-        lightColor: { ...Vec3.schema, default: [1.2, 1.2, 1.2] },
+        lightColor: { ...Vec3.schema, default: [1.0, 1.0, 1.0] },
         // valid during update phase
         updateFrame: FrameSchema,
         commandEncoder: { default: null as GPUCommandEncoder | null, transient: true },

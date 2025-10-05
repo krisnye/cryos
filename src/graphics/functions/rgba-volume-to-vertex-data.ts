@@ -14,13 +14,14 @@ const DIRECTIONS: readonly Vec3[] = [
 
 // Pre-computed quad indices using integer offsets
 // Each normal maps directly to its index: [1,0,0]=0, [-1,0,0]=1, [0,1,0]=2, etc.
+// Vertices are in counter-clockwise order when viewed from outside the cube
 const FACE_QUADS: readonly number[][] = [
-    [1, 2, 6, 5],   // +X face (right)
-    [0, 7, 3, 4],   // -X face (left)
-    [3, 2, 6, 7],   // +Y face (top)
-    [0, 1, 5, 4],   // -Y face (bottom)
-    [4, 5, 6, 7],   // +Z face (front)
-    [0, 3, 2, 1]    // -Z face (back)
+    [1, 5, 6, 2],   // +X face (right) - counter-clockwise when viewed from +X
+    [0, 3, 7, 4],   // -X face (left) - counter-clockwise when viewed from -X
+    [3, 7, 6, 2],   // +Y face (top) - counter-clockwise when viewed from +Y
+    [0, 4, 5, 1],   // -Y face (bottom) - counter-clockwise when viewed from -Y
+    [4, 7, 6, 5],   // +Z face (front) - counter-clockwise when viewed from +Z
+    [0, 1, 2, 3]    // -Z face (back) - counter-clockwise when viewed from -Z
 ];
 
 // Convert normal vector to direct array index (no string operations!)

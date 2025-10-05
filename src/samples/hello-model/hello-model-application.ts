@@ -20,6 +20,9 @@ export class HelloModelGame extends HelloModelBaseElement {
     }
 
     static override styles: CSSResult = css`
+        .game-container {
+            background-color: beige;
+        }
     `;
 
     override render(): TemplateResult {
@@ -28,9 +31,9 @@ export class HelloModelGame extends HelloModelBaseElement {
                 <div>
                     Hello Model!
                 </div>
-                <graphics-viewport style="border: 1px solid red;" .initialCamera=${{ position: [5, 3, -5], target: [0, 0, 0] }} .clearColor=${[0.0, 0.0, 0.0, 0.0] as const}>
-                </graphics-viewport>
                 <graphics-viewport style="border: 1px solid blue;" .initialCamera=${{ position: [2, 5, 7], target: [0, 0, 0] }} .clearColor=${[0.0, 0.0, 0.0, 0.0] as const}>
+                </graphics-viewport>
+                <graphics-viewport style="border: 1px solid red;" .initialCamera=${{ position: [5, 3, -5], target: [0, 0, 0] }} .clearColor=${[0.0, 0.0, 0.0, 0.0] as const}>
                 </graphics-viewport>
             </div>
         `;

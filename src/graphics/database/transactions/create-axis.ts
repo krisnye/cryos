@@ -10,7 +10,7 @@ export function createAxis(t: GraphicsStore) {
         rotation: Quat.identity()
     } as never);
 
-    const size = 3;
+    const size = 5;
     const girth = 0.35;
     
     // Red particle on X-axis (no rotation - aligned with X)

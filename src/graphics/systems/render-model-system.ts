@@ -1,5 +1,4 @@
 import { SystemFactory } from "systems/system-factory.js";
-import { GraphicsStore } from "../database/graphics-store.js";
 import { GraphicsService } from "graphics/graphics-service.js";
 import { Vec3, Quat } from "@adobe/data/math";
 import { createStructBuffer, copyToGPUBuffer } from "@adobe/data/typed-buffer";
@@ -50,7 +49,8 @@ export const renderModelSystem : SystemFactory<GraphicsService> = (service) => {
     
     // Reusable buffers - retained across iterations and system calls
     let instanceDataBuffer = createStructBuffer(instanceTransformSchema, 1); // Start with capacity 1
-    let gpuBuffer: GPUBuffer | null = null;
+    // Map of vertex buffer to GPU buffer for each group
+    const groupGpuBuffers = new Map<GPUBuffer, GPUBuffer>();
 
     return [{
         name: "renderModelSystem",
@@ -162,6 +162,11 @@ export const renderModelSystem : SystemFactory<GraphicsService> = (service) => {
                     instanceDataBuffer.capacity = group.instanceCount;
                 }
                 
+                // Clear the buffer before populating (critical!)
+                for (let i = 0; i < instanceDataBuffer.capacity; i++) {
+                    instanceDataBuffer.set(i, { position: [0, 0, 0], scale: [0, 0, 0], rotation: [0, 0, 0, 1] });
+                }
+                
                 // Populate instance data
                 for (let i = 0; i < group.instanceCount; i++) {
                     instanceDataBuffer.set(i, {
@@ -171,14 +176,17 @@ export const renderModelSystem : SystemFactory<GraphicsService> = (service) => {
                     });
                 }
                 
-                // Create or resize GPU buffer for instance data
+                // Get or create GPU buffer for this specific group
+                let gpuBuffer = groupGpuBuffers.get(vertexBuffer);
                 const instanceDataArray = instanceDataBuffer.getTypedArray();
+                
                 if (!gpuBuffer || gpuBuffer.size < instanceDataArray.byteLength) {
                     gpuBuffer = device.createBuffer({
                         size: instanceDataArray.byteLength,
                         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
                         mappedAtCreation: false
                     });
+                    groupGpuBuffers.set(vertexBuffer, gpuBuffer);
                 }
                 
                 // Copy typed data to GPU buffer
@@ -210,11 +218,11 @@ export const renderModelSystem : SystemFactory<GraphicsService> = (service) => {
             bindGroupLayout = null;
             pipeline = null;
             
-            // Clean up reusable buffers
-            if (gpuBuffer) {
+            // Clean up all group GPU buffers
+            for (const gpuBuffer of groupGpuBuffers.values()) {
                 gpuBuffer.destroy();
-                gpuBuffer = null;
             }
+            groupGpuBuffers.clear();
         }
     }]
 }

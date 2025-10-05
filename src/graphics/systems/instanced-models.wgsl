@@ -79,8 +79,11 @@ fn fragmentMain(input: VertexOutput) -> FragmentOutput {
     // Combine lighting
     let lighting = ambient + diffuse;
     
-    // Apply lighting to color
-    let finalColor = input.color * lighting;
+    // Apply lighting to color (but preserve alpha)
+    let finalColor = vec4<f32>(
+        input.color.rgb * lighting,
+        input.color.a
+    );
     
-    return FragmentOutput(finalColor);
+    return FragmentOutput(vec4<f32>(1.0, 1.0, 1.0, 1.0));
 }

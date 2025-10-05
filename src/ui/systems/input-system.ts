@@ -68,7 +68,6 @@ export const inputSystem: SystemFactory<GraphicsService> = (service) => {
             Object.values(store.resources.pressedKeys).forEach(keyState => {
                 keyState.frameCount += 1;
             });
-            // console.log(JSON.stringify(store.resources.pressedKeys, null, 2));
         },
         dispose: () => {
             // Remove event listeners

@@ -11,12 +11,12 @@ export const tagName = "graphics-viewport";
 
 declare global {
     interface HTMLElementTagNameMap {
-        [tagName]: HelloModelViewport;
+        [tagName]: GraphicsViewport;
     }
 }
 
 @customElement(tagName)
-export class HelloModelViewport extends ApplicationElement<GraphicsService> {
+export class GraphicsViewport extends ApplicationElement<GraphicsService> {
     static override styles: CSSResult = css`
         :host {
             display: inline-block;
@@ -33,10 +33,10 @@ export class HelloModelViewport extends ApplicationElement<GraphicsService> {
     clearColor: Vec4 = [0.3, 0.3, 0.3, 1.0];
 
     @property({ type: Number })
-    width: number = 600;
+    width: number = 800;
 
     @property({ type: Number })
-    height: number = 400;
+    height: number = 600;
 
     override render(): TemplateResult {
         const device = useObservable(this.service.database.observe.resources.device);

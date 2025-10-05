@@ -6,10 +6,10 @@ export type Type = FromSchema<typeof schema>;
 
 export const toVec4 = (rgba: Type): Vec4 => {
     return [
-        (rgba >>> 0) & 0xFF / 255,
-        (rgba >>> 8) & 0xFF / 255,
-        (rgba >>> 16) & 0xFF / 255,
-        (rgba >>> 24) & 0xFF / 255
+        ((rgba >>> 0) & 0xFF) / 255,   // Red   - bits 0-7
+        ((rgba >>> 8) & 0xFF) / 255,    // Green - bits 8-15
+        ((rgba >>> 16) & 0xFF) / 255,   // Blue  - bits 16-23
+        ((rgba >>> 24) & 0xFF) / 255    // Alpha - bits 24-31
     ]
 }
 
@@ -18,5 +18,5 @@ export const fromVec4 = (vec4: Vec4): Type => {
 }
 
 export const isVisible = (rgba: Type): boolean => {
-    return (rgba & 0xFF) !== 0; // Alpha is in lowest 8 bits, visible if non-zero
+    return ((rgba >>> 24) & 0xFF) !== 0; // Alpha is in highest 8 bits, visible if non-zero
 }
