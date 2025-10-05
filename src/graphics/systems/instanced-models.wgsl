@@ -85,5 +85,5 @@ fn fragmentMain(input: VertexOutput) -> FragmentOutput {
         input.color.a
     );
     
-    return FragmentOutput(vec4<f32>(1.0, 1.0, 1.0, 1.0));
+    return FragmentOutput(finalColor);
 }
