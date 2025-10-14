@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { Volume, Rgba } from "data/index.js";
-import { fromVec4 } from "data/rgba/rgba.js";
 import { rgbaVolumeToVertexData } from "./rgba-volume-to-vertex-data.js";
 import { Vec4, Vec3 } from "@adobe/data/math";
 
@@ -13,7 +12,7 @@ describe("rgbaVolumeToVertexData", () => {
         const data = createTypedBuffer(Rgba.schema, elements);
         
         // Fill one voxel with red color
-        const redColor = fromVec4([1, 0, 0, 1] as Vec4); // Red with full alpha
+        const redColor = Rgba.fromVec4([1, 0, 0, 1] as Vec4); // Red with full alpha
         data.set(0, redColor); // Position 0,0,0
         
         const volume: Volume<Rgba> = { size, data };
@@ -39,7 +38,7 @@ describe("rgbaVolumeToVertexData", () => {
         const data = createTypedBuffer(Rgba.schema, elements);
         
         // Fill all voxels
-        const redColor = fromVec4([1, 0, 0, 1] as Vec4);
+        const redColor = Rgba.fromVec4([1, 0, 0, 1] as Vec4);
         for (let i = 0; i < elements; i++) {
             data.set(i, redColor);
         }
@@ -65,7 +64,7 @@ describe("rgbaVolumeToVertexData", () => {
         const data = createTypedBuffer(Rgba.schema, elements);
         
         // Leave voxels transparent (alpha = 0)
-        const transparentColor = fromVec4([0, 0, 0, 0] as Vec4);
+        const transparentColor = Rgba.fromVec4([0, 0, 0, 0] as Vec4);
         data.set(0, transparentColor);
         
         const volume: Volume<Rgba> = { size, data };

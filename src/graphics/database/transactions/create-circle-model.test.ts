@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import { createCircleModel } from "./create-circle-model.js";
 import { graphicsStoreSchema } from "../graphics-store.js";
 import { createStoreFromSchema } from "@adobe/data/ecs";
-import { index } from "data/volume/volume.js";
+import { Volume } from "data/index.js";
 import { Quat } from "@adobe/data/math";
 
 describe("createCircleModel", () => {
@@ -16,7 +16,7 @@ describe("createCircleModel", () => {
                 color: [1, 0, 0, 1],
                 radius,
                 scale: [0.25, 0.25, 0.25],
-                rotation: Quat.identity()
+                rotation: Quat.identity
             });
             
             expect(entity).toBeGreaterThan(0);
@@ -39,7 +39,7 @@ describe("createCircleModel", () => {
             color: [1, 0, 0, 1],
             radius,
             scale: [1, 1, 1],
-            rotation: Quat.identity()
+            rotation: Quat.identity
         });
         
         const volume = store.read(entity)!.voxelColor;
@@ -47,17 +47,17 @@ describe("createCircleModel", () => {
         const centerY = radius;
         
         // Check center is filled
-        const centerIdx = index(volume, centerX, centerY, 0);
+        const centerIdx = Volume.index(volume, centerX, centerY, 0);
         expect(volume.data.get(centerIdx)).toBeGreaterThan(0);
         
         // Check edge cases: just inside radius should be filled
         const innerX = centerX + Math.floor(radius * 0.7);
         const innerY = centerY;
-        const innerIdx = index(volume, innerX, innerY, 0);
+        const innerIdx = Volume.index(volume, innerX, innerY, 0);
         expect(volume.data.get(innerIdx)).toBeGreaterThan(0);
         
         // Check corners (outside radius) should be empty
-        const cornerIdx = index(volume, 0, 0, 0);
+        const cornerIdx = Volume.index(volume, 0, 0, 0);
         expect(volume.data.get(cornerIdx)).toBe(0);
     });
 });

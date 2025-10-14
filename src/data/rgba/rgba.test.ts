@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toVec4, fromVec4, isVisible } from "./rgba.js";
+import { Rgba } from "./rgba.js";
 import { Vec4 } from "@adobe/data/math";
 
 describe("Rgba", () => {
@@ -9,7 +9,7 @@ describe("Rgba", () => {
             // Packed as: R << 0 | G << 8 | B << 16 | A << 24
             const packed = (87 << 0) | (69 << 8) | (163 << 16) | (255 << 24);
             
-            const vec4 = toVec4(packed);
+            const vec4 = Rgba.toVec4(packed);
             
             expect(vec4[0]).toBeCloseTo(87 / 255, 3); // R
             expect(vec4[1]).toBeCloseTo(69 / 255, 3); // G
@@ -20,7 +20,7 @@ describe("Rgba", () => {
         it("should handle zero values correctly", () => {
             const packed = (0 << 0) | (0 << 8) | (0 << 16) | (0 << 24);
             
-            const vec4 = toVec4(packed);
+            const vec4 = Rgba.toVec4(packed);
             
             expect(vec4).toEqual([0, 0, 0, 0]);
         });
@@ -28,7 +28,7 @@ describe("Rgba", () => {
         it("should handle maximum values correctly", () => {
             const packed = (255 << 0) | (255 << 8) | (255 << 16) | (255 << 24);
             
-            const vec4 = toVec4(packed);
+            const vec4 = Rgba.toVec4(packed);
             
             expect(vec4).toEqual([1, 1, 1, 1]);
         });
@@ -38,7 +38,7 @@ describe("Rgba", () => {
         it("should correctly pack RGBA values into u32", () => {
             const vec4: Vec4 = [87/255, 69/255, 163/255, 255/255];
             
-            const packed = fromVec4(vec4);
+            const packed = Rgba.fromVec4(vec4);
             
             // Extract bytes to verify packing
             const r = (packed >>> 0) & 0xFF;
@@ -55,7 +55,7 @@ describe("Rgba", () => {
         it("should handle zero values correctly", () => {
             const vec4: Vec4 = [0, 0, 0, 0];
             
-            const packed = fromVec4(vec4);
+            const packed = Rgba.fromVec4(vec4);
             
             expect(packed).toBe(0);
         });
@@ -63,7 +63,7 @@ describe("Rgba", () => {
         it("should handle maximum values correctly", () => {
             const vec4: Vec4 = [1, 1, 1, 1];
             
-            const packed = fromVec4(vec4);
+            const packed = Rgba.fromVec4(vec4);
             
             // Extract bytes to verify packing
             const r = (packed >>> 0) & 0xFF;
@@ -82,8 +82,8 @@ describe("Rgba", () => {
         it("should maintain values through pack/unpack cycle", () => {
             const originalVec4: Vec4 = [0.5, 0.25, 0.75, 0.8];
             
-            const packed = fromVec4(originalVec4);
-            const unpacked = toVec4(packed);
+            const packed = Rgba.fromVec4(originalVec4);
+            const unpacked = Rgba.toVec4(packed);
             
             // Allow for floating point precision loss when converting to/from u8
             expect(unpacked[0]).toBeCloseTo(originalVec4[0], 2);
@@ -102,8 +102,8 @@ describe("Rgba", () => {
             ];
 
             testCases.forEach(originalVec4 => {
-                const packed = fromVec4(originalVec4);
-                const unpacked = toVec4(packed);
+                const packed = Rgba.fromVec4(originalVec4);
+                const unpacked = Rgba.toVec4(packed);
                 
                 expect(unpacked[0]).toBeCloseTo(originalVec4[0], 2);
                 expect(unpacked[1]).toBeCloseTo(originalVec4[1], 2);
@@ -117,19 +117,19 @@ describe("Rgba", () => {
         it("should return true for opaque pixels", () => {
             const opaquePacked = (87 << 0) | (69 << 8) | (163 << 16) | (255 << 24);
             
-            expect(isVisible(opaquePacked)).toBe(true);
+            expect(Rgba.isVisible(opaquePacked)).toBe(true);
         });
 
-        it("should return false when R channel is zero", () => {
-            const zeroRPacked = (0 << 0) | (69 << 8) | (163 << 16) | (255 << 24);
+        it("should return false when alpha channel is zero", () => {
+            const zeroAlphaPacked = (87 << 0) | (69 << 8) | (163 << 16) | (0 << 24);
             
-            expect(isVisible(zeroRPacked)).toBe(false);
+            expect(Rgba.isVisible(zeroAlphaPacked)).toBe(false);
         });
 
-        it("should return true when R channel is non-zero", () => {
-            const nonZeroRPacked = (87 << 0) | (69 << 8) | (163 << 16) | (128 << 24);
+        it("should return true when alpha channel is non-zero", () => {
+            const nonZeroAlphaPacked = (87 << 0) | (69 << 8) | (163 << 16) | (128 << 24);
             
-            expect(isVisible(nonZeroRPacked)).toBe(true);
+            expect(Rgba.isVisible(nonZeroAlphaPacked)).toBe(true);
         });
     });
 });

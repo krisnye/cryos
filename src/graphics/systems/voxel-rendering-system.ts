@@ -2,7 +2,7 @@ import { GraphicsService } from "graphics/graphics-service.js";
 import { SystemFactory } from "systems/system-factory.js";
 import { createStructGPUBuffer } from "graphics/create-struct-gpu-buffer.js";
 import { Vec3, Vec4, Quat } from "@adobe/data/math";
-import shaderSource from './voxels.wgsl';
+import shaderSource from './voxels.js';
 import { copyColumnToGPUBuffer } from "@adobe/data/table";
 
 // Schema for voxel data structures

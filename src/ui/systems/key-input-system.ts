@@ -2,7 +2,7 @@ import { SystemFactory } from "systems/system-factory.js";
 import { GraphicsService } from "graphics/graphics-service.js";
 import { KeyCode } from "../types/key-code.js";
 
-export const inputSystem: SystemFactory<GraphicsService> = (service) => {
+export const keyInputSystem: SystemFactory<GraphicsService> = (service) => {
     const { store } = service;
 
     const handleKeyDown = (event: KeyboardEvent) => {

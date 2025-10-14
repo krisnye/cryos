@@ -1,7 +1,6 @@
 import { Quat, Vec3, Vec4 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { Rgba, Volume } from "data/index.js";
-import { index } from "data/volume/volume.js";
 import { GraphicsStore } from "graphics/database/graphics-store.js";
 import { createVoxelModel } from "./create-voxel-model.js";
 
@@ -28,7 +27,7 @@ export function createCircleModel(t: GraphicsStore, props: {
             const distSquared = dx * dx + dy * dy;
             
             if (distSquared <= props.radius * props.radius) {
-                data.set(index(volume, x, y, 0), color);
+                data.set(Volume.index(volume, x, y, 0), color);
             }
         }
     }

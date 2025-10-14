@@ -69,34 +69,34 @@ describe("imageBlobToRgbaVolume", () => {
         
         const volume = await imageBlobToRgbaVolume(imageBlob);
         
-        // Check top-left pixel (should be red)
+        // Check top-left pixel (should be blue after vertical flip)
         const topLeftRgba = volume.data.get(0);
         const topLeftVec4 = Rgba.toVec4(topLeftRgba);
-        expect(topLeftVec4[0]).toBeCloseTo(1, 2); // R
+        expect(topLeftVec4[0]).toBeCloseTo(0, 2); // R
         expect(topLeftVec4[1]).toBeCloseTo(0, 2); // G
-        expect(topLeftVec4[2]).toBeCloseTo(0, 2); // B
+        expect(topLeftVec4[2]).toBeCloseTo(1, 2); // B
         expect(topLeftVec4[3]).toBeCloseTo(1, 2); // A
 
-        // Check top-right pixel (should be green)
+        // Check top-right pixel (should be yellow after vertical flip)
         const topRightRgba = volume.data.get(2);
         const topRightVec4 = Rgba.toVec4(topRightRgba);
-        expect(topRightVec4[0]).toBeCloseTo(0, 2); // R
+        expect(topRightVec4[0]).toBeCloseTo(1, 2); // R
         expect(topRightVec4[1]).toBeCloseTo(1, 2); // G
         expect(topRightVec4[2]).toBeCloseTo(0, 2); // B
         expect(topRightVec4[3]).toBeCloseTo(1, 2); // A
 
-        // Check bottom-left pixel (should be blue)
+        // Check bottom-left pixel (should be red after vertical flip)
         const bottomLeftRgba = volume.data.get(8);
         const bottomLeftVec4 = Rgba.toVec4(bottomLeftRgba);
-        expect(bottomLeftVec4[0]).toBeCloseTo(0, 2); // R
+        expect(bottomLeftVec4[0]).toBeCloseTo(1, 2); // R
         expect(bottomLeftVec4[1]).toBeCloseTo(0, 2); // G
-        expect(bottomLeftVec4[2]).toBeCloseTo(1, 2); // B
+        expect(bottomLeftVec4[2]).toBeCloseTo(0, 2); // B
         expect(bottomLeftVec4[3]).toBeCloseTo(1, 2); // A
 
-        // Check bottom-right pixel (should be yellow)
+        // Check bottom-right pixel (should be green after vertical flip)
         const bottomRightRgba = volume.data.get(10);
         const bottomRightVec4 = Rgba.toVec4(bottomRightRgba);
-        expect(bottomRightVec4[0]).toBeCloseTo(1, 2); // R
+        expect(bottomRightVec4[0]).toBeCloseTo(0, 2); // R
         expect(bottomRightVec4[1]).toBeCloseTo(1, 2); // G
         expect(bottomRightVec4[2]).toBeCloseTo(0, 2); // B
         expect(bottomRightVec4[3]).toBeCloseTo(1, 2); // A

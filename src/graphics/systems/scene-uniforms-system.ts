@@ -1,11 +1,9 @@
 import { GraphicsService } from "graphics/graphics-service.js";
 import { SystemFactory } from "systems/system-factory.js";
-import { createStructGPUBuffer } from "graphics/create-struct-gpu-buffer.js";
-import { toViewProjection } from "graphics/camera/to-view-projection.js";
 import { F32, Mat4x4, Vec3 } from "@adobe/data/math";
 import { createStructBuffer, copyToGPUBuffer, TypedBuffer, getStructLayout } from "@adobe/data/typed-buffer";
 import { FromSchema } from "@adobe/data/schema";
-import { Entity } from "@adobe/data/ecs";
+import { Camera } from "graphics/camera/camera.js";
 
 // Scene uniforms schema
 const SceneUniformsSchema = {
@@ -40,7 +38,7 @@ export const sceneUniformsSystem: SystemFactory<GraphicsService> = (service) => 
             if (!activeViewport) return;
 
             const { camera, sceneUniformsBuffer } = activeViewport;
-            const viewProjection = toViewProjection(camera);
+            const viewProjection = Camera.toViewProjection(camera);
             
             structBuffer ??= createStructBuffer(SceneUniformsSchema, new ArrayBuffer(structLayout.size));
 

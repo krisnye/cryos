@@ -1,8 +1,7 @@
 import { TypedBuffer, createStructBuffer } from "@adobe/data/typed-buffer";
 import { Rgba, Volume } from "data/index.js";
-import { index } from "data/volume/volume.js";
 import { PositionColorNormalVertex, positionColorNormalVertexSchema } from "graphics/vertices/position-color-normal.js";
-import { Vec3, Vec4 } from "@adobe/data/math";
+import { Mat4x4, Vec3, Vec4 } from "@adobe/data/math";
 import { Mutable } from "@adobe/data";
 
 // Pre-computed direction vectors for performance
@@ -36,22 +35,6 @@ function getNormalIndex(dx: number, dy: number, dz: number): number {
     return 0; // fallback to +X
 }
 
-// Helper function to mutate reusable vertex position array (zero allocations!)
-function setVertexPosition(position: Mutable<Vec3>, x: number, y: number, z: number, vertexIndex: number, x1: number, y1: number, z1: number): Vec3 {
-    switch (vertexIndex) {
-        case 0: position[0] = x; position[1] = y; position[2] = z; break;      // 0: min corner
-        case 1: position[0] = x1; position[1] = y; position[2] = z; break;    // 1: maxX minY minZ
-        case 2: position[0] = x1; position[1] = y1; position[2] = z; break;     // 2: maxX maxY minZ
-        case 3: position[0] = x; position[1] = y1; position[2] = z; break;     // 3: minX maxY minZ
-        case 4: position[0] = x; position[1] = y; position[2] = z1; break;      // 4: minX minY maxZ
-        case 5: position[0] = x1; position[1] = y; position[2] = z1; break;    // 5: maxX minY maxZ
-        case 6: position[0] = x1; position[1] = y1; position[2] = z1; break;    // 6: maxX maxY maxZ
-        case 7: position[0] = x; position[1] = y1; position[2] = z1; break;    // 7: minX maxY maxZ
-        default: position[0] = x; position[1] = y; position[2] = z; break;     // fallback
-    }
-    return position; // Return as Vec3 type
-}
-
 // Face data structure for minimal allocation
 interface FaceData {
     x: number; y: number; z: number;
@@ -59,7 +42,8 @@ interface FaceData {
     color: Vec4; // Pre-converted color
 }
 
-export function rgbaVolumeToVertexData(volume: Volume<Rgba>): TypedBuffer<PositionColorNormalVertex> {
+export function rgbaVolumeToVertexData(volume: Volume<Rgba>, options: { center?: Vec3 } = {}): TypedBuffer<PositionColorNormalVertex> {
+    const { center = Vec3.scale(volume.size, 0.5) } = options;
     const [width, height, depth] = volume.size;
     
     // First pass: count visible faces
@@ -68,11 +52,29 @@ export function rgbaVolumeToVertexData(volume: Volume<Rgba>): TypedBuffer<Positi
     const faces: FaceData[] = new Array(estimatedCapacity);
     let faceCount = 0;
 
+    // Helper function to mutate reusable vertex position array (zero allocations!)
+    function setVertexPosition(position: Mutable<Vec3>, x: number, y: number, z: number, vertexIndex: number, x1: number, y1: number, z1: number): Vec3 {
+        switch (vertexIndex) {
+            case 0: position[0] = x; position[1] = y; position[2] = z; break;      // 0: min corner
+            case 1: position[0] = x1; position[1] = y; position[2] = z; break;    // 1: maxX minY minZ
+            case 2: position[0] = x1; position[1] = y1; position[2] = z; break;     // 2: maxX maxY minZ
+            case 3: position[0] = x; position[1] = y1; position[2] = z; break;     // 3: minX maxY minZ
+            case 4: position[0] = x; position[1] = y; position[2] = z1; break;      // 4: minX minY maxZ
+            case 5: position[0] = x1; position[1] = y; position[2] = z1; break;    // 5: maxX minY maxZ
+            case 6: position[0] = x1; position[1] = y1; position[2] = z1; break;    // 6: maxX maxY maxZ
+            case 7: position[0] = x; position[1] = y1; position[2] = z1; break;    // 7: minX maxY maxZ
+            default: position[0] = x; position[1] = y; position[2] = z; break;     // fallback
+        }
+        position[0] -= center[0];
+        position[1] -= center[1];
+        position[2] -= center[2];
+        return position; // Return as Vec3 type
+    }
     // Check all voxels in the volume
     for (let z = 0; z < depth; z++) {
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
-                const voxelIndex = index(volume, x, y, z);
+                const voxelIndex = Volume.index(volume, x, y, z);
                 const voxelColor = volume.data.get(voxelIndex);
                 
                 // Skip if voxel is transparent/invisible (alpha = 0)
@@ -88,11 +90,11 @@ export function rgbaVolumeToVertexData(volume: Volume<Rgba>): TypedBuffer<Positi
                     const nz = z + dz;
                     
                     // Check if adjacent voxel is out of bounds or empty
-                    const isBoundary = nx < 0 || nx >= width || 
-                                      ny < 0 || ny >= height || 
-                                      nz < 0 || nz >= depth;
+                    const isBoundary = nx < 0 || nx >= width ||
+                                       ny < 0 || ny >= height ||
+                                       nz < 0 || nz >= depth;
                     
-                    const isEmpty = !isBoundary && !Rgba.isVisible(volume.data.get(index(volume, nx, ny, nz)));
+                    const isEmpty = !isBoundary && !Rgba.isVisible(volume.data.get(Volume.index(volume, nx, ny, nz)));
                     
                     if (isBoundary || isEmpty) {
                         faces[faceCount++] = { x, y, z, dx, dy, dz, color: colorVec4 };

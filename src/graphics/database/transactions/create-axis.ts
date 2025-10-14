@@ -7,7 +7,7 @@ export function createAxis(t: GraphicsStore) {
         position: [0, 0, 0],
         color: [0, 0, 0, 1],
         scale: [1, 1, 1],
-        rotation: Quat.identity()
+        rotation: Quat.identity
     } as never);
 
     const size = 5;
@@ -18,7 +18,7 @@ export function createAxis(t: GraphicsStore) {
         position: [size / 2, 0, 0],
         color: [1, 0, 0, 1],
         scale: [size, girth, girth],
-        rotation: Quat.identity()
+        rotation: Quat.identity
     } as never);
     
     // Green particle on Y-axis (no rotation - aligned with Y)
@@ -26,7 +26,7 @@ export function createAxis(t: GraphicsStore) {
         position: [0, size / 2, 0],
         color: [0, 1, 0, 1],
         scale: [girth, size, girth],
-        rotation: Quat.identity()
+        rotation: Quat.identity
     } as never);
     
     // Blue particle on Z-axis (rotated 45 degrees around Y axis to demonstrate rotation)

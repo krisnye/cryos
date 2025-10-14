@@ -1,6 +1,10 @@
 // Instanced model rendering shader
 // Based on the voxel rendering approach but adapted for instanced vertex buffers
 
+export default `
+// Instanced model rendering shader
+// Based on the voxel rendering approach but adapted for instanced vertex buffers
+
 struct SceneUniforms {
     viewProjectionMatrix: mat4x4<f32>,
     lightDirection: vec3<f32>,
@@ -22,6 +26,11 @@ fn rotateByQuaternion(v: vec3<f32>, q: vec4<f32>) -> vec3<f32> {
     let qxyz = vec3<f32>(q.x, q.y, q.z);
     let t = 2.0 * cross(qxyz, v);
     return v + q.w * t + cross(qxyz, t);
+}
+
+// Compute inverse quaternion (for unit quaternions, inverse = conjugate)
+fn inverseQuaternion(q: vec4<f32>) -> vec4<f32> {
+    return vec4<f32>(-q.x, -q.y, -q.z, q.w);
 }
 
 struct VertexOutput {
@@ -47,15 +56,14 @@ fn vertexMain(
     let rotatedVertex = rotateByQuaternion(scaledVertex, instanceRotation);
     let worldPosition = rotatedVertex + instancePosition;
     
-    // Rotate the normal as well
-    let scaledNormal = vertexNormal * instanceScale;
-    let rotatedNormal = rotateByQuaternion(scaledNormal, instanceRotation);
+    // Transform normal to world space (simpler approach)
+    let worldNormal = rotateByQuaternion(vertexNormal, instanceRotation);
     
     var output: VertexOutput;
     output.position = scene.viewProjectionMatrix * vec4<f32>(worldPosition, 1.0);
     output.color = vertexColor;
     output.worldPosition = worldPosition;
-    output.normal = rotatedNormal;
+    output.normal = worldNormal; // Transform to world space
     output.instanceId = instanceId;
     return output;
 }
@@ -68,7 +76,7 @@ struct FragmentOutput {
 fn fragmentMain(input: VertexOutput) -> FragmentOutput {
     // Normalize vectors
     let N = normalize(input.normal);
-    let L = normalize(-scene.lightDirection); // Light direction (toward light)
+    let L = normalize(-scene.lightDirection);
     
     // Ambient lighting
     let ambient = scene.ambientStrength;
@@ -81,9 +89,10 @@ fn fragmentMain(input: VertexOutput) -> FragmentOutput {
     
     // Apply lighting to color (but preserve alpha)
     let finalColor = vec4<f32>(
-        input.color.rgb * lighting,
+        input.color.rgb * lighting * scene.lightColor,
         input.color.a
     );
     
     return FragmentOutput(finalColor);
 }
+`;

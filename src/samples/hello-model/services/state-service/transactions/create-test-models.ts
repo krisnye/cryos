@@ -11,9 +11,9 @@ export const createTestModels = (t: HelloModelStore) => {
         color: [1, 1, 0, 1], // Red + Green = Yellow
         radius: 10,
         scale: [0.10, 0.10, 0.10],
-        rotation: Quat.identity() // No rotation needed for XY plane
+        rotation: Quat.fromAxisAngle([1, 0, 0], (0 * Math.PI / 10)) // Rotate 90° around X-axis
     });
-    
+
     // Circle in XZ plane (red + blue = magenta)
     createCircleModel(t, {
         position: [0, 0, 0.1], // Slightly offset in Z to avoid depth conflict

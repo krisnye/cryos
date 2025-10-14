@@ -1,6 +1,10 @@
 // Voxel rendering shader
 // Based on the particle rendering approach but adapted for voxels
 
+export default `
+// Voxel rendering shader
+// Based on the particle rendering approach but adapted for voxels
+
 struct SceneUniforms {
     viewProjectionMatrix: mat4x4<f32>,
     lightDirection: vec3<f32>,
@@ -146,3 +150,4 @@ fn fragmentMain(input: VertexOutput) -> FragmentOutput {
     
     return FragmentOutput(finalColor);
 }
+`;

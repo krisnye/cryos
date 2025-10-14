@@ -2,7 +2,7 @@ import { ApplicationElement, useEffect, useElement, useObservable, useState } fr
 import { customElement, property } from "lit/decorators.js";
 import { html, css, TemplateResult, CSSResult } from "lit";
 import { Entity } from "@adobe/data/ecs";
-import { Camera } from "graphics/camera/camera.js";
+import { Camera } from "graphics/index.js";
 import { GraphicsService } from "../graphics-service.js";
 import { GraphicsDatabase } from "graphics/database/graphics-database.js";
 import { Vec4 } from "@adobe/data/math";
@@ -52,7 +52,7 @@ export class GraphicsViewport extends ApplicationElement<GraphicsService> {
         }, [device, canvas, this.width, this.height]);
 
         return html`
-            <canvas @click=${() => console.log("click", viewportId)}></canvas>
+            <canvas></canvas>
         `;
     }
 }

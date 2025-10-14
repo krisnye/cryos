@@ -1,7 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { screenToWorldRay } from "./screen-to-world-ray.js";
-import { toViewProjection } from "./to-view-projection.js";
-import type { Camera } from "./camera.js";
+import { Camera } from "../index.js";
 import { Mat4x4 } from "@adobe/data/math";
 
 describe("screenToWorldRay", () => {
@@ -23,10 +21,10 @@ describe("screenToWorldRay", () => {
         const screenCenter: [number, number] = [canvasWidth / 2, canvasHeight / 2];
 
         // Compute the inverse view-projection matrix
-        const viewProjection = toViewProjection(camera);
+        const viewProjection = Camera.toViewProjection(camera);
         const invViewProjection = Mat4x4.inverse(viewProjection);
 
-        const ray = screenToWorldRay(screenCenter, invViewProjection, canvasWidth, canvasHeight);
+        const ray = Camera.screenToWorldRay(screenCenter, invViewProjection, canvasWidth, canvasHeight);
 
         // Ray should start at near plane point (not camera position)
         expect(ray.a[0]).toBeCloseTo(0, 1);
@@ -61,10 +59,10 @@ describe("screenToWorldRay", () => {
         const screenTopLeft: [number, number] = [0, 0];
 
         // Compute the inverse view-projection matrix
-        const viewProjection = toViewProjection(camera);
+        const viewProjection = Camera.toViewProjection(camera);
         const invViewProjection = Mat4x4.inverse(viewProjection);
 
-        const ray = screenToWorldRay(screenTopLeft, invViewProjection, canvasWidth, canvasHeight);
+        const ray = Camera.screenToWorldRay(screenTopLeft, invViewProjection, canvasWidth, canvasHeight);
 
         // Ray should start at near plane point
         expect(ray.a[2]).toBeCloseTo(5, 1); // Near plane
@@ -97,10 +95,10 @@ describe("screenToWorldRay", () => {
         const screenBottomRight: [number, number] = [canvasWidth, canvasHeight];
 
         // Compute the inverse view-projection matrix
-        const viewProjection = toViewProjection(camera);
+        const viewProjection = Camera.toViewProjection(camera);
         const invViewProjection = Mat4x4.inverse(viewProjection);
 
-        const ray = screenToWorldRay(screenBottomRight, invViewProjection, canvasWidth, canvasHeight);
+        const ray = Camera.screenToWorldRay(screenBottomRight, invViewProjection, canvasWidth, canvasHeight);
 
         // Ray should start at near plane point
         expect(ray.a[2]).toBeCloseTo(5, 1); // Near plane
@@ -134,10 +132,10 @@ describe("screenToWorldRay", () => {
         const customLength = 50;
 
         // Compute the inverse view-projection matrix
-        const viewProjection = toViewProjection(camera);
+        const viewProjection = Camera.toViewProjection(camera);
         const invViewProjection = Mat4x4.inverse(viewProjection);
 
-        const ray = screenToWorldRay(screenCenter, invViewProjection, canvasWidth, canvasHeight, customLength);
+        const ray = Camera.screenToWorldRay(screenCenter, invViewProjection, canvasWidth, canvasHeight, customLength);
 
         // Ray should start at near plane point
         expect(ray.a[2]).toBeCloseTo(5, 1); // Near plane
@@ -168,10 +166,10 @@ describe("screenToWorldRay", () => {
         const screenCenter: [number, number] = [canvasWidth / 2, canvasHeight / 2];
 
         // Compute the inverse view-projection matrix
-        const viewProjection = toViewProjection(camera);
+        const viewProjection = Camera.toViewProjection(camera);
         const invViewProjection = Mat4x4.inverse(viewProjection);
 
-        const ray = screenToWorldRay(screenCenter, invViewProjection, canvasWidth, canvasHeight);
+        const ray = Camera.screenToWorldRay(screenCenter, invViewProjection, canvasWidth, canvasHeight);
 
         // Ray should start at near plane point (not camera position)
         // The actual values depend on the camera setup, so let's just check they're reasonable

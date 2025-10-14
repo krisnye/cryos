@@ -1,4 +1,4 @@
-import { Camera } from "graphics/camera/camera.js";
+import { Camera } from "graphics/index.js";
 import { GraphicsStore } from "../graphics-store.js";
 import { Vec4 } from "@adobe/data/math";
 import { isContext } from "vm";

@@ -4,7 +4,7 @@ import { Vec3, Quat } from "@adobe/data/math";
 import { createStructBuffer, copyToGPUBuffer } from "@adobe/data/typed-buffer";
 import { Schema, FromSchema } from "@adobe/data/schema";
 import { positionColorNormalVertexLayout } from "graphics/vertices/position-color-normal.js";
-import instancedShaderSource from './instanced-models.wgsl';
+import instancedShaderSource from './instanced-models.js';
 
 /**
  * Instanced transform data schema (per-instance vertex attributes)

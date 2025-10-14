@@ -1,5 +1,4 @@
 import { SystemFactory } from "systems/system-factory.js";
-import { GraphicsStore } from "../database/graphics-store.js";
 import { rgbaVolumeToVertexData } from "../functions/rgba-volume-to-vertex-data.js";
 import { GraphicsService } from "graphics/graphics-service.js";
 import { copyToGPUBuffer } from "@adobe/data/typed-buffer";
