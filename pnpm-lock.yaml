@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adobe/data':
-        specifier: ^0.5.13
-        version: 0.5.13
+        specifier: ^0.5.16
+        version: 0.5.16(lit@3.3.1)
       '@lit/context':
         specifier: ^1.1.5
         version: 1.1.6
@@ -81,8 +81,10 @@ importers:
 
 packages:
 
-  '@adobe/data@0.5.13':
-    resolution: {integrity: sha512-q07yvvS6Ma729Bb1vdUxclAXBd5LWR+kYuekFT60eh3KU0GHq7pUq6yEPNxCT4hZROyFZGJJY7kFS/MPIUh1tw==}
+  '@adobe/data@0.5.16':
+    resolution: {integrity: sha512-swO9AlK0cUekHUkVdAJeZLQsh/ErxE9WrtdUQThU//LukzpcFaLfDOsJkGfG4SRr+DTWw4Nl2SBiTKGbHZ7tVA==}
+    peerDependencies:
+      lit: ^3.3.1
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -2749,7 +2751,7 @@ packages:
 
 snapshots:
 
-  '@adobe/data@0.5.13':
+  '@adobe/data@0.5.16(lit@3.3.1)':
     dependencies:
       '@cfworker/json-schema': 4.1.1
       '@lit/context': 1.1.6
