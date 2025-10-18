@@ -38,16 +38,18 @@ export class GraphicsViewport extends ApplicationElement<GraphicsService> {
     @property({ type: Number })
     height: number = 600;
 
+    @property({ type: Number })
+    viewportId: Entity | null = null;
+
     override render(): TemplateResult {
         const device = useObservable(this.service.database.observe.resources.device);
         const canvas = useElement("canvas");
-        const [viewportId, setViewportId] = useState<Entity | null>(null);
         useEffect(() => {
             if (device && canvas) {
                 // Set canvas size
                 canvas.width = this.width;
                 canvas.height = this.height;
-                initViewport(this.service.database, device, canvas, this.clearColor, this.initialCamera).then(setViewportId);
+                initViewport(this.service.database, device, canvas, this.clearColor, this.initialCamera).then(viewportId => this.viewportId = viewportId);
             }
         }, [device, canvas, this.width, this.height]);
 

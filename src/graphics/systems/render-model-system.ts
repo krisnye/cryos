@@ -4,7 +4,7 @@ import { Vec3, Quat } from "@adobe/data/math";
 import { createStructBuffer, copyToGPUBuffer } from "@adobe/data/typed-buffer";
 import { Schema, FromSchema } from "@adobe/data/schema";
 import { positionColorNormalVertexLayout } from "graphics/vertices/position-color-normal.js";
-import instancedShaderSource from './instanced-models.js';
+import instancedShaderSource from './instanced-models.wgsl.js';
 
 /**
  * Instanced transform data schema (per-instance vertex attributes)
@@ -161,12 +161,7 @@ export const renderModelSystem : SystemFactory<GraphicsService> = (service) => {
                 if (instanceDataBuffer.capacity < group.instanceCount) {
                     instanceDataBuffer.capacity = group.instanceCount;
                 }
-                
-                // Clear the buffer before populating (critical!)
-                for (let i = 0; i < instanceDataBuffer.capacity; i++) {
-                    instanceDataBuffer.set(i, { position: [0, 0, 0], scale: [0, 0, 0], rotation: [0, 0, 0, 1] });
-                }
-                
+
                 // Populate instance data
                 for (let i = 0; i < group.instanceCount; i++) {
                     instanceDataBuffer.set(i, {

@@ -80,6 +80,8 @@ export const graphicsStoreSchema = createStoreSchema(
         modelVertexBuffer: { default: null as unknown as GPUBuffer },
         modelVertexCount: { default: 0 },
         voxelVertexSource: { default: null as unknown as Volume<Rgba> },
+
+        pickable: TrueSchema,
     },
     {
         gravitationalConstant: { default: 1e-2 as F32 },
@@ -121,7 +123,8 @@ export const graphicsStoreSchema = createStoreSchema(
             "position",
             "scale",
             "rotation",
-            "voxelColor"
+            "voxelColor",
+            "centerOfMass"
         ],
         Particle: [
             "position",

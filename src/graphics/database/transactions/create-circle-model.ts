@@ -16,10 +16,10 @@ export function createCircleModel(t: GraphicsStore, props: {
     const data = createTypedBuffer(Rgba.schema, elements);
     const color = Rgba.fromVec4(props.color);
     const volume = Volume.create({ size, data });
-    
+
     const centerX = props.radius;
     const centerY = props.radius;
-    
+
     for (let x = 0; x < size[0]; x++) {
         for (let y = 0; y < size[1]; y++) {
             const dx = x - centerX;

@@ -1,7 +1,7 @@
 // Instanced model rendering shader
 // Based on the voxel rendering approach but adapted for instanced vertex buffers
 
-export default /* wgsl */`
+export default `
 // Instanced model rendering shader
 // Based on the voxel rendering approach but adapted for instanced vertex buffers
 
