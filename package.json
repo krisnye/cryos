@@ -1,6 +1,6 @@
 {
   "name": "cryos",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Voxel Physics and Rendering Engine",
   "type": "module",
   "scripts": {
