@@ -71,6 +71,7 @@ export const graphicsStoreSchema = createStoreSchema(
         sceneUniformsBuffer: { default: null as unknown as GPUBuffer, transient: true },
 
         camera: Camera.schema,
+        cameraControlType: { default: "orbit" satisfies Camera.ControlType as Camera.ControlType },
         context: { default: null as unknown as GPUCanvasContext, transient: true },
         depthTexture: { default: null as unknown as GPUTexture, transient: true },
 
@@ -115,6 +116,7 @@ export const graphicsStoreSchema = createStoreSchema(
         Viewport: [
             "camera",
             "context",
+            "cameraControlType",
             "depthTexture",
             "color",
             "sceneUniformsBuffer",

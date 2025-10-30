@@ -1,6 +1,6 @@
 {
   "name": "cryos",
-  "version": "0.4.4",
+  "version": "0.4.6",
   "description": "Voxel Physics and Rendering Engine",
   "type": "module",
   "scripts": {
@@ -46,7 +46,7 @@
   "author": "krisnye@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "@adobe/data": "^0.5.18",
+    "@adobe/data": "^0.5.19",
     "@lit/context": "^1.1.5"
   },
   "peerDependencies": {

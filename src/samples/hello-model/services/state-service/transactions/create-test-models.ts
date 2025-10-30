@@ -4,7 +4,7 @@ import { createCircleModel } from "graphics/database/transactions/create-circle-
 import { Quat } from "@adobe/data/math";
 export const createTestModels = (t: HelloModelStore) => {   
     createAxis(t);
-    
+
     // Circle in XY plane (red + green = yellow)
     createCircleModel(t, {
         position: [0, 0, 0],

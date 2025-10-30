@@ -37,7 +37,7 @@ export const physicsSystem: SystemFactory<GraphicsService> = (service) => {
                     table.columns.velocity.set(i, Vec3.add(velocity, Vec3.scale(acceleration, deltaTime)));
                 }
             }
-            console.log(`physicsSystem: ${total} gravity targets, gravity sources: ${gravitySources.length}`);
+            // console.log(`physicsSystem: ${total} gravity targets, gravity sources: ${gravitySources.length}`);
         }
     },
     {

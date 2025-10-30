@@ -15,10 +15,10 @@ export const keyInputSystem: SystemFactory<GraphicsService> = (service) => {
             alt: event.altKey,
             meta: event.metaKey
         };
-        
+
         // Handle key press directly
         const existingState = store.resources.pressedKeys[keyCode];
-        
+
         if (existingState) {
             // Key already pressed - increment repeat count
             existingState.repeatCount += 1;
