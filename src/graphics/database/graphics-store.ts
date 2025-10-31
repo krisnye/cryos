@@ -8,6 +8,8 @@ import { Rgba, Volume } from "data/index.js";
 import { KeyCode } from "ui/types/key-code.js";
 import { KeyState } from "ui/types/input-state.js";
 import { PointerId, PointerState } from "ui/types/pointer-state.js";
+import { PositionColorNormalVertex } from "graphics/vertices/position-color-normal.js";
+import { TypedBuffer } from "@adobe/data/typed-buffer";
 
 export const graphicsStoreSchema = createStoreSchema(
     {
@@ -78,7 +80,9 @@ export const graphicsStoreSchema = createStoreSchema(
         modelId: Entity.schema,
 
         voxelColor: { default: null as unknown as Volume<Rgba> },
+        vertexData: { default: null as unknown as TypedBuffer<PositionColorNormalVertex> },
         modelVertexBuffer: { default: null as unknown as GPUBuffer },
+        modelVertexBufferSource: { default: null as unknown as TypedBuffer<PositionColorNormalVertex> },
         modelVertexCount: { default: 0 },
         voxelVertexSource: { default: null as unknown as Volume<Rgba> },
 
@@ -133,6 +137,12 @@ export const graphicsStoreSchema = createStoreSchema(
             "color",
             "scale",
             "rotation",
+        ],
+        VertexModel: [
+            "position",
+            "scale",
+            "rotation",
+            "vertexData",
         ],
         RenderModel: [
             "position",

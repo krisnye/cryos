@@ -16,6 +16,13 @@ const samples: Record<string, SampleDefinition> = {
             return html`<hello-model-application></hello-model-application>`;
         }
     },
+    "forest": {
+        name: "Forest",
+        render: () => {
+            import("./forest/forest-application.js");
+            return html`<forest-application></forest-application>`;
+        }
+    },
     "twixt": {
         name: "Twixt",
         render: () => {

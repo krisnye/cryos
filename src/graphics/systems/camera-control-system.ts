@@ -147,14 +147,14 @@ function handleOrbitCamera(
     }
 
     // Handle arrow keys for orbit rotation
-    const worldUp: Vec3 = [0, 1, 0];
+    const worldUp: Vec3 = [0, 0, 1]; // Z is up
     
-    // Arrow Left/Right: Rotate horizontally around target (around world Y axis)
+    // Arrow Left/Right: Rotate horizontally around target (around world Z axis)
     if (pressedKeys.ArrowLeft) {
         const speed = getAcceleratedSpeed(baseRotationSpeed, maxRotationSpeed, pressedKeys.ArrowLeft.frameCount, rotationRampUpFrames);
         const offset = Vec3.subtract(newCamera.position, newCamera.target);
-        const rotationY = Mat4x4.rotationY(speed);
-        const rotatedOffset = Mat4x4.multiplyVec3(rotationY, offset);
+        const rotationZ = Mat4x4.rotationZ(speed);
+        const rotatedOffset = Mat4x4.multiplyVec3(rotationZ, offset);
         newCamera.position = Vec3.add(newCamera.target, rotatedOffset);
         
         // Update up vector to stay perpendicular to view direction
@@ -167,8 +167,8 @@ function handleOrbitCamera(
     if (pressedKeys.ArrowRight) {
         const speed = getAcceleratedSpeed(baseRotationSpeed, maxRotationSpeed, pressedKeys.ArrowRight.frameCount, rotationRampUpFrames);
         const offset = Vec3.subtract(newCamera.position, newCamera.target);
-        const rotationY = Mat4x4.rotationY(-speed);
-        const rotatedOffset = Mat4x4.multiplyVec3(rotationY, offset);
+        const rotationZ = Mat4x4.rotationZ(-speed);
+        const rotatedOffset = Mat4x4.multiplyVec3(rotationZ, offset);
         newCamera.position = Vec3.add(newCamera.target, rotatedOffset);
         
         // Update up vector to stay perpendicular to view direction
@@ -180,14 +180,16 @@ function handleOrbitCamera(
     }
 
     // Arrow Up/Down: Rotate vertically around target (around local right axis)
-    if (pressedKeys.ArrowUp) {
-        const speed = getAcceleratedSpeed(baseRotationSpeed, maxRotationSpeed, pressedKeys.ArrowUp.frameCount, rotationRampUpFrames);
+    // Use the camera's current up vector to maintain continuity through zenith/nadir
+    const handleVerticalRotation = (angle: number) => {
         const offset = Vec3.subtract(newCamera.position, newCamera.target);
         const currentForward = Vec3.normalize(Vec3.negate(offset));
-        const currentRight = Vec3.normalize(Vec3.cross(currentForward, worldUp));
+        
+        // Calculate right vector using camera's current up vector (not world up)
+        // This maintains continuity when rotating through straight up/down
+        const currentRight = Vec3.normalize(Vec3.cross(currentForward, newCamera.up));
         
         // Create rotation matrix around right axis using Rodrigues' formula
-        const angle = speed;
         const c = Math.cos(angle);
         const s = Math.sin(angle);
         const t = 1 - c;
@@ -200,45 +202,23 @@ function handleOrbitCamera(
             0,                   0,                   0,                   1
         ];
         
+        // Rotate both the position offset and the up vector
         const rotatedOffset = Mat4x4.multiplyVec3(rotationMatrix, offset);
-        newCamera.position = Vec3.add(newCamera.target, rotatedOffset);
+        const rotatedUp = Mat4x4.multiplyVec3(rotationMatrix, newCamera.up);
         
-        // Update up vector
-        const finalForward = Vec3.normalize(Vec3.subtract(newCamera.target, newCamera.position));
-        const finalRight = Vec3.normalize(Vec3.cross(finalForward, worldUp));
-        newCamera.up = Vec3.normalize(Vec3.cross(finalRight, finalForward));
+        newCamera.position = Vec3.add(newCamera.target, rotatedOffset);
+        newCamera.up = Vec3.normalize(rotatedUp);
         
         cameraChanged = true;
+    };
+
+    if (pressedKeys.ArrowUp) {
+        const speed = getAcceleratedSpeed(baseRotationSpeed, maxRotationSpeed, pressedKeys.ArrowUp.frameCount, rotationRampUpFrames);
+        handleVerticalRotation(speed);
     }
     if (pressedKeys.ArrowDown) {
         const speed = getAcceleratedSpeed(baseRotationSpeed, maxRotationSpeed, pressedKeys.ArrowDown.frameCount, rotationRampUpFrames);
-        const offset = Vec3.subtract(newCamera.position, newCamera.target);
-        const currentForward = Vec3.normalize(Vec3.negate(offset));
-        const currentRight = Vec3.normalize(Vec3.cross(currentForward, worldUp));
-        
-        // Create rotation matrix around right axis using Rodrigues' formula
-        const angle = -speed;
-        const c = Math.cos(angle);
-        const s = Math.sin(angle);
-        const t = 1 - c;
-        const [rx, ry, rz] = currentRight;
-        
-        const rotationMatrix: Mat4x4 = [
-            t * rx * rx + c,     t * rx * ry + s * rz, t * rx * rz - s * ry, 0,
-            t * rx * ry - s * rz, t * ry * ry + c,     t * ry * rz + s * rx, 0,
-            t * rx * rz + s * ry, t * ry * rz - s * rx, t * rz * rz + c,     0,
-            0,                   0,                   0,                   1
-        ];
-        
-        const rotatedOffset = Mat4x4.multiplyVec3(rotationMatrix, offset);
-        newCamera.position = Vec3.add(newCamera.target, rotatedOffset);
-        
-        // Update up vector
-        const finalForward = Vec3.normalize(Vec3.subtract(newCamera.target, newCamera.position));
-        const finalRight = Vec3.normalize(Vec3.cross(finalForward, worldUp));
-        newCamera.up = Vec3.normalize(Vec3.cross(finalRight, finalForward));
-        
-        cameraChanged = true;
+        handleVerticalRotation(-speed);
     }
 
     // Update camera if it changed

@@ -1,6 +1,7 @@
 import { createStoreSchema, StoreFromSchema } from "@adobe/data/ecs";
 import { Vec2, Vec3 } from "@adobe/data/math";
 import { TrueSchema } from "@adobe/data/schema";
+import { Assert } from "@adobe/data/types";
 import { GraphicsStore, graphicsStoreSchema } from "graphics/database/index.js";
 
 export const helloModelStoreSchemaVersion = 1;
@@ -31,4 +32,4 @@ export const helloModelStoreSchema = createStoreSchema(
 
 export type HelloModelStore = StoreFromSchema<typeof helloModelStoreSchema>;
 
-const checkThatHelloModelStoreIsGraphicsStore = (store: HelloModelStore): GraphicsStore => store;
+type _AssertHelloModelStoreIsGraphicsStore = Assert<HelloModelStore extends GraphicsStore ? true : false>;
