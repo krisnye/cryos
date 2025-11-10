@@ -16,6 +16,13 @@ const samples: Record<string, SampleDefinition> = {
             return html`<hello-model-application></hello-model-application>`;
         }
     },
+    "voxel-editor": {
+        name: "Voxel Editor",
+        render: () => {
+            import("./voxel-editor/elements/voxel-editor-main-element.js");
+            return html`<voxel-editor-application></voxel-editor-application>`;
+        }
+    },
     "forest": {
         name: "Forest",
         render: () => {

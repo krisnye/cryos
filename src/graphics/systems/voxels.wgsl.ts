@@ -132,6 +132,11 @@ struct FragmentOutput {
 
 @fragment
 fn fragmentMain(input: VertexOutput) -> FragmentOutput {
+    // Discard fully transparent fragments to avoid depth writes
+    if (input.color.a <= 0.0) {
+        discard;
+    }
+    
     // Normalize vectors
     let N = normalize(input.normal);
     let L = normalize(-sceneUniforms.lightDirection); // Light direction (toward light)
@@ -145,8 +150,9 @@ fn fragmentMain(input: VertexOutput) -> FragmentOutput {
     // Combine lighting
     let lighting = ambient + diffuse;
     
-    // Apply lighting to color
-    let finalColor = input.color * lighting;
+    // Apply lighting to color (preserve alpha)
+    let litRGB = input.color.rgb * lighting;
+    let finalColor = vec4<f32>(litRGB, input.color.a);
     
     return FragmentOutput(finalColor);
 }

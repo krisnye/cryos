@@ -1,35 +1,34 @@
 import { Store } from "@adobe/data/ecs";
 import { Vec2 } from "@adobe/data/math";
-import { TrueSchema } from "@adobe/data/schema";
 import { GameService } from "game-service/game-service.js";
-import * as forestTransactions from "./transactions/index.js";
+import * as helloModelTransactions from "./transactions/index.js";
 
 // Store Schema
 const schema = GameService.schema(
     {
-        tree: TrueSchema,
     },
     {
         mapSize: { default: [800, 600] as Vec2 },
     },
     {
-        Tree: ["tree", "position", "velocity"],
+        // No custom archetypes - just using the graphics ones
     }
 );
 
-export type ForestStore = Store.FromSchema<typeof schema>;
-export type Particle = Store.InsertValues<ForestStore, "Particle">;
+export type HelloModelStore = Store.FromSchema<typeof schema>;
 
-export function createForestService() {
+export function createHelloModelService() {
     const service = GameService.create(
         schema,
-        forestTransactions,
+        helloModelTransactions,
     ).initializeSystems({
         // no custom systems.
     });
     // Create some test data
     service.database.transactions.createTestModels();
     return service;
-};
+}
 
-export type ForestService = ReturnType<typeof createForestService>;
+export type HelloModelService = ReturnType<typeof createHelloModelService>;
+
+

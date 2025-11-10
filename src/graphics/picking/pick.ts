@@ -1,19 +1,18 @@
 import { Table } from "@adobe/data/table";
 import { Aabb, Line3, Quat, Vec3 } from "@adobe/data/math";
-import { Entity, StoreComponents } from "@adobe/data/ecs";
+import { Entity, Store } from "@adobe/data/ecs";
 import { PickResult } from "./pick-result.js";
 import { GraphicsStore } from "graphics/database/graphics-store.js";
 import { PickIntermediateResult } from "./pick-intermediate-result.js";
 import { Rgba, Volume } from "data/index.js";
 import { Transform } from "graphics/transform/transform.js";
-import { Mutable } from "@adobe/data";
 
 /**
  * Uses bounding boxes to test for broad phase intersection.
  */
 export function* boundingBoxBroadTest<
     S extends GraphicsStore,
-    T extends Table<{ id: Entity, position: Vec3, boundingBox: Aabb } & Partial<StoreComponents<S>>>
+    T extends Table<{ id: Entity, position: Vec3, boundingBox: Aabb } & Partial<Store.Components<S>>>
 >(table: T, props: { line: Line3, radius: number }): Generator<PickIntermediateResult<S, T>> {
     const { line, radius } = props;
     for (let row = 0; row < table.rowCount; row++) {
@@ -27,7 +26,7 @@ export function* boundingBoxBroadTest<
  */
 export function* defaultBroadTest<
     S extends GraphicsStore,
-    T extends Table<{ id: Entity, position: Vec3 } & Partial<StoreComponents<S>>>
+    T extends Table<{ id: Entity, position: Vec3 } & Partial<Store.Components<S>>>
 >(table: T, props: { line: Line3, radius: number }): Generator<PickIntermediateResult<S, T>> {
     const { line } = props;
     for (let row = 0; row < table.rowCount; row++) {
@@ -39,7 +38,7 @@ export function* defaultBroadTest<
 
 export const defaultNarrowTest = <
     S extends GraphicsStore,
-    T extends Table<{ id: Entity, position: Vec3 } & Partial<StoreComponents<S>>>
+    T extends Table<{ id: Entity, position: Vec3 } & Partial<Store.Components<S>>>
 >(
     props: { store: S, line: Line3, radius: number }, broadResult: PickIntermediateResult<S, T>
 ): PickResult | null => {
@@ -84,6 +83,10 @@ export const defaultNarrowTest = <
     else {
         // this is a voxel model
         const entity = table.columns.id.get(row);
+        const color = table.columns.color?.get(row);
+        if (!color || color[3 /* alpha */] === 0) {
+            return null;
+        }
         // every voxel is just a unit cube with transformations applied to it
         const aabb = Aabb.unit;
         const alpha = Aabb.lineIntersection(aabb, modelLine, radius);
@@ -107,7 +110,7 @@ export const defaultNarrowTest = <
 // Narrow phase picking of entities.
 export function pick<
     S extends GraphicsStore,
-    T extends Table<{ id: Entity, position: Vec3 } & Partial<StoreComponents<S>>>
+    T extends Table<{ id: Entity, position: Vec3 } & Partial<Store.Components<S>>>
 >(options: {
     store: S,
     tables: readonly T[],

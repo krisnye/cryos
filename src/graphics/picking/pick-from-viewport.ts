@@ -14,11 +14,11 @@ import { pick } from "graphics/picking/pick.js";
  */
 export const pickFromViewport = (props: {
     store: GraphicsStore,
-    screenPosition: Vec2,
+    viewportPosition: Vec2,
     viewportId: Entity,
     tables?: readonly Table<{ id: Entity, position: Vec3 }>[]
 }): PickResult | null => {
-    const { store, screenPosition, viewportId, tables = store.queryArchetypes(["id", "position"]) } = props;
+    const { store, viewportPosition, viewportId, tables = store.queryArchetypes(["id", "position"]) } = props;
     const viewport = store.read(viewportId, store.archetypes.Viewport)!;
     const camera = viewport.camera;
     const canvasWidth = viewport.context.canvas.width;
@@ -29,7 +29,7 @@ export const pickFromViewport = (props: {
     const invViewProjection = Mat4x4.inverse(viewProjection);
 
     // Convert screen position to world space pick line
-    const line = Camera.screenToWorldRay(screenPosition, invViewProjection, canvasWidth, canvasHeight);
+    const line = Camera.screenToWorldRay(viewportPosition, invViewProjection, canvasWidth, canvasHeight);
     const picked = pick({ store, tables, line, radius: 0 });
 
     return picked[0] ?? null;

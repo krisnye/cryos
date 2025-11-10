@@ -1,5 +1,5 @@
 import { Vec3, Aabb, Quat, F32, Vec4 } from "@adobe/data/math";
-import { createStoreSchema, Entity, StoreFromSchema } from "@adobe/data/ecs";
+import { Entity, Store } from "@adobe/data/ecs";
 import { FrameSchema } from "graphics/frame.js";
 import { Camera } from "graphics/index.js";
 import { Schema, TrueSchema } from "@adobe/data/schema";
@@ -11,7 +11,7 @@ import { PointerId, PointerState } from "ui/types/pointer-state.js";
 import { PositionColorNormalVertex } from "graphics/vertices/position-color-normal.js";
 import { TypedBuffer } from "@adobe/data/typed-buffer";
 
-export const graphicsStoreSchema = createStoreSchema(
+export const graphicsStoreSchema = Store.Schema.create(
     {
         /**
          * Axix Aligned Bounding Box within world space.
@@ -153,11 +153,11 @@ export const graphicsStoreSchema = createStoreSchema(
     },
 );
 
-export type GraphicsStore = StoreFromSchema<typeof graphicsStoreSchema>;
-export type Viewport = Parameters<GraphicsStore["archetypes"]["Viewport"]["insert"]>[0];
-export type Particle = Parameters<GraphicsStore["archetypes"]["Particle"]["insert"]>[0];
-export type VoxelModel = Parameters<GraphicsStore["archetypes"]["VoxelModel"]["insert"]>[0];
-export type RenderModel = Parameters<GraphicsStore["archetypes"]["RenderModel"]["insert"]>[0];
+export type GraphicsStore = Store.FromSchema<typeof graphicsStoreSchema>;
+export type Viewport = Store.InsertValues<GraphicsStore, "Viewport">;
+export type Particle = Store.InsertValues<GraphicsStore, "Particle">;
+export type VoxelModel = Store.InsertValues<GraphicsStore, "VoxelModel">;
+export type RenderModel = Store.InsertValues<GraphicsStore, "RenderModel">;
 
 declare const foo: GraphicsStore;
 // @ts-expect-error

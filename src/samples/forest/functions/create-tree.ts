@@ -1,5 +1,5 @@
 import { Quat, Vec3 } from "@adobe/data/math";
-import { Particle } from "../forest-store.js";
+import { Particle } from "../forest-service.js";
 
 export interface TreeParams {
     /** Starting position of the tree trunk */
@@ -62,21 +62,24 @@ export const createTree = (params: TreeParams = {}): Particle[] => {
         // Add terminal leaf at the end of the branch
         if (shouldTerminate) {
             const leafSize = 0.8; // Fixed size for visibility
-            // Create flattened leaf perpendicular to branch direction
-            // The leaf should be a flat disc, with thin dimension along branch direction
-            const normalizedDir = Vec3.normalize(direction);
             
-            // Default particle is aligned with Z axis, we want to rotate it so Z aligns with branch direction
-            const up: Vec3 = [0, 0, 1];
-            const angle = Math.acos(Vec3.dot(up, normalizedDir));
-            const axis = Vec3.normalize(Vec3.cross(up, normalizedDir));
-            const rotation = Vec3.dot(axis, axis) > 0.001 
-                ? Quat.fromAxisAngle(axis, angle)
-                : Quat.identity;
+            // Position leaf at the end of this branch segment, not at its start
+            const normalizedDir = Vec3.normalize(direction);
+            const leafPosition = Vec3.add(position, Vec3.scale(normalizedDir, segmentLength));
+            
+            // Create a random rotation for the leaf
+            // Generate random axis and angle for completely random orientation
+            const randomAxis: Vec3 = Vec3.normalize([
+                Math.random() * 2 - 1,
+                Math.random() * 2 - 1,
+                Math.random() * 2 - 1
+            ]);
+            const randomAngle = Math.random() * Math.PI * 2;
+            const rotation = Quat.fromAxisAngle(randomAxis, randomAngle);
             
             particles.push({
-                position,
-                // Large in X and Y, small in Z (perpendicular to branch when rotated)
+                position: leafPosition,
+                // Large in X and Y, small in Z (will be randomized by rotation)
                 scale: [leafSize, leafSize, leafSize * 0.1],
                 rotation,
                 color: leafColor

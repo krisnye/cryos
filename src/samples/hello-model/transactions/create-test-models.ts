@@ -1,7 +1,7 @@
-import { createAxis } from "graphics/database/index.js";
-import { HelloModelStore } from "../hello-model-store.js";
-import { createCircleModel } from "graphics/database/transactions/create-circle-model.js";
 import { Quat } from "@adobe/data/math";
+import { createAxis, createCircleModel } from "graphics/database/index.js";
+import { HelloModelStore } from "../hello-model-service.js";
+
 export const createTestModels = (t: HelloModelStore) => {   
     createAxis(t);
 
@@ -31,4 +31,7 @@ export const createTestModels = (t: HelloModelStore) => {
         scale: [0.10, 0.10, 0.10],
         rotation: Quat.fromAxisAngle([0, 1, 0], - Math.PI / 2) // Rotate -90° around X-axis to get YZ plane
     });
-}
+};
+
+
+

@@ -35,7 +35,7 @@ export class ForestApplication extends ApplicationElement<ForestService> {
         const y = e.clientY - bounds.top;
         const entity = pickFromViewport({ 
             store: this.service.store, 
-            screenPosition: [x, y], 
+            viewportPosition: [x, y], 
             viewportId: viewport.viewportId! 
         });
         

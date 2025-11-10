@@ -74,6 +74,11 @@ struct FragmentOutput {
 
 @fragment
 fn fragmentMain(input: VertexOutput) -> FragmentOutput {
+    // Discard fully transparent fragments to avoid depth writes
+    if (input.color.a <= 0.0) {
+        discard;
+    }
+    
     // Normalize vectors
     let N = normalize(input.normal);
     let L = normalize(-scene.lightDirection);

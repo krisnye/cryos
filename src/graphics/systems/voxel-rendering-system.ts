@@ -2,7 +2,7 @@ import { GraphicsService } from "graphics/graphics-service.js";
 import { SystemFactory } from "systems/system-factory.js";
 import { createStructGPUBuffer } from "graphics/create-struct-gpu-buffer.js";
 import { Vec3, Vec4, Quat } from "@adobe/data/math";
-import shaderSource from './voxels.js';
+import shaderSource from './voxels.wgsl.js';
 import { copyColumnToGPUBuffer } from "@adobe/data/table";
 
 // Schema for voxel data structures
@@ -72,7 +72,21 @@ export const voxelRenderingSystem: SystemFactory<GraphicsService> = (service) =>
                 fragment: {
                     module: device.createShaderModule({ code: shaderSource }),
                     entryPoint: 'fragmentMain',
-                    targets: [{ format: 'bgra8unorm' }] // Default format, will be updated per viewport
+                    targets: [{
+                        format: 'bgra8unorm',
+                        blend: {
+                            color: {
+                                srcFactor: 'src-alpha',
+                                dstFactor: 'one-minus-src-alpha',
+                                operation: 'add'
+                            },
+                            alpha: {
+                                srcFactor: 'one',
+                                dstFactor: 'one-minus-src-alpha',
+                                operation: 'add'
+                            }
+                        }
+                    }]
                 },
                 primitive: {
                     topology: 'triangle-list',
