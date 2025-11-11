@@ -1,4 +1,6 @@
+import { Simplify } from "@adobe/data/types";
 import { Material, MaterialIndex } from "./material.js";
+import { Mutable } from "@adobe/data";
 
 const rawMaterials = [
     {
@@ -95,7 +97,7 @@ const rawMaterials = [
 ] as const satisfies Omit<Material, "index">[];
 
 // Derive the type from the const assertion
-type RawMaterial = { index: MaterialIndex } & typeof rawMaterials[number];
+type RawMaterial = Simplify<{ readonly index: MaterialIndex } & typeof rawMaterials[number]>;
 type BasicMaterials = readonly RawMaterial[] & {
     [K in RawMaterial['name']]: Extract<RawMaterial, { name: K }>;
 };
@@ -103,6 +105,6 @@ type BasicMaterials = readonly RawMaterial[] & {
 // Create the materials object that satisfies both array and named property access
 export const materials: BasicMaterials = Object.assign([...rawMaterials], {} as any);
 for (let i = 0; i < materials.length; i++) {
-    materials[i].index = i;
+    (materials[i] as Mutable<RawMaterial>).index = i;
     (materials as any)[materials[i].name] = materials[i];
 }

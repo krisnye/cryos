@@ -2,6 +2,7 @@ import { html, TemplateResult } from "lit";
 import { Vec3, Vec2 } from "@adobe/data/math";
 import { Entity } from "@adobe/data/ecs";
 import { GraphicsViewport } from "../../../graphics/elements/graphics-viewport.js";
+import { schema } from "../voxel-editor-store.js";
 
 // Helper type for viewport event data
 interface ViewportEventData {
@@ -24,26 +25,33 @@ const getViewportEventData = (e: PointerEvent): ViewportEventData | null => {
     };
 };
 
-export interface VoxelEditorMainElementProps {
-    modelSize: Vec3;
-    clearColor: readonly [number, number, number, number];
+type RenderArgs = {
     keyPress: (e: KeyboardEvent) => void;
     pointerDown: (data: ViewportEventData) => void;
     pointerUp: (data: ViewportEventData) => void;
     pointerMove: (data: ViewportEventData) => void;
 }
 
-export const render = (props: VoxelEditorMainElementProps): TemplateResult => {
-    const center = Vec3.scale(props.modelSize, 0.5);
+export const render = (props: RenderArgs): TemplateResult => {
+    const center = Vec3.scale(schema.resources.modelSize.default, 0.5);
     return html`
-        <div class="game-container" tabindex="0" @keydown=${props.keyPress}>
+        <div class="game-container" tabindex="0" @keydown=${props.keyPress} style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        ">
             <graphics-viewport
-                style="border: 1px solid red;"
+                style="display: block; width: 100%; height: 100%; pointer-events: auto;"
                 .initialCamera=${{
-                    position: Vec3.add([15, 15, 15], center),
+                    position: Vec3.add([23, 23, 23], center),
                     target: center
                 }}
-                .clearColor=${props.clearColor}
+                .clearColor=${[0.0, 0.0, 0.0, 0.0] as const}
                 @pointerdown=${(e: PointerEvent) => {
                     const data = getViewportEventData(e);
                     if (data) {
@@ -64,6 +72,7 @@ export const render = (props: VoxelEditorMainElementProps): TemplateResult => {
                 }}
             >
             </graphics-viewport>
+            <voxel-editor-toolbar style="pointer-events: none;"></voxel-editor-toolbar>
         </div>
     `;
 };

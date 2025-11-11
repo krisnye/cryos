@@ -1,7 +1,8 @@
 import { AabbFace, Quat, Vec3, Vec4 } from "@adobe/data/math";
 import { VoxelEditorStore } from "../voxel-editor-store.js";
-import { getEntityByPosition } from "./get-entity-by-position.js";
 import { setSelectedVoxelFace } from "./set-selected-voxel-face.js";
+import { expandModelSize } from "../transactions/expand-model-size.js";
+import { getEntityByPosition } from "./get-entity-by-position.js";
 
 export const extrudeSelections = (
     t: VoxelEditorStore,
@@ -31,16 +32,14 @@ export const extrudeSelections = (
             position[2] + normal[2],
         ];
         
-        // Check if a pickable entity already exists at this position
-        const existingEntity = getEntityByPosition(
-            t,
-            extrudedPosition,
-            t.archetypes.Pickable.components
-        );
+        // Check if there's already a Model or Wall at the target position
+        const existingModel = getEntityByPosition(t, extrudedPosition, t.archetypes.Model.components);
+        const existingWall = getEntityByPosition(t, extrudedPosition, t.archetypes.Wall.components);
         
-        // If no entity exists, create a new one
-        if (!existingEntity) {
-            t.archetypes.Pickable.insert({
+        // Only create a new Model voxel if the position is not occupied
+        if (!existingModel && !existingWall) {
+            t.archetypes.Model.insert({
+                model: true,
                 pickable: true,
                 position: extrudedPosition,
                 color,
@@ -55,5 +54,8 @@ export const extrudeSelections = (
         // Select the same face on the extruded voxel (continuing in the same direction)
         setSelectedVoxelFace(t, { position: extrudedPosition, face, selected: true });
     }
+    
+    // Expand model size to accommodate the new voxels
+    expandModelSize(t);
 };
 

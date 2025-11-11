@@ -12,13 +12,15 @@ export const schema = GameService.schema(
         selectedFaces: AabbFace.schema,
         pickable: TrueSchema,
         selectedVoxelFace: TrueSchema,
+        model: TrueSchema,
     },
     {
-        modelSize: { default: [8, 8, 8] as Vec3 },
+        modelSize: { default: [16, 16, 16] as Vec3 },
         pointerDown: { default: [] as ({ position: Vec3, face: AabbFace, select: boolean } | undefined)[], mutable: true }
     },
     {
         Pickable: ["pickable", ...graphicsStoreSchema.archetypes.Particle],
+        Model: ["model", "pickable", ...graphicsStoreSchema.archetypes.Particle],
         Wall: ["wall", "wallFace", "pickable", ...graphicsStoreSchema.archetypes.Particle],
         // selection model, voxel position and selected faces.
         SelectedVoxel: ["selectedFaces", "position"],

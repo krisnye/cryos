@@ -1,6 +1,8 @@
 import { SystemFactory } from "systems/system-factory.js";
 import { VoxelEditorService } from "../voxel-editor-service.js";
 import { AabbFace, Vec3, Vec4 } from "@adobe/data/math";
+import { applyCheckerboardColor } from "../functions/apply-checkerboard-color.js";
+import { getCheckerboardPattern } from "../functions/get-checkerboard-pattern.js";
 
 const WALL_COLOR_LIGHT: Vec4 = [0.6, 0.6, 0.6, 1];
 const WALL_COLOR_DARK: Vec4 = [0.4, 0.4, 0.4, 1];
@@ -25,6 +27,7 @@ export const wallVisibilitySystem: SystemFactory<VoxelEditorService> = (service)
             if (!viewport) return;
 
             const cameraPosition = viewport.camera.position;
+            const currentModelSize = store.resources.modelSize;
             
             // Get all wall entities
             const wallTables = store.queryArchetypes(store.archetypes.Wall.components);
@@ -44,9 +47,12 @@ export const wallVisibilitySystem: SystemFactory<VoxelEditorService> = (service)
                     let targetColor: Vec4;
                     if (shouldBeVisible) {
                         // Apply checkerboard pattern for visible walls
-                        const isLight = getCheckerboardPattern(wallFace, wallPosition);
-                        targetColor = isLight ? WALL_COLOR_LIGHT : WALL_COLOR_DARK;
+                        const isLight = getCheckerboardPattern(wallPosition);
+                        const baseColor = isLight ? WALL_COLOR_LIGHT : WALL_COLOR_DARK;
+                        // Apply extended region checkerboard if applicable
+                        targetColor = applyCheckerboardColor(wallPosition, baseColor, currentModelSize);
                     } else {
+                        // Make near walls transparent
                         targetColor = WALL_COLOR_TRANSPARENT;
                     }
                     
@@ -74,23 +80,5 @@ function isWallFacingAway(face: AabbFace, wallPosition: Vec3, cameraPosition: Ve
     const dot = Vec3.dot(faceNormal, toCamera);
     
     return dot < 0;
-}
-
-/**
- * Determines checkerboard pattern for a wall position in 3D space.
- * Creates a true 3D checkerboard pattern (like a 3D chess cube).
- * Returns true for light squares, false for dark squares.
- */
-function getCheckerboardPattern(face: AabbFace, position: Vec3): boolean {
-    const [x, y, z] = position;
-    
-    // For a proper 3D checkerboard, use all three coordinates
-    // The pattern alternates based on the sum of all three integer coordinates
-    const ix = Math.floor(x);
-    const iy = Math.floor(y);
-    const iz = Math.floor(z);
-    
-    // 3D checkerboard: (x + y + z) % 2 determines the color
-    return (ix + iy + iz) % 2 === 0;
 }
 

@@ -2,6 +2,7 @@ import { AabbFace, Vec3 } from "@adobe/data/math";
 import { VoxelEditorStore } from "../voxel-editor-store.js";
 import { getEntityByPosition } from "./get-entity-by-position.js";
 import { setSelectedVoxelFace } from "./set-selected-voxel-face.js";
+import { expandModelSize } from "../transactions/expand-model-size.js";
 
 export const intrudeSelections = (t: VoxelEditorStore): void => {
     // Collect all selected faces first to avoid mutating while iterating
@@ -20,19 +21,16 @@ export const intrudeSelections = (t: VoxelEditorStore): void => {
     
     // Process each selected face
     for (const { position, face } of selectedFaces) {
-        // Find the pickable entity at this position
+        // Find the model entity at this position
         const currentEntity = getEntityByPosition(
             t,
             position,
-            t.archetypes.Pickable.components
+            t.archetypes.Model.components
         );
         
-        // Delete if there's a pickable entity at this position, but NEVER delete walls
+        // Delete if there's a model entity at this position
         if (currentEntity) {
-            const isWall = t.get(currentEntity, "wall");
-            if (!isWall) {
-                t.delete(currentEntity);
-            }
+            t.delete(currentEntity);
         }
         
         // Always clear the current face selection and move inward
@@ -49,5 +47,8 @@ export const intrudeSelections = (t: VoxelEditorStore): void => {
         // Select the same face on the previous position (continuing to allow movement)
         setSelectedVoxelFace(t, { position: previousPosition, face, selected: true });
     }
+    
+    // Adjust model size (may shrink back to default if voxels were deleted)
+    expandModelSize(t);
 };
 
