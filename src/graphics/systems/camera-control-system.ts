@@ -67,6 +67,7 @@ function getAcceleratedSpeed(
  * - Arrow keys: Rotate camera around target
  * - W/A/S/D: Pan camera and target
  * - Q/E: Zoom in/out
+ * - R/F: Adjust orthographic blend (R=more ortho, F=more perspective)
  */
 function handleOrbitCamera(
     store: GraphicsStore,
@@ -146,15 +147,28 @@ function handleOrbitCamera(
         cameraChanged = true;
     }
 
+    // Handle keyboard input for orthographic blend (R/F)
+    const orthographicSpeed = 0.02; // Speed to blend between perspective and orthographic
+    if (pressedKeys.KeyR) {
+        // Increase orthographic (toward orthographic)
+        newCamera.orthographic = Math.min(1.0, newCamera.orthographic + orthographicSpeed);
+        cameraChanged = true;
+    }
+    if (pressedKeys.KeyF) {
+        // Decrease orthographic (toward perspective)
+        newCamera.orthographic = Math.max(0.0, newCamera.orthographic - orthographicSpeed);
+        cameraChanged = true;
+    }
+
     // Handle arrow keys for orbit rotation
-    const worldUp: Vec3 = [0, 0, 1]; // Z is up
+    const worldUp: Vec3 = [0, 1, 0]; // Y is up (matching default camera convention)
     
-    // Arrow Left/Right: Rotate horizontally around target (around world Z axis)
+    // Arrow Left/Right: Rotate horizontally around target (around world Y axis)
     if (pressedKeys.ArrowLeft) {
         const speed = getAcceleratedSpeed(baseRotationSpeed, maxRotationSpeed, pressedKeys.ArrowLeft.frameCount, rotationRampUpFrames);
         const offset = Vec3.subtract(newCamera.position, newCamera.target);
-        const rotationZ = Mat4x4.rotationZ(speed);
-        const rotatedOffset = Mat4x4.multiplyVec3(rotationZ, offset);
+        const rotationY = Mat4x4.rotationY(speed);
+        const rotatedOffset = Mat4x4.multiplyVec3(rotationY, offset);
         newCamera.position = Vec3.add(newCamera.target, rotatedOffset);
         
         // Update up vector to stay perpendicular to view direction
@@ -167,8 +181,8 @@ function handleOrbitCamera(
     if (pressedKeys.ArrowRight) {
         const speed = getAcceleratedSpeed(baseRotationSpeed, maxRotationSpeed, pressedKeys.ArrowRight.frameCount, rotationRampUpFrames);
         const offset = Vec3.subtract(newCamera.position, newCamera.target);
-        const rotationZ = Mat4x4.rotationZ(-speed);
-        const rotatedOffset = Mat4x4.multiplyVec3(rotationZ, offset);
+        const rotationY = Mat4x4.rotationY(-speed);
+        const rotatedOffset = Mat4x4.multiplyVec3(rotationY, offset);
         newCamera.position = Vec3.add(newCamera.target, rotatedOffset);
         
         // Update up vector to stay perpendicular to view direction

@@ -1,8 +1,8 @@
 import { Quat } from "@adobe/data/math";
 import { createAxis } from "../../../graphics/database/index.js";
-import { ForestStore } from "../forest-store.js";
 import { createTree } from "../functions/create-tree.js";
 import { particlesToVertexData } from "graphics/functions/particles-to-vertex-data.js";
+import { ForestStore } from "../forest-service.js";
 
 export const createTestModels = (t: ForestStore) => {   
     createAxis(t);

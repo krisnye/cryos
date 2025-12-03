@@ -1,0 +1,268 @@
+---
+alwaysApply: false
+---
+
+# React-Style Hooks in LitElement
+
+This application uses `@adobe/data/lit` which provides React-style hooks for LitElement components.
+
+## Available Hooks
+
+Import hooks from `@adobe/data/lit`:
+```typescript
+import { useEffect, useState, useObservableValues, useMemo, useDebounce, useResizeObserver } from "@adobe/data/lit";
+```
+
+## Hook Usage Patterns
+
+### useEffect - Side Effects and Lifecycle
+
+Use `useEffect` for side effects like event listeners, subscriptions, or DOM manipulation.
+
+```typescript
+// Run once on mount, cleanup on unmount
+useEffect(() => {
+    // Setup code
+    const handler = () => { /* ... */ };
+    window.addEventListener('event', handler);
+    
+    // Return cleanup function
+    return () => {
+        window.removeEventListener('event', handler);
+    };
+}, []); // Empty deps = mount/unmount only
+```
+
+```typescript
+// Run when dependencies change
+useEffect(() => {
+    // This runs when `value` changes
+    doSomething(value);
+}, [value]); // Runs when value changes
+```
+
+### Custom Hooks
+
+Create reusable hooks by prefixing function names with `use`:
+
+```typescript
+/**
+ * Hook to setup some application behavior
+ * @param service - The application service
+ */
+export const useMyFeature = (service: MyService): void => {
+    useEffect(() => {
+        // Setup logic
+        return () => {
+            // Cleanup logic
+        };
+    }, []);
+};
+```
+
+Then use in component's `render()` method:
+
+```typescript
+override render(): TemplateResult {
+    // Call hooks at the top of render
+    useMyFeature(this.service);
+    
+    return html`...`;
+}
+```
+
+### useState - Component State
+
+```typescript
+const [count, setCount] = useState(0);
+const [name, setName] = useState("default");
+```
+
+### useObservableValues - Reactive State
+
+Use for observing reactive state changes:
+
+```typescript
+const { value1, value2 } = useObservableValues(() => ({
+    value1: observable.value1,
+    value2: observable.value2
+}));
+```
+
+## Rules for Hooks
+
+1. **Call hooks at the top of the render method** - Don't call inside conditions, loops, or nested functions
+2. **Prefix custom hooks with `use`** - e.g., `useMyFeature`, `useUnsavedChangesWarning`
+3. **Pass service/dependencies explicitly** - Custom hooks should take the service or store as a parameter
+4. **Return cleanup functions from useEffect** - Always clean up event listeners, subscriptions, etc.
+5. **Be careful with dependency arrays** - Empty `[]` = run once; `[dep]` = run when dep changes
+
+## When to Create Custom Hooks
+
+Create a custom hook when you have:
+- Reusable side effect logic (event listeners, intervals, etc.)
+- Complex state management that can be abstracted
+- Integration with browser APIs (localStorage, geolocation, etc.)
+- Subscriptions or observers that need cleanup
+
+## Examples in Codebase
+
+- `src/samples/voxel-editor/functions/setup-unsaved-changes-warning.ts` - Custom hook for beforeunload warning
+- `src/graphics/elements/graphics-viewport.ts` - Multiple hooks for viewport management
+- `src/samples/sample-container.ts` - Observable state management
+
+## Anti-patterns
+
+❌ **Don't manually manage lifecycle methods when you can use hooks:**
+```typescript
+// Bad - manual lifecycle management
+override connectedCallback(): void {
+    super.connectedCallback();
+    this.cleanup = setupFeature();
+}
+override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.cleanup?.();
+}
+```
+
+✅ **Do use hooks in render:**
+```typescript
+// Good - hook handles lifecycle automatically
+override render(): TemplateResult {
+    useFeature(this.service);
+    return html`...`;
+}
+```
+# React-Style Hooks in LitElement
+
+This application uses `@adobe/data/lit` which provides React-style hooks for LitElement components.
+
+## Available Hooks
+
+Import hooks from `@adobe/data/lit`:
+```typescript
+import { useEffect, useState, useObservableValues, useMemo, useDebounce, useResizeObserver } from "@adobe/data/lit";
+```
+
+## Hook Usage Patterns
+
+### useEffect - Side Effects and Lifecycle
+
+Use `useEffect` for side effects like event listeners, subscriptions, or DOM manipulation.
+
+```typescript
+// Run once on mount, cleanup on unmount
+useEffect(() => {
+    // Setup code
+    const handler = () => { /* ... */ };
+    window.addEventListener('event', handler);
+    
+    // Return cleanup function
+    return () => {
+        window.removeEventListener('event', handler);
+    };
+}, []); // Empty deps = mount/unmount only
+```
+
+```typescript
+// Run when dependencies change
+useEffect(() => {
+    // This runs when `value` changes
+    doSomething(value);
+}, [value]); // Runs when value changes
+```
+
+### Custom Hooks
+
+Create reusable hooks by prefixing function names with `use`:
+
+```typescript
+/**
+ * Hook to setup some application behavior
+ * @param service - The application service
+ */
+export const useMyFeature = (service: MyService): void => {
+    useEffect(() => {
+        // Setup logic
+        return () => {
+            // Cleanup logic
+        };
+    }, []);
+};
+```
+
+Then use in component's `render()` method:
+
+```typescript
+override render(): TemplateResult {
+    // Call hooks at the top of render
+    useMyFeature(this.service);
+    
+    return html`...`;
+}
+```
+
+### useState - Component State
+
+```typescript
+const [count, setCount] = useState(0);
+const [name, setName] = useState("default");
+```
+
+### useObservableValues - Reactive State
+
+Use for observing reactive state changes:
+
+```typescript
+const { value1, value2 } = useObservableValues(() => ({
+    value1: observable.value1,
+    value2: observable.value2
+}));
+```
+
+## Rules for Hooks
+
+1. **Call hooks at the top of the render method** - Don't call inside conditions, loops, or nested functions
+2. **Prefix custom hooks with `use`** - e.g., `useMyFeature`, `useUnsavedChangesWarning`
+3. **Pass service/dependencies explicitly** - Custom hooks should take the service or store as a parameter
+4. **Return cleanup functions from useEffect** - Always clean up event listeners, subscriptions, etc.
+5. **Be careful with dependency arrays** - Empty `[]` = run once; `[dep]` = run when dep changes
+
+## When to Create Custom Hooks
+
+Create a custom hook when you have:
+- Reusable side effect logic (event listeners, intervals, etc.)
+- Complex state management that can be abstracted
+- Integration with browser APIs (localStorage, geolocation, etc.)
+- Subscriptions or observers that need cleanup
+
+## Examples in Codebase
+
+- `src/samples/voxel-editor/functions/setup-unsaved-changes-warning.ts` - Custom hook for beforeunload warning
+- `src/graphics/elements/graphics-viewport.ts` - Multiple hooks for viewport management
+- `src/samples/sample-container.ts` - Observable state management
+
+## Anti-patterns
+
+❌ **Don't manually manage lifecycle methods when you can use hooks:**
+```typescript
+// Bad - manual lifecycle management
+override connectedCallback(): void {
+    super.connectedCallback();
+    this.cleanup = setupFeature();
+}
+override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.cleanup?.();
+}
+```
+
+✅ **Do use hooks in render:**
+```typescript
+// Good - hook handles lifecycle automatically
+override render(): TemplateResult {
+    useFeature(this.service);
+    return html`...`;
+}
+```

@@ -1,7 +1,7 @@
 import { describe, test, expect } from "vitest";
 import { createCircleModel } from "./create-circle-model.js";
 import { graphicsStoreSchema } from "../graphics-store.js";
-import { createStoreFromSchema } from "@adobe/data/ecs";
+import { Store } from "@adobe/data/ecs";
 import { Volume } from "data/index.js";
 import { Quat } from "@adobe/data/math";
 
@@ -10,7 +10,7 @@ describe("createCircleModel", () => {
         const radii = [5, 10, 20];
         
         radii.forEach(radius => {
-            const store = createStoreFromSchema(graphicsStoreSchema);
+            const store = Store.createFromSchema(graphicsStoreSchema);
             const entity = createCircleModel(store, {
                 position: [0, 0, 0],
                 color: [1, 0, 0, 1],
@@ -25,14 +25,14 @@ describe("createCircleModel", () => {
             expect(entityData).toBeDefined();
             
             const volume = entityData!.voxelColor;
-            expect(volume.size[0]).toBe(radius * 2);
-            expect(volume.size[1]).toBe(radius * 2);
-            expect(volume.size[2]).toBe(1);
+            expect(volume?.size[0]).toBe(radius * 2);
+            expect(volume?.size[1]).toBe(radius * 2);
+            expect(volume?.size[2]).toBe(1);
         });
     });
 
     test("fills only voxels within radius", () => {
-        const store = createStoreFromSchema(graphicsStoreSchema);
+        const store = Store.createFromSchema(graphicsStoreSchema);
         const radius = 10;
         const entity = createCircleModel(store, {
             position: [0, 0, 0],
@@ -42,7 +42,7 @@ describe("createCircleModel", () => {
             rotation: Quat.identity
         });
         
-        const volume = store.read(entity)!.voxelColor;
+        const volume = store.read(entity)!.voxelColor!;
         const centerX = radius;
         const centerY = radius;
         

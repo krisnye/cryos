@@ -1,4 +1,6 @@
+import { Simplify } from "@adobe/data/types";
 import { Material, MaterialIndex } from "./material.js";
+import { Mutable } from "@adobe/data";
 
 const rawMaterials = [
     {
@@ -83,6 +85,51 @@ const rawMaterials = [
         thermalConductivity: 0.12,
     },
     {
+        name: "steel",
+        phase: "solid",
+        color: [0.55, 0.55, 0.6, 1.0],
+        density: 7.85,
+        viscosity: 0,
+        specificHeatCapacity: 490.0,
+        thermalConductivity: 50.0,
+    },
+    {
+        name: "concrete",
+        phase: "solid",
+        color: [0.6, 0.6, 0.6, 1.0],
+        density: 2.4,
+        viscosity: 0,
+        specificHeatCapacity: 880.0,
+        thermalConductivity: 1.4,
+    },
+    {
+        name: "reinforcedConcrete",
+        phase: "solid",
+        color: [0.55, 0.55, 0.55, 1.0],
+        density: 2.5,
+        viscosity: 0,
+        specificHeatCapacity: 880.0,
+        thermalConductivity: 2.0,
+    },
+    {
+        name: "glass",
+        phase: "solid",
+        color: [0.9, 0.95, 1.0, 0.3],
+        density: 2.5,
+        viscosity: 0,
+        specificHeatCapacity: 840.0,
+        thermalConductivity: 1.0,
+    },
+    {
+        name: "temperedGlass",
+        phase: "solid",
+        color: [0.5, 0.55, 0.6, 0.4],
+        density: 2.5,
+        viscosity: 0,
+        specificHeatCapacity: 840.0,
+        thermalConductivity: 1.0,
+    },
+    {
         name: "meta",
         meta: true,
         phase: "solid",
@@ -95,7 +142,7 @@ const rawMaterials = [
 ] as const satisfies Omit<Material, "index">[];
 
 // Derive the type from the const assertion
-type RawMaterial = { index: MaterialIndex } & typeof rawMaterials[number];
+type RawMaterial = Simplify<{ readonly index: MaterialIndex } & typeof rawMaterials[number]>;
 type BasicMaterials = readonly RawMaterial[] & {
     [K in RawMaterial['name']]: Extract<RawMaterial, { name: K }>;
 };
@@ -103,6 +150,6 @@ type BasicMaterials = readonly RawMaterial[] & {
 // Create the materials object that satisfies both array and named property access
 export const materials: BasicMaterials = Object.assign([...rawMaterials], {} as any);
 for (let i = 0; i < materials.length; i++) {
-    materials[i].index = i;
+    (materials[i] as Mutable<RawMaterial>).index = i;
     (materials as any)[materials[i].name] = materials[i];
 }

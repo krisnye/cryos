@@ -1,6 +1,6 @@
-import { ApplicationElement, useEffect, useElement, useObservable, useState } from "@adobe/data/lit";
+import { ApplicationElement, useEffect, useElement, useObservable, useState, useResizeObserver, useDebounce, useMemo } from "@adobe/data/lit";
 import { customElement, property } from "lit/decorators.js";
-import { html, css, TemplateResult, CSSResult } from "lit";
+import { html, type TemplateResult } from "lit";
 import { Entity } from "@adobe/data/ecs";
 import { Camera } from "graphics/index.js";
 import { GraphicsService } from "../graphics-service.js";
@@ -15,16 +15,51 @@ declare global {
     }
 }
 
+
+// Hook to initialize viewport once
+function useViewportInitialization(
+    viewportId: Entity | null,
+    device: GPUDevice | null | undefined,
+    canvas: HTMLCanvasElement | null,
+    actualWidth: number,
+    actualHeight: number,
+    database: GraphicsDatabase,
+    clearColor: Vec4,
+    initialCamera: Partial<Camera>,
+    setViewportId: (id: Entity) => void
+) {
+        useEffect(() => {
+            if (viewportId === null && device && canvas && actualWidth > 0 && actualHeight > 0) {
+                canvas.width = actualWidth;
+                canvas.height = actualHeight;
+                initViewport(database, device, canvas, clearColor, initialCamera)
+                    .then(viewportId => {
+                        if (viewportId !== undefined) {
+                            setViewportId(viewportId);
+                        }
+                    });
+            }
+        }, [device, canvas, actualWidth, actualHeight]);
+}
+
+// Hook to update viewport size when dimensions change
+function useViewportSizeUpdate(
+    viewportId: Entity | null,
+    device: GPUDevice | null | undefined,
+    canvas: HTMLCanvasElement | null,
+    actualWidth: number,
+    actualHeight: number,
+    database: GraphicsDatabase
+) {
+    useEffect(() => {
+        if (viewportId !== null && device && canvas && actualWidth > 0 && actualHeight > 0) {
+            updateViewportSize(database, device, viewportId, canvas, actualWidth, actualHeight);
+        }
+    }, [actualWidth, actualHeight]);
+}
+
 @customElement(tagName)
 export class GraphicsViewport extends ApplicationElement<GraphicsService> {
-    static override styles: CSSResult = css`
-        :host {
-            display: inline-block;
-        }
-        canvas {
-            display: block;
-        }
-    `;
 
     @property({ type: Object })
     initialCamera: Partial<Camera> = {};
@@ -38,23 +73,59 @@ export class GraphicsViewport extends ApplicationElement<GraphicsService> {
     @property({ type: Number })
     height: number = 600;
 
+    @property({ type: Boolean })
+    autoResize: boolean = true;
+
     @property({ type: Number })
     viewportId: Entity | null = null;
 
     override render(): TemplateResult {
         const device = useObservable(this.service.database.observe.resources.device);
         const canvas = useElement("canvas");
-        useEffect(() => {
-            if (device && canvas) {
-                // Set canvas size
-                canvas.width = this.width;
-                canvas.height = this.height;
-                initViewport(this.service.database, device, canvas, this.clearColor, this.initialCamera).then(viewportId => this.viewportId = viewportId);
+        const [size, setSize] = useState({ width: this.width, height: this.height });
+
+        // Observe element size changes (memoized to prevent infinite loops)
+        const handleResize = useMemo(() => (info: { width: number; height: number }) => {
+            if (!this.autoResize) return;
+            const width = Math.floor(info.width);
+            const height = Math.floor(info.height);
+            if (width > 0 && height > 0) {
+                setSize({ width, height });
             }
-        }, [device, canvas, this.width, this.height]);
+        }, [this.autoResize]);
+        
+        useResizeObserver(handleResize);
+
+        // Debounce GPU updates (150ms after resize stops)
+        const debouncedSize = useDebounce(size, 150);
+
+        // Use auto-size or explicit props
+        const actualWidth = this.autoResize ? debouncedSize.width : this.width;
+        const actualHeight = this.autoResize ? debouncedSize.height : this.height;
+
+        // Initialize viewport once, then update on size changes
+        useViewportInitialization(
+            this.viewportId,
+            device,
+            canvas,
+            actualWidth,
+            actualHeight,
+            this.service.database,
+            this.clearColor,
+            this.initialCamera,
+            (id) => this.viewportId = id
+        );
+        useViewportSizeUpdate(
+            this.viewportId,
+            device,
+            canvas,
+            actualWidth,
+            actualHeight,
+            this.service.database
+        );
 
         return html`
-            <canvas></canvas>
+            <canvas style="display: block; width: 100%; height: 100%;"></canvas>
         `;
     }
 }
@@ -94,4 +165,25 @@ async function initViewport(database: GraphicsDatabase, device: GPUDevice, canva
         color,
     });
     return viewportId;
+}
+
+function updateViewportSize(database: GraphicsDatabase, device: GPUDevice, viewportId: Entity, canvas: HTMLCanvasElement, width: number, height: number) {
+    // Update canvas dimensions and GPU resources together to keep them in sync
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Create new depth texture with updated size
+    const depthTexture = device.createTexture({
+        size: [width, height],
+        format: 'depth24plus',
+        usage: GPUTextureUsage.RENDER_ATTACHMENT
+    });
+
+    // Update camera aspect ratio and depth texture
+    database.transactions.updateViewportSize({
+        viewportId,
+        width,
+        height,
+        depthTexture,
+    });
 }

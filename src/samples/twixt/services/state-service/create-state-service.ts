@@ -5,25 +5,25 @@ import { boardSize } from "./dependent-state/board-size.js";
 import { currentPlayer } from "./dependent-state/current-player.js";
 import { BoardLink, BoardPoint } from "./state-service.js";
 
-export function createTwixtStore() {
+export const createTwixtStore = () => {
     return createStore({} as const, {
         board: { default: new Array<BoardPoint>(24 ** 2).fill(null) },
         links: { default: new Array<BoardLink>(0) },
         hoverIndex: { default: null as number | null },
-    } as const)
-}
+    } as const);
+};
 
 export type TwixtStore = ReturnType<typeof createTwixtStore>;
 export type TwixtReadonlyStore = ToReadonlyStore<TwixtStore>;
 
-export function createTwixtDatabase() {
+export const createTwixtDatabase = () => {
     return createDatabase(
         createTwixtStore(),
         transactions
     );
-}
+};
 
-export function createTwixtStateService() {
+export const createTwixtStateService = () => {
     const database = createTwixtDatabase();
     return {
         database,
