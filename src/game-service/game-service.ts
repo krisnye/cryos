@@ -1,4 +1,4 @@
-import { ArchetypeComponents, ComponentSchemas, createDatabase, Database, ResourceSchemas, Store, ToTransactionFunctions, TransactionDeclarations, TransactionFunctions } from "@adobe/data/ecs";
+import { ArchetypeComponents, ComponentSchemas, createDatabase, Database, OptionalComponents, ResourceSchemas, Store, ToTransactionFunctions, TransactionDeclarations, TransactionFunctions } from "@adobe/data/ecs";
 import { FromSchemas } from "@adobe/data/schema";
 import { Service } from "@adobe/data/service";
 import { StringKeyof } from "@adobe/data/types";
@@ -15,7 +15,7 @@ import * as uiSystems from "ui/systems/index.js";
 export interface GameService<
     C extends object,
     R extends object,
-    A extends ArchetypeComponents<StringKeyof<C>>,
+    A extends ArchetypeComponents<StringKeyof<C & OptionalComponents>>,
     T extends TransactionFunctions
 > extends Service {
     store: Store<C, R, A> & GraphicsStore;
@@ -40,7 +40,7 @@ export namespace GameService {
     export function schema<
         const CS extends ComponentSchemas,
         const RS extends ResourceSchemas,
-        const A extends ArchetypeComponents<StringKeyof<CS & typeof graphicsStoreSchema.components>>,
+        const A extends ArchetypeComponents<StringKeyof<CS & OptionalComponents & typeof graphicsStoreSchema.components>>,
     >(
         components: CS,
         resources: RS,
@@ -67,13 +67,13 @@ export namespace GameService {
     export function create<
         const CS extends ComponentSchemas,
         const RS extends ResourceSchemas,
-        const A extends ArchetypeComponents<StringKeyof<CS>>,
-        const TD extends TransactionDeclarations<FromSchemas<CS>, FromSchemas<RS>, A>,
+        const A extends ArchetypeComponents<StringKeyof<CS & OptionalComponents>>,
+        const TD extends TransactionDeclarations<FromSchemas<CS & OptionalComponents>, FromSchemas<RS>, A>,
     >(
         schema: Store.Schema<CS, RS, A>,
         actions: TD,
     ): GameService<FromSchemas<CS>, FromSchemas<RS>, A, ToTransactionFunctions<TD>> {
-        const store = Store.createFromSchema(schema);
+        const store = Store.createFromSchema(schema as any) as Store<FromSchemas<CS & OptionalComponents>, FromSchemas<RS>, A>;
         actions = {
             ...graphicsTransactions,
             ...actions,

@@ -1,0 +1,38 @@
+{
+  "json": {
+    "modelSize": [
+      16,
+      16,
+      16
+    ],
+    "material": {
+      "size": [
+        8,
+        13,
+        7
+      ],
+      "data": {
+        "codec": "typed-buffer",
+        "json": {
+          "type": "number",
+          "schema": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "capacity": 728
+        },
+        "binaryIndex": 0,
+        "binaryCount": 1
+      }
+    },
+    "offset": [
+      5.5,
+      0.5,
+      5.5
+    ]
+  },
+  "lengths": [
+    5824
+  ],
+  "binary": "eJzt2DsOwCAMA1DGjh16IO5/qk5I7RBIjNK4krNk4U2Yb2vPOvu7R0t+3rP91eed3R993lm9d56scfK13ptTa1y19+bUGlfto/stuj/K53jv/j4KPR+yvPd8GIWeL1m+ev7l93x1/rV+Yt66f8jXeDS/LB7NL4sfhd6/5Tk8+v5g8ej7g8Wz5+NvPnpP2/Wr/69ovr/2q/+vaL7z/Q3hpFoh"
+}

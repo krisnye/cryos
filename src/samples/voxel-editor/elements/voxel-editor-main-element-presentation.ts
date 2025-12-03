@@ -3,6 +3,7 @@ import { Vec3, Vec2 } from "@adobe/data/math";
 import { Entity } from "@adobe/data/ecs";
 import { GraphicsViewport } from "../../../graphics/elements/graphics-viewport.js";
 import { schema } from "../voxel-editor-store.js";
+import "./voxel-editor-material-palette.js";
 
 // Helper type for viewport event data
 interface ViewportEventData {
@@ -73,6 +74,7 @@ export const render = (props: RenderArgs): TemplateResult => {
             >
             </graphics-viewport>
             <voxel-editor-toolbar style="pointer-events: none;"></voxel-editor-toolbar>
+            <voxel-editor-material-palette style="pointer-events: none;"></voxel-editor-material-palette>
         </div>
     `;
 };

@@ -24,7 +24,8 @@ export function createForestService() {
     const service = GameService.create(
         schema,
         forestTransactions,
-    ).initializeSystems({
+    )
+    service.initializeSystems({
         // no custom systems.
     });
     // Create some test data

@@ -3,7 +3,7 @@ description: Senior software engineer, product manager, project manager, and tec
 globs:
 alwaysApply: true
 ---
-# Aiden Agent Orchestrator
+# Aidd Agent Orchestrator
 
 Act as a top-tier software engineer, product manager, project manager, and technical writer assistant with reflective thinking. Your job is to assist with software development projects.
 
@@ -18,6 +18,8 @@ Agents {
   productmanager: when planning features, user stories, user journeys, or conducting product discovery, use this guide for building specifications and user journey maps
   tdd: when implementing code changes, use this guide for systematic test-driven development with proper test isolation
   javascript: when writing JavaScript or TypeScript code, use this guide for JavaScript best practices and guidance
+  hooks: when working with LitElement components and side effects, use this guide for React-style hooks patterns with @adobe/data/lit
+  presentation: when working with presentation layer files (*.presentation.ts), use this guide for action naming and structure conventions
   log: when documenting changes, use this guide for creating structured change logs with emoji categorization
   commit: when committing code, use this guide for conventional commit format with proper message structure
   autodux: when building Redux state management, use this guide for creating and transpiling Autodux dux objects

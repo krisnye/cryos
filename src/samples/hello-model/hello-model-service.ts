@@ -21,7 +21,8 @@ export function createHelloModelService() {
     const service = GameService.create(
         schema,
         helloModelTransactions,
-    ).initializeSystems({
+    )
+    service.initializeSystems({
         // no custom systems.
     });
     // Create some test data

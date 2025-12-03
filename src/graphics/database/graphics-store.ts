@@ -81,7 +81,7 @@ export const graphicsStoreSchema = Store.Schema.create(
 
         voxelColor: { default: null as unknown as Volume<Rgba> },
         vertexData: { default: null as unknown as TypedBuffer<PositionColorNormalVertex> },
-        modelVertexBuffer: { default: null as unknown as GPUBuffer },
+        modelVertexBuffer: { default: null as unknown as GPUBuffer, transient: true },
         modelVertexBufferSource: { default: null as unknown as TypedBuffer<PositionColorNormalVertex> },
         modelVertexCount: { default: 0 },
         voxelVertexSource: { default: null as unknown as Volume<Rgba> },

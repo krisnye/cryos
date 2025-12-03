@@ -10,6 +10,10 @@ export const pointerMove = (t: VoxelEditorStore, { viewportPosition, viewportId,
     if (!pointerDown) {
         return;
     }
+    
+    // Coalesce with the current drag operation using its unique drag ID
+    t.undoable = { coalesce: { action: "area-selection", dragId: pointerDown.dragId } };
+    
     const picked = pickVoxelFace(t, { viewportPosition, viewportId });
     if (!picked) {
         return;

@@ -20,6 +20,13 @@ typescript
 - Use `const` and `let` instead of `var`.
 - Use `??` instead of `||` for nullish coalescing.
 
+# TypeScript
+
+- NEVER use `as any` to bypass type errors - this defeats TypeScript's purpose
+- If you cannot determine correct types, ASK THE USER for guidance
+- Use proper type assertions with `as Type` only when you have strong guarantees
+- Prefer type narrowing (guards, conditionals) over type assertions
+
 # Testing
 
 - Use pnpm test [filename] --run to make tests exit automatically

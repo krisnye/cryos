@@ -54,6 +54,7 @@ export const selectedVoxelVisibilitySystem: SystemFactory<VoxelEditorService> = 
                             color: SELECTED_FACE_COLOR,
                             scale: scale,
                             rotation: Quat.identity,
+                            transient: true,
                         });
                     }
                 }

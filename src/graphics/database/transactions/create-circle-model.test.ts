@@ -25,9 +25,9 @@ describe("createCircleModel", () => {
             expect(entityData).toBeDefined();
             
             const volume = entityData!.voxelColor;
-            expect(volume.size[0]).toBe(radius * 2);
-            expect(volume.size[1]).toBe(radius * 2);
-            expect(volume.size[2]).toBe(1);
+            expect(volume?.size[0]).toBe(radius * 2);
+            expect(volume?.size[1]).toBe(radius * 2);
+            expect(volume?.size[2]).toBe(1);
         });
     });
 
@@ -42,7 +42,7 @@ describe("createCircleModel", () => {
             rotation: Quat.identity
         });
         
-        const volume = store.read(entity)!.voxelColor;
+        const volume = store.read(entity)!.voxelColor!;
         const centerX = radius;
         const centerY = radius;
         

@@ -1,3 +1,4 @@
+import { Schema } from "@adobe/data/schema";
 import { Phase } from "./phase.js";
 import { Vec4 } from "@adobe/data/math";
 
@@ -17,4 +18,8 @@ export type Material = {
     specificHeatCapacity: number;
     /** Thermal conductivity in W/(m·K) (Watts per meter per Kelvin) */
     thermalConductivity: number;
+}
+
+export namespace MaterialIndex {
+    export const schema = { type: "integer", minimum: 0 } as const satisfies Schema;
 }

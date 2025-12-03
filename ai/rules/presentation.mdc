@@ -1,0 +1,66 @@
+---
+description: Guidelines for presentation layer files
+globs:
+  - "**/*.presentation.ts"
+alwaysApply: true
+---
+# Presentation Layer Guidelines
+
+Presentation files (`*.presentation.ts`) separate pure rendering logic from component behavior.
+
+## Action Property Naming
+
+**Use `verbNoun` format for action properties, NOT `on*` format:**
+
+```typescript
+// ❌ Bad - on* implies events
+type RenderArgs = {
+    onSave: () => void;
+    onClick: () => void;
+    onSubmit: () => void;
+};
+
+// ✅ Good - verbNoun describes semantic actions
+type RenderArgs = {
+    saveModel: () => void;
+    selectItem: () => void;
+    submitForm: () => void;
+};
+```
+
+## Rationale
+
+- `on*` format is for **events** (e.g., `onclick`, `onchange`)
+- Action props are **semantic commands**, not events
+- `verbNoun` clearly describes what the action does
+- Follows functional programming naming conventions
+
+## Examples
+
+- `createUser`, `deleteItem`, `updateSettings`
+- `openFile`, `closeDialog`, `toggleMenu`
+- `loadData`, `saveChanges`, `clearFilter`
+
+## Structure
+
+```typescript
+import { html, type TemplateResult } from "lit";
+
+type RenderArgs = {
+    // Data properties (readonly state)
+    title: string;
+    isActive: boolean;
+    items: Item[];
+    
+    // Action properties (semantic commands)
+    createItem: () => void;
+    deleteItem: (id: string) => void;
+    toggleActive: () => void;
+};
+
+export const render = (props: RenderArgs): TemplateResult => {
+    return html`
+        <button @click=${props.createItem}>Create</button>
+    `;
+};
+```

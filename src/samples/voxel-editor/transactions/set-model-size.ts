@@ -32,6 +32,7 @@ export const setModelSize = (t: VoxelEditorStore, size: Vec3) => {
                 color: applyCheckerboardColor(position, WALL_COLOR, size),
                 scale: [1, 1, 1],
                 rotation: Quat.identity,
+                transient: true,
             });
         }
     }
@@ -48,6 +49,7 @@ export const setModelSize = (t: VoxelEditorStore, size: Vec3) => {
                 color: applyCheckerboardColor(position, WALL_COLOR, size),
                 scale: [1, 1, 1],
                 rotation: Quat.identity,
+                transient: true,
             });
         }
     }
@@ -64,6 +66,7 @@ export const setModelSize = (t: VoxelEditorStore, size: Vec3) => {
                 color: applyCheckerboardColor(position, WALL_COLOR, size),
                 scale: [1, 1, 1],
                 rotation: Quat.identity,
+                transient: true,
             });
         }
     }
@@ -80,6 +83,7 @@ export const setModelSize = (t: VoxelEditorStore, size: Vec3) => {
                 color: applyCheckerboardColor(position, WALL_COLOR, size),
                 scale: [1, 1, 1],
                 rotation: Quat.identity,
+                transient: true,
             });
         }
     }
@@ -96,6 +100,7 @@ export const setModelSize = (t: VoxelEditorStore, size: Vec3) => {
                 color: applyCheckerboardColor(position, WALL_COLOR, size),
                 scale: [1, 1, 1],
                 rotation: Quat.identity,
+                transient: true,
             });
         }
     }
@@ -112,6 +117,7 @@ export const setModelSize = (t: VoxelEditorStore, size: Vec3) => {
                 color: applyCheckerboardColor(position, WALL_COLOR, size),
                 scale: [1, 1, 1],
                 rotation: Quat.identity,
+                transient: true,
             });
         }
     }

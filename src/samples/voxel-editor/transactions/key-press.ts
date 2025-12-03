@@ -3,20 +3,25 @@ import { VoxelEditorStore } from "../voxel-editor-store.js";
 import { clearSelection } from "./clear-selection.js";
 import { extrudeSelections } from "../functions/extrude-selections.js";
 import { intrudeSelections } from "../functions/intrude-selections.js";
-
-const DEFAULT_VOXEL_COLOR: Vec4 = [1, 1, 1, 1];
+import { materials } from "physics/basic-materials.js";
 
 export const keyPress = (t: VoxelEditorStore, { key }: { key: KeyboardEvent["key"] }) => {
 
     if (key === "Escape") {
+        t.undoable = { coalesce: false };
         clearSelection(t);
     }
 
     if (key === "=") {
-        extrudeSelections(t, { color: DEFAULT_VOXEL_COLOR });
+        t.undoable = { coalesce: false };
+        const materialIndex = t.resources.selectedMaterial;
+        const selectedMaterial = materials[materialIndex];
+        const color: Vec4 = [...selectedMaterial.color] as Vec4;
+        extrudeSelections(t, { color, material: materialIndex });
     }
 
     if (key === "-") {
+        t.undoable = { coalesce: false };
         intrudeSelections(t);
     }
 };

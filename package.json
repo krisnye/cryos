@@ -46,7 +46,7 @@
   "author": "krisnye@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "@adobe/data": "^0.5.22",
+    "@adobe/data": "^0.7.4",
     "@lit/context": "^1.1.5",
     "@shoelace-style/shoelace": "^2.19.1"
   },

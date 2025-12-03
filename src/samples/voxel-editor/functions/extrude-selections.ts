@@ -3,10 +3,11 @@ import { VoxelEditorStore } from "../voxel-editor-store.js";
 import { setSelectedVoxelFace } from "./set-selected-voxel-face.js";
 import { expandModelSize } from "../transactions/expand-model-size.js";
 import { getEntityByPosition } from "./get-entity-by-position.js";
+import { MaterialIndex } from "physics/material.js";
 
 export const extrudeSelections = (
     t: VoxelEditorStore,
-    { color, scale = [1, 1, 1] }: { color: Vec4; scale?: Vec3 }
+    { color, material, scale = [1, 1, 1] }: { color: Vec4; material: MaterialIndex; scale?: Vec3 }
 ): void => {
     // Collect all selected faces first to avoid mutating while iterating
     const selectedFaces: Array<{ position: Vec3; face: AabbFace }> = [];
@@ -41,6 +42,7 @@ export const extrudeSelections = (
             t.archetypes.Model.insert({
                 model: true,
                 pickable: true,
+                material,
                 position: extrudedPosition,
                 color,
                 scale,

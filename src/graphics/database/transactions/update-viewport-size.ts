@@ -10,7 +10,7 @@ export const updateViewportSize = (
         depthTexture: GPUTexture;
     }
 ) => {
-    const viewport = t.read(params.viewportId);
+    const viewport = t.read(params.viewportId, t.archetypes.Viewport);
     if (!viewport) return;
 
     t.update(params.viewportId, {
