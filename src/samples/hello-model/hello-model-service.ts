@@ -1,35 +1,29 @@
-import { Store } from "@adobe/data/ecs";
-import { Vec2 } from "@adobe/data/math";
-import { GameService } from "game-service/game-service.js";
-import * as helloModelTransactions from "./transactions/index.js";
-
-// Store Schema
-const schema = GameService.schema(
-    {
-    },
-    {
-        mapSize: { default: [800, 600] as Vec2 },
-    },
-    {
-        // No custom archetypes - just using the graphics ones
-    }
-);
-
-export type HelloModelStore = Store.FromSchema<typeof schema>;
+import { Database } from "@adobe/data/ecs";
+import { voxelRendering } from "plugins/index.js";
 
 export function createHelloModelService() {
-    const service = GameService.create(
-        schema,
-        helloModelTransactions,
-    )
-    service.initializeSystems({
-        // no custom systems.
-    });
-    // Create some test data
-    service.database.transactions.createTestModels();
-    return service;
+    return Database.create(
+        Database.Plugin.create({
+            systems: {
+                hello_model_init: {
+                    create: db => {
+                        // do initialization here.
+                        return () => {};
+                    }
+                },
+                hello_model_render: {
+                    create: db => () => {
+                        console.log("myrender " + db.resources.renderPassEncoder);
+                    },
+                    schedule: {
+                        during: ["render"]
+                    }
+                },
+            },
+            extends: voxelRendering
+        })
+    );
 }
 
 export type HelloModelService = ReturnType<typeof createHelloModelService>;
-
 

@@ -1,7 +1,5 @@
 import { html, LitElement, TemplateResult, css, CSSResult } from "lit";
 import { customElement } from "lit/decorators.js";
-import { withHooks, useObservableValues, useEffect, useState } from "@adobe/data/lit";
-import { createQueryState } from "@adobe/data/observe";
 
 interface SampleDefinition {
     name: string;
@@ -16,35 +14,14 @@ const samples: Record<string, SampleDefinition> = {
             return html`<hello-model-application></hello-model-application>`;
         }
     },
-    "voxel-editor": {
-        name: "Voxel Editor",
-        render: () => {
-            import("./voxel-editor/elements/voxel-editor-main-element.js");
-            return html`<voxel-editor-application></voxel-editor-application>`;
-        }
-    },
-    "forest": {
-        name: "Forest",
-        render: () => {
-            import("./forest/forest-application.js");
-            return html`<forest-application></forest-application>`;
-        }
-    },
-    "twixt": {
-        name: "Twixt",
-        render: () => {
-            import("./twixt/twixt-application.js");
-            return html`<twixt-application></twixt-application>`;
-        }
-    },
 } as const;
 
 type SampleKeys = keyof typeof samples;
 
-const [sample, setSample] = createQueryState<SampleKeys | null>("sample", null);
-
-@customElement("voxel-sample-container")
+@customElement("cryos-sample-container")
 export class SampleContainer extends LitElement {
+    private currentSample: SampleKeys | null = null;
+
     static override styles: CSSResult = css`
         :host {
             display: block;
@@ -92,27 +69,35 @@ export class SampleContainer extends LitElement {
         }
     `;
 
-    @withHooks
-    override render(): TemplateResult {
-        const values = useObservableValues(() => ({
-            sample
-        })) ?? { sample: null };
+    override connectedCallback(): void {
+        super.connectedCallback();
+        const urlParams = new URLSearchParams(window.location.search);
+        const sampleParam = urlParams.get("sample");
+        if (sampleParam && sampleParam in samples) {
+            this.currentSample = sampleParam as SampleKeys;
+        }
+        this.requestUpdate();
+    }
 
-        if (!values.sample) {
+    override render(): TemplateResult {
+        if (!this.currentSample) {
             return html`
-                <h1 class="title">Voxel Samples</h1>
+                <h1 class="title">Cryos Samples</h1>
                 <nav>
                     ${Object.entries(samples).map(([key, value]) => 
                         html`<a href="#" @click=${(e: Event) => {
                             e.preventDefault();
-                            setSample(key as SampleKeys);
+                            this.currentSample = key as SampleKeys;
+                            window.history.pushState({}, "", `?sample=${key}`);
+                            this.requestUpdate();
                         }}>${value.name}</a>`
                     )}
                 </nav>
             `;
         }
 
-        const { render } = samples[values!.sample!];
+        const { render } = samples[this.currentSample];
         return render();
     }
 }
+
