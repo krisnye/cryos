@@ -1,6 +1,6 @@
 {
   "name": "cryos",
-  "version": "0.4.7",
+  "version": "0.5.0",
   "description": "Voxel Physics and Rendering Engine",
   "type": "module",
   "scripts": {
@@ -15,7 +15,12 @@
     "deploy": "npm run clean && npm run build && npm publish --access public",
     "test:debug": "node --inspect ./node_modules/vitest/vitest.mjs run --no-browser"
   },
-  "files": ["lib/**/*", "package.json", "README.md", "LICENSE"],
+  "files": [
+    "lib/**/*",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": "./lib/index.js",
     "./*": "./lib/*.js"
@@ -46,7 +51,7 @@
   "author": "krisnye@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "@adobe/data": "^0.7.4",
+    "@adobe/data": "file:../data/dist",
     "@lit/context": "^1.1.5",
     "@shoelace-style/shoelace": "^2.19.1"
   },
