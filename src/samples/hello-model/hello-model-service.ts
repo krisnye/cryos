@@ -1,5 +1,5 @@
 import { Database } from "@adobe/data/ecs";
-import { voxelRendering } from "plugins/index.js";
+import { voxelRendering, cameraControl } from "plugins/index.js";
 
 export function createHelloModelService() {
     return Database.create(
@@ -8,12 +8,14 @@ export function createHelloModelService() {
                 hello_model_init: {
                     create: db => {
                         console.log("initializing test models");
-                        db.transactions.createTestModels();
+                        db.transactions.createAxis();
+                        // Enable orbit camera control
+                        db.store.resources.cameraControlType = "orbit";
                         // this is an init only system so it doesn't return a system function.
                     }
                 }
             },
-            extends: voxelRendering
+            extends: Database.Plugin.combine(voxelRendering, cameraControl)
         })
     );
 }

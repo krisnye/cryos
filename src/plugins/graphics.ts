@@ -17,7 +17,7 @@ export const graphics = Database.Plugin.create({
         commandEncoder: { default: null as GPUCommandEncoder | null, transient: true },
         renderPassEncoder: { default: null as GPURenderPassEncoder | null, transient: true },
         depthTexture: { default: null as GPUTexture | null, transient: true },
-        clearColor: { default: [0, 0, 0, 1] as Vec4, transient: true },
+        clearColor: { default: [0, 0, 0, 0] as Vec4, transient: true },
         canvas: { default: null as HTMLCanvasElement | null, transient: true },
         canvasContext: { default: null as GPUCanvasContext | null, transient: true },
     },
