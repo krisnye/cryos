@@ -7,20 +7,11 @@ export function createHelloModelService() {
             systems: {
                 hello_model_init: {
                     create: db => {
-                        // do initialization here.
-                        console.log("adding test models");
+                        console.log("initializing test models");
                         db.transactions.createTestModels();
-                        return () => {};
+                        // this is an init only system so it doesn't return a system function.
                     }
-                },
-                hello_model_render: {
-                    create: db => () => {
-                        console.log("myrender " + db.resources.renderPassEncoder);
-                    },
-                    schedule: {
-                        during: ["render"]
-                    }
-                },
+                }
             },
             extends: voxelRendering
         })
