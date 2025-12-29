@@ -62,13 +62,17 @@ export const graphics = Database.Plugin.create({
             create: db => () => {
                 let { canvas, commandEncoder, clearColor, canvasContext, device, depthTexture } = db.store.resources;
                 if (!commandEncoder || !canvasContext || !device || !canvas) return;
-                if (!depthTexture) {
+                
+                // Create or recreate depth texture if needed (e.g., canvas resized)
+                const canvasSize: [number, number] = [canvas.width, canvas.height];
+                if (!depthTexture || depthTexture.width !== canvasSize[0] || depthTexture.height !== canvasSize[1]) {
                     depthTexture = db.store.resources.depthTexture = device.createTexture({
-                        size: [canvas.width, canvas.height],
+                        size: canvasSize,
                         format: 'depth24plus',
                         usage: GPUTextureUsage.RENDER_ATTACHMENT
                     });
                 }
+                
                 db.store.resources.renderPassEncoder = commandEncoder.beginRenderPass({
                     colorAttachments: [{
                         clearValue: clearColor,
@@ -100,13 +104,14 @@ export const graphics = Database.Plugin.create({
         },
         postRender: {
             create: db => () => {
-                const { commandEncoder, renderPassEncoder } = db.store.resources;
+                const { commandEncoder, renderPassEncoder, device } = db.store.resources;
                 if (renderPassEncoder) {
                     renderPassEncoder.end();
                     db.store.resources.renderPassEncoder = null;
                 }
-                if (commandEncoder) {
-                    commandEncoder.finish();
+                if (commandEncoder && device) {
+                    const commandBuffer = commandEncoder.finish();
+                    device.queue.submit([commandBuffer]);
                     db.store.resources.commandEncoder = null;
                 }
             },

@@ -43,6 +43,23 @@ export const scene = Database.Plugin.create({
         lightColor: { default: [1.0, 1.0, 1.0] as Vec3 },
     },
     systems: {
+        updateCameraAspect: {
+            create: (db) => {
+                return () => {
+                    const { canvas, camera } = db.store.resources;
+                    if (!canvas || !camera) return;
+                    
+                    const aspect = canvas.width / canvas.height;
+                    if (camera.aspect !== aspect) {
+                        db.store.resources.camera = {
+                            ...camera,
+                            aspect
+                        };
+                    }
+                };
+            },
+            schedule: { during: ["preRender"] }
+        },
         updateSceneUniforms: {
             create: (db) => {
                 // Retain the struct buffer for reuse across frames

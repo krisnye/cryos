@@ -8,6 +8,7 @@ export function createHelloModelService() {
                 hello_model_init: {
                     create: db => {
                         // do initialization here.
+                        console.log("adding test models");
                         db.transactions.createTestModels();
                         return () => {};
                     }
