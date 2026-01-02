@@ -126,33 +126,39 @@ function handleOrbitCamera(
 
     // Handle arrow keys for orbit rotation
     const worldUp: Vec3 = [0, 1, 0]; // Y is up (matching default camera convention)
+    const worldZAxis: Vec3 = [0, 0, 1]; // World Z axis (vertical)
     
-    // Arrow Left/Right: Rotate horizontally around target (around world Y axis)
+    // Arrow Left/Right: Orbit around target (around world Z axis)
+    // This rotates the camera in the XY plane, keeping Z constant
     if (pressedKeys.ArrowLeft) {
         const speed = getAcceleratedSpeed(baseRotationSpeed, maxRotationSpeed, pressedKeys.ArrowLeft.frameCount, rotationRampUpFrames);
         const offset = Vec3.subtract(newCamera.position, newCamera.target);
-        const rotationY = Mat4x4.rotationY(speed);
-        const rotatedOffset = Mat4x4.multiplyVec3(rotationY, offset);
+        
+        // Rotate offset around world Z axis using rotationZ matrix
+        // This rotates in the XY plane (X and Y change, Z stays constant)
+        const rotationZ = Mat4x4.rotationZ(speed);
+        const rotatedOffset = Mat4x4.multiplyVec3(rotationZ, offset);
         newCamera.position = Vec3.add(newCamera.target, rotatedOffset);
         
-        // Update up vector to stay perpendicular to view direction
-        const newForward = Vec3.normalize(Vec3.subtract(newCamera.target, newCamera.position));
-        const newRight = Vec3.normalize(Vec3.cross(newForward, worldUp));
-        newCamera.up = Vec3.normalize(Vec3.cross(newRight, newForward));
+        // Rotate up vector around world Z axis to maintain camera orientation
+        const rotatedUp = Mat4x4.multiplyVec3(rotationZ, newCamera.up);
+        newCamera.up = Vec3.normalize(rotatedUp);
         
         cameraChanged = true;
     }
     if (pressedKeys.ArrowRight) {
         const speed = getAcceleratedSpeed(baseRotationSpeed, maxRotationSpeed, pressedKeys.ArrowRight.frameCount, rotationRampUpFrames);
         const offset = Vec3.subtract(newCamera.position, newCamera.target);
-        const rotationY = Mat4x4.rotationY(-speed);
-        const rotatedOffset = Mat4x4.multiplyVec3(rotationY, offset);
+        
+        // Rotate offset around world Z axis using rotationZ matrix
+        // This rotates in the XY plane (X and Y change, Z stays constant)
+        const rotationZ = Mat4x4.rotationZ(-speed);
+        const rotatedOffset = Mat4x4.multiplyVec3(rotationZ, offset);
         newCamera.position = Vec3.add(newCamera.target, rotatedOffset);
         
-        // Update up vector to stay perpendicular to view direction
-        const newForward = Vec3.normalize(Vec3.subtract(newCamera.target, newCamera.position));
-        const newRight = Vec3.normalize(Vec3.cross(newForward, worldUp));
-        newCamera.up = Vec3.normalize(Vec3.cross(newRight, newForward));
+        // Rotate up vector around world Z axis to maintain camera orientation
+        const rotatedUp = Mat4x4.multiplyVec3(rotationZ, newCamera.up);
+        newCamera.up = Vec3.normalize(rotatedUp);
         
         cameraChanged = true;
     }

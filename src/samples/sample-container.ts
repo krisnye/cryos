@@ -14,6 +14,13 @@ const samples: Record<string, SampleDefinition> = {
             return html`<hello-model-application></hello-model-application>`;
         }
     },
+    "hello-physics": {
+        name: "Hello Physics",
+        render: () => {
+            import("./hello-physics/hello-physics-application.js");
+            return html`<hello-physics-application></hello-physics-application>`;
+        }
+    },
 } as const;
 
 type SampleKeys = keyof typeof samples;
