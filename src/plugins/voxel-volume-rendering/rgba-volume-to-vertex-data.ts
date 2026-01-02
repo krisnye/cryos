@@ -1,9 +1,8 @@
 import { TypedBuffer, createStructBuffer } from "@adobe/data/typed-buffer";
 import { Mutable } from "@adobe/data";
 import { Vec3, Vec4 } from "@adobe/data/math";
-import { Volume } from "../../types/volume/index.js";
-import { Rgba } from "../../types/rgba/index.js";
-import { PositionColorNormalVertex, positionColorNormalVertexSchema } from "../../types/vertices/index.js";
+import { PositionColorNormalVertex } from "../../types/vertices/index.js";
+import { Rgba, Volume } from "types/index.js";
 
 // Pre-computed direction vectors for performance
 const DIRECTIONS: readonly Vec3[] = [
@@ -107,7 +106,7 @@ export function rgbaVolumeToVertexData(volume: Volume<Rgba>, options: { center?:
 
     // Create vertex buffer with precise capacity (6 vertices per face)
     const vertexCount = faceCount * 6; // 2 triangles per face, 3 vertices per triangle
-    const vertexBuffer = createStructBuffer(positionColorNormalVertexSchema, vertexCount);
+    const vertexBuffer = createStructBuffer(PositionColorNormalVertex.schema, vertexCount);
     
     // Second pass: generate vertices
     let vertexIndex = 0;

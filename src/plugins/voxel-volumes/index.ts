@@ -1,8 +1,7 @@
 import { Database } from "@adobe/data/ecs";
 import { Quat, Vec3 } from "@adobe/data/math";
 import { geometry } from "../geometry.js";
-import { Volume } from "../../types/volume/index.js";
-import { Rgba } from "../../types/rgba/index.js";
+import { Volume, Rgba } from "../../types/index.js";
 
 export const voxelVolumes = Database.Plugin.create({
     components: {

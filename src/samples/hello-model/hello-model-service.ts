@@ -2,8 +2,7 @@ import { Database } from "@adobe/data/ecs";
 import { Vec3, Vec4, Quat } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { voxelVolumeRendering, cameraControl, voxels, voxelRendering } from "plugins/index.js";
-import { Volume } from "../../types/volume/index.js";
-import { Rgba } from "../../types/rgba/index.js";
+import { Volume, Rgba } from "../../types/index.js";
 
 // Helper function to create an interesting test volume (a sphere with color gradient)
 function createTestVolume(size: Vec3 = [8, 8, 8]): Volume<Rgba> {

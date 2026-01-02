@@ -5,9 +5,7 @@ import { TypedBuffer, copyToGPUBuffer, createStructBuffer } from "@adobe/data/ty
 import { voxelVolumes } from "../voxel-volumes/index.js";
 import { scene } from "../scene.js";
 import { rgbaVolumeToVertexData } from "./rgba-volume-to-vertex-data.js";
-import { PositionColorNormalVertex, positionColorNormalVertexLayout } from "../../types/vertices/index.js";
-import { Volume } from "../../types/volume/index.js";
-import { Rgba } from "../../types/rgba/index.js";
+import { PositionColorNormalVertex, Volume, Rgba } from "../../types/index.js";
 import instancedShaderSource from "./instanced-models.wgsl.js";
 
 // Instanced transform data schema (per-instance vertex attributes)
@@ -332,7 +330,7 @@ export const voxelVolumeRendering = Database.Plugin.create({
 
                         renderPassEncoder.setBindGroup(0, bindGroup);
 
-                        const vertexCount = vertexBuffer.size / positionColorNormalVertexLayout.size;
+                        const vertexCount = vertexBuffer.size / PositionColorNormalVertex.layout.size;
                         // Execute instanced draw call - use actual vertex count
                         renderPassEncoder.draw(vertexCount, group.instanceCount, 0, 0);
                     }
