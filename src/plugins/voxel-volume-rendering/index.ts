@@ -179,7 +179,7 @@ export const voxelVolumeRendering = Database.Plugin.create({
                 let pipeline: GPURenderPipeline | null = null;
 
                 // Reusable buffers - retained across iterations and system calls (in closure)
-                let instanceDataBuffer = createStructBuffer(instanceTransformSchema, 1); // Start with capacity 1
+                const instanceDataBuffer = createStructBuffer(instanceTransformSchema, 1); // Start with capacity 1
                 // Map of vertex buffer to GPU buffer for each group (in closure)
                 const groupGpuBuffers = new Map<GPUBuffer, GPUBuffer>();
 

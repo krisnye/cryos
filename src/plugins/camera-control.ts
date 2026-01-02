@@ -39,7 +39,7 @@ function handleOrbitCamera(
     camera: Camera,
     pressedKeys: Partial<Record<KeyCode, KeyState>>
 ): Camera | null {
-    let newCamera = { ...camera };
+    const newCamera = { ...camera };
     let cameraChanged = false;
 
     // Get camera forward/right/up vectors for movement
