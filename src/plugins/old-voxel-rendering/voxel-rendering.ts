@@ -1,7 +1,7 @@
 import { Database } from "@adobe/data/ecs";
 import { Vec3, Vec4, Quat } from "@adobe/data/math";
 import { copyColumnToGPUBuffer } from "@adobe/data/table";
-import { voxels } from "../voxels.js";
+import { voxels } from "../old-voxels.js";
 import { scene } from "../scene.js";
 import { SchemaX } from "../../types/index.js";
 import shaderSource from './voxels.wgsl.js';

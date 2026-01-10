@@ -2,7 +2,7 @@ import { Database } from "@adobe/data/ecs";
 import { Vec3, Quat } from "@adobe/data/math";
 import { Schema } from "@adobe/data/schema";
 import { TypedBuffer, copyToGPUBuffer, createStructBuffer } from "@adobe/data/typed-buffer";
-import { voxelVolumes } from "../voxel-volumes/index.js";
+import { voxelVolumes } from "../old-voxel-volumes/index.js";
 import { scene } from "../scene.js";
 import { rgbaVolumeToVertexData } from "./rgba-volume-to-vertex-data.js";
 import { PositionColorNormalVertex, Volume, Rgba } from "../../types/index.js";

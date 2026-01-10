@@ -1,5 +1,6 @@
 import { Database, scheduler } from "@adobe/data/ecs";
 import { Vec4 } from "@adobe/data/math";
+import { True } from "@adobe/data/schema";
 
 async function getWebGPUDevice() {
     const adapter = await navigator.gpu?.requestAdapter();
@@ -12,6 +13,10 @@ async function getWebGPUDevice() {
 }
 
 export const graphics = Database.Plugin.create({
+    components: {
+        visible: True.schema,
+        name: { type: "string" },
+    },
     resources: {
         device: { default: null as GPUDevice | null, transient: true },
         commandEncoder: { default: null as GPUCommandEncoder | null, transient: true },

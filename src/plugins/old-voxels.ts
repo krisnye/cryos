@@ -1,11 +1,12 @@
 import { Database } from "@adobe/data/ecs";
-import { Quat } from "@adobe/data/math";
+import { Quat, Vec4 } from "@adobe/data/math";
 import { geometry } from "./geometry.js";
 import { True } from "@adobe/data/schema";
 
 export const voxels = Database.Plugin.create({
     components: {
         voxel: True.schema,
+        color: Vec4.schema,
     },
     archetypes: {
         Voxel: ["voxel", "position", "color", "scale", "rotation"],

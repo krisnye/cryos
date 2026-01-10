@@ -9,7 +9,6 @@ export const geometry = Database.Plugin.create({
         rotation: Quat.schema,
         scale: Vec3.schema,
         boundingBox: Aabb.schema,
-        color: Vec4.schema,
     },
     extends: graphics
 })
