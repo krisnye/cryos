@@ -3,4 +3,4 @@ import { schema } from "./schema.js";
 
 export type Material = Schema.ToType<typeof schema>;
 
-export * from "./namespace.js";
+export * as Material from "./namespace.js";

@@ -11,3 +11,4 @@ export * from "./pointer-input.js";
 export * from "./camera-control.js";
 export * from "./physics/physics.js";
 export * from "./particle.js";
+export * from "./particle-rendering/index.js";
