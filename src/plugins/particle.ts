@@ -1,14 +1,13 @@
 import { Database } from "@adobe/data/ecs";
-import { geometry } from "./geometry.js";
 import { True } from "@adobe/data/schema";
-import { material } from "./material.js";
+import { physics } from "./physics/physics.js";
 
 export const particle = Database.Plugin.create({
     components: {
         particle: True.schema,
     },
     archetypes: {
-        Particle: ["particle", "position", "material", "scale", "rotation"],
+        Particle: ["particle", "position", "material"],
     },
-    extends: Database.Plugin.combine(geometry, material)
+    extends: physics
 })

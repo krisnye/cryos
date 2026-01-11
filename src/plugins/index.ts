@@ -9,5 +9,5 @@ export * from "./old-voxel-volume-rendering/index.js";
 export * from "./key-input.js";
 export * from "./pointer-input.js";
 export * from "./camera-control.js";
-export * from "./physics/index.js";
-
+export * from "./physics/physics.js";
+export * from "./particle.js";
