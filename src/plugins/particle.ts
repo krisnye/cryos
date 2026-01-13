@@ -12,27 +12,34 @@ export const particle = Database.Plugin.create({
     },
     transactions: {
         createAxis(t) {
-            const size = 2;
+            const size = 4; // Extended arm length
+            
+            // Black center cube
+            t.archetypes.Particle.insert({
+                particle: true,
+                position: [0, 0, 0],
+                material: Material.id.metaBlack
+            });
             
             // Red particle on X-axis
             t.archetypes.Particle.insert({
                 particle: true,
                 position: [size / 2, 0, 0],
-                material: Material.id["meta-red"]
+                material: Material.id.metaRed
             });
             
             // Green particle on Y-axis
             t.archetypes.Particle.insert({
                 particle: true,
                 position: [0, size / 2, 0],
-                material: Material.id["meta-green"]
+                material: Material.id.metaGreen
             });
             
             // Blue particle on Z-axis
             t.archetypes.Particle.insert({
                 particle: true,
                 position: [0, 0, size / 2],
-                material: Material.id["meta-blue"]
+                material: Material.id.metaBlue
             });
         },
     },

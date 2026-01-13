@@ -16,7 +16,7 @@ const metaMaterialBase: Omit<Material, "baseColor"> = {
 
 export const materialDefinitions = {
     air: {
-        baseColor: [1.0, 1.0, 1.0, 0.01],
+        baseColor: [1.0, 1.0, 1.0, 0.0],
         metallic: 0,
         roughness: 0,
         irReflectance: 0,
@@ -228,67 +228,67 @@ export const materialDefinitions = {
         thermalConductivity: 1.4,
     },
     // Meta-color materials (painted materials sharing MetaMaterial properties)
-    "meta-red": {
+    metaRed: {
         baseColor: [1.0, 0.0, 0.0, 1.0],
         ...metaMaterialBase,
     },
-    "meta-orange": {
+    metaOrange: {
         baseColor: [1.0, 0.5, 0.0, 1.0],
         ...metaMaterialBase,
     },
-    "meta-yellow": {
+    metaYellow: {
         baseColor: [1.0, 1.0, 0.0, 1.0],
         ...metaMaterialBase,
     },
-    "meta-lime": {
+    metaLime: {
         baseColor: [0.5, 1.0, 0.0, 1.0],
         ...metaMaterialBase,
     },
-    "meta-green": {
+    metaGreen: {
         baseColor: [0.0, 1.0, 0.0, 1.0],
         ...metaMaterialBase,
     },
-    "meta-teal": {
+    metaTeal: {
         baseColor: [0.0, 1.0, 0.5, 1.0],
         ...metaMaterialBase,
     },
-    "meta-cyan": {
+    metaCyan: {
         baseColor: [0.0, 1.0, 1.0, 1.0],
         ...metaMaterialBase,
     },
-    "meta-blue": {
+    metaBlue: {
         baseColor: [0.0, 0.5, 1.0, 1.0],
         ...metaMaterialBase,
     },
-    "meta-indigo": {
+    metaIndigo: {
         baseColor: [0.25, 0.0, 1.0, 1.0],
         ...metaMaterialBase,
     },
-    "meta-violet": {
+    metaViolet: {
         baseColor: [0.5, 0.0, 1.0, 1.0],
         ...metaMaterialBase,
     },
-    "meta-purple": {
+    metaPurple: {
         baseColor: [0.75, 0.0, 1.0, 1.0],
         ...metaMaterialBase,
     },
-    "meta-magenta": {
+    metaMagenta: {
         baseColor: [1.0, 0.0, 1.0, 1.0],
         ...metaMaterialBase,
     },
-    "meta-pink": {
+    metaPink: {
         baseColor: [1.0, 0.5, 0.75, 1.0],
         ...metaMaterialBase,
     },
-    "meta-white": {
+    metaWhite: {
         baseColor: [1.0, 1.0, 1.0, 1.0],
         ...metaMaterialBase,
     },
-    "meta-gray": {
+    metaGray: {
         baseColor: [0.5, 0.5, 0.5, 1.0],
         ...metaMaterialBase,
     },
-    "meta-black": {
+    metaBlack: {
         baseColor: [0.0, 0.0, 0.0, 1.0],
         ...metaMaterialBase,
     },
