@@ -21,6 +21,7 @@ const SceneUniformsSchema = {
 type SceneUniforms = Schema.ToType<typeof SceneUniformsSchema>;
 
 export const scene = Database.Plugin.create({
+    extends: graphics,
     resources: {
         // Camera resource (singleton for single viewport)
         camera: {
@@ -104,6 +105,5 @@ export const scene = Database.Plugin.create({
             schedule: { during: ["preRender"] }
         }
     },
-    extends: graphics
 });
 

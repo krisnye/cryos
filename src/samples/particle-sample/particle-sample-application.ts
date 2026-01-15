@@ -1,23 +1,23 @@
 import { html, css, CSSResult, TemplateResult, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
-import { createHelloModelService, HelloModelService } from "./hello-model-service.js";
+import { createParticleSampleService, ParticleSampleService } from "./particle-sample-service.js";
 
 // UI Component
-export const tagName = "hello-model-application";
+export const tagName = "particle-sample-application";
 
 declare global {
     interface HTMLElementTagNameMap {
-        [tagName]: HelloModelApplication;
+        [tagName]: ParticleSampleApplication;
     }
 }
 
 @customElement(tagName)
-export class HelloModelApplication extends LitElement {
-    private service: HelloModelService;
+export class ParticleSampleApplication extends LitElement {
+    private service: ParticleSampleService;
 
     constructor() {
         super();
-        this.service = createHelloModelService();
+        this.service = createParticleSampleService();
     }
 
     static override styles: CSSResult = css`
@@ -39,7 +39,7 @@ export class HelloModelApplication extends LitElement {
     override render(): TemplateResult {
         return html`
             <div class="game-container">
-                <div>Hello Model!</div>
+                <div>Particle Sample</div>
                 <canvas width="800" height="600"></canvas>
             </div>
         `;

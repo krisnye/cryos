@@ -1,7 +1,7 @@
 import { Database } from "@adobe/data/ecs";
 import { Vec3, Vec4, Quat } from "@adobe/data/math";
 import { copyColumnToGPUBuffer } from "@adobe/data/table";
-import { voxels } from "../voxels.js";
+import { voxels } from "../old-voxels.js";
 import { scene } from "../scene.js";
 import { SchemaX } from "../../types/index.js";
 import shaderSource from './voxels.wgsl.js';
@@ -13,6 +13,7 @@ const VoxelScaleSchema = Vec3.schema;
 const VoxelRotationSchema = Quat.schema;
 
 export const voxelRendering = Database.Plugin.create({
+    extends: Database.Plugin.combine(voxels, scene),
     resources: {
         // GPU rendering resources (lazy initialized)
         voxelBindGroupLayout: { default: null as GPUBindGroupLayout | null },
@@ -213,7 +214,6 @@ export const voxelRendering = Database.Plugin.create({
             },
             schedule: { during: ["render"] }
         }
-    },
-    extends: Database.Plugin.combine(voxels, scene)
+    }
 });
 

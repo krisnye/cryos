@@ -1,25 +1,35 @@
 import { Database, scheduler } from "@adobe/data/ecs";
 import { Vec4 } from "@adobe/data/math";
+import { True } from "@adobe/data/schema";
 
 async function getWebGPUDevice() {
     const adapter = await navigator.gpu?.requestAdapter();
     if (!adapter) {
-        throw new Error('No GPU adapter found');
+        return null;
     }
-
     const device = await adapter.requestDevice();
     return device;
 }
 
 export const graphics = Database.Plugin.create({
+    extends: scheduler,
+    components: {
+        visible: True.schema,
+        name: { type: "string" },
+    },
     resources: {
         device: { default: null as GPUDevice | null, transient: true },
         commandEncoder: { default: null as GPUCommandEncoder | null, transient: true },
         renderPassEncoder: { default: null as GPURenderPassEncoder | null, transient: true },
         depthTexture: { default: null as GPUTexture | null, transient: true },
-        clearColor: { default: [0, 0, 0, 1] as Vec4, transient: true },
+        clearColor: { default: [0, 0, 0, 0] as Vec4, transient: true },
         canvas: { default: null as HTMLCanvasElement | null, transient: true },
         canvasContext: { default: null as GPUCanvasContext | null, transient: true },
+    },
+    transactions: {
+        setCanvas(t, canvas: HTMLCanvasElement | null) {
+            t.resources.canvas = canvas;
+        }
     },
     systems: {
         input: {
@@ -118,5 +128,4 @@ export const graphics = Database.Plugin.create({
             schedule: { after: ["render"] }
         }
     },
-    extends: scheduler
 })
