@@ -100,16 +100,8 @@ export const particleRenderingTransparentBase = Database.Plugin.create({
                     materialIndexBuffer = copyColumnToGPUBuffer(particleTables, "material", device, materialIndexBuffer);
                     
                     // Create/update sorted index buffer (GPU-side, only grows)
-                    let sortedIndexBuffer = getOrCreateSortedIndexBuffer(device, particleCount, db.store.resources.transparentBaseSortedIndexBuffer);
-                    const sortedIndicesSubarray = indicesView;
-                    if (sortedIndexBuffer.size < sortedIndicesSubarray.byteLength) {
-                        sortedIndexBuffer.destroy();
-                        sortedIndexBuffer = device.createBuffer({
-                            size: sortedIndicesSubarray.byteLength,
-                            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-                        });
-                    }
-                    device.queue.writeBuffer(sortedIndexBuffer, 0, sortedIndicesSubarray.buffer, sortedIndicesSubarray.byteOffset, sortedIndicesSubarray.byteLength);
+                    const { buffer: sortedIndexBuffer } = getOrCreateSortedIndexBuffer(device, particleCount, db.store.resources.transparentBaseSortedIndexBuffer);
+                    device.queue.writeBuffer(sortedIndexBuffer, 0, indicesView.buffer, indicesView.byteOffset, indicesView.byteLength);
                     
                     db.store.resources.transparentBasePositionBuffer = positionBuffer;
                     db.store.resources.transparentBaseMaterialIndexBuffer = materialIndexBuffer;

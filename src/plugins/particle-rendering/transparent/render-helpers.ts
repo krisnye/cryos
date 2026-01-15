@@ -81,21 +81,29 @@ export function createTransparentRenderPipeline(
 
 /**
  * Create or reuse a GPU buffer for sorted particle indices
+ * If the existing buffer is too small, it will be destroyed and a new one created.
+ * @returns The buffer (possibly new) and whether it was recreated
  */
 export function getOrCreateSortedIndexBuffer(
     device: GPUDevice,
     particleCount: number,
     existingBuffer: GPUBuffer | null
-): GPUBuffer {
+): { buffer: GPUBuffer; wasRecreated: boolean } {
     const requiredSize = Math.max(particleCount, 1) * 4; // u32 = 4 bytes
     
     if (!existingBuffer || existingBuffer.size < requiredSize) {
-        return device.createBuffer({
-            size: requiredSize,
-            usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-        });
+        if (existingBuffer) {
+            existingBuffer.destroy();
+        }
+        return {
+            buffer: device.createBuffer({
+                size: requiredSize,
+                usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+            }),
+            wasRecreated: true
+        };
     }
     
-    return existingBuffer;
+    return { buffer: existingBuffer, wasRecreated: false };
 }
 
