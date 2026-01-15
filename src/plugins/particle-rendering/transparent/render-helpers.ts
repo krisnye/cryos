@@ -81,7 +81,7 @@ export function createTransparentRenderPipeline(
 
 /**
  * Create or reuse a GPU buffer for sorted particle indices
- * If the existing buffer is too small, it will be destroyed and a new one created.
+ * If the existing buffer is too small, it will be destroyed and a new one created with a growth factor.
  * @returns The buffer (possibly new) and whether it was recreated
  */
 export function getOrCreateSortedIndexBuffer(
@@ -95,9 +95,15 @@ export function getOrCreateSortedIndexBuffer(
         if (existingBuffer) {
             existingBuffer.destroy();
         }
+        // Use growth factor of 2 to reduce reallocations when particleCount increases
+        const growthFactor = 2;
+        const newSize = existingBuffer 
+            ? Math.max(requiredSize, existingBuffer.size * growthFactor)
+            : requiredSize;
+        
         return {
             buffer: device.createBuffer({
-                size: requiredSize,
+                size: newSize,
                 usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
             }),
             wasRecreated: true
