@@ -209,6 +209,7 @@ function handleOrbitCamera(
 }
 
 export const cameraControl = Database.Plugin.create({
+    extends: Database.Plugin.combine(scene, keyInput),
     resources: {
         cameraControlType: { default: null as CameraControlType | null },
     },
@@ -242,6 +243,5 @@ export const cameraControl = Database.Plugin.create({
             schedule: { during: ["update"] }
         }
     },
-    extends: Database.Plugin.combine(scene, keyInput)
 });
 

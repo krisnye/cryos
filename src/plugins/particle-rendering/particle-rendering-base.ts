@@ -13,6 +13,7 @@ import {
 } from './render-helpers.js';
 
 export const particleRenderingBase = Database.Plugin.create({
+    extends: Database.Plugin.combine(particle, materials, scene),
     resources: {
         baseBindGroupLayout: { default: null as GPUBindGroupLayout | null },
         basePipeline: { default: null as GPURenderPipeline | null },
@@ -74,6 +75,5 @@ export const particleRenderingBase = Database.Plugin.create({
             schedule: { during: ["render"] }
         },
     },
-    extends: Database.Plugin.combine(particle, materials, scene)
 });
 

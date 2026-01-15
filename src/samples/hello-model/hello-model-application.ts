@@ -33,7 +33,7 @@ export class HelloModelApplication extends LitElement {
     `;
 
     override firstUpdated(): void {
-        this.service.store.resources.canvas = this.renderRoot.querySelector("canvas") ?? null;
+        this.service.transactions.setCanvas(this.renderRoot.querySelector("canvas") ?? null);
     }
 
     override render(): TemplateResult {

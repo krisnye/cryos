@@ -4,6 +4,7 @@ import { geometry } from "./geometry.js";
 import { True } from "@adobe/data/schema";
 
 export const voxels = Database.Plugin.create({
+    extends: geometry,
     components: {
         voxel: True.schema,
         color: Vec4.schema,
@@ -52,6 +53,5 @@ export const voxels = Database.Plugin.create({
                 rotation: Quat.identity
             });
         },
-    },
-    extends: geometry
+    }
 })

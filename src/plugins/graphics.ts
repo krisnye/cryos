@@ -12,6 +12,7 @@ async function getWebGPUDevice() {
 }
 
 export const graphics = Database.Plugin.create({
+    extends: scheduler,
     components: {
         visible: True.schema,
         name: { type: "string" },
@@ -24,6 +25,11 @@ export const graphics = Database.Plugin.create({
         clearColor: { default: [0, 0, 0, 0] as Vec4, transient: true },
         canvas: { default: null as HTMLCanvasElement | null, transient: true },
         canvasContext: { default: null as GPUCanvasContext | null, transient: true },
+    },
+    transactions: {
+        setCanvas(t, canvas: HTMLCanvasElement | null) {
+            t.resources.canvas = canvas;
+        }
     },
     systems: {
         input: {
@@ -122,5 +128,4 @@ export const graphics = Database.Plugin.create({
             schedule: { after: ["render"] }
         }
     },
-    extends: scheduler
 })

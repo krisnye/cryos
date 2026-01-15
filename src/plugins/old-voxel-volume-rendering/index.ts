@@ -31,6 +31,7 @@ type ModelGroup = {
 };
 
 export const voxelVolumeRendering = Database.Plugin.create({
+    extends: Database.Plugin.combine(voxelVolumes, scene),
     components: {
         vertexData: { default: null as unknown as TypedBuffer<PositionColorNormalVertex> },
         voxelVertexSource: { default: null as unknown as Volume<Rgba> },
@@ -339,6 +340,5 @@ export const voxelVolumeRendering = Database.Plugin.create({
             schedule: { during: ["render"] },
         },
     },
-    extends: Database.Plugin.combine(voxelVolumes, scene),
 });
 

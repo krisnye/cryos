@@ -4,6 +4,7 @@ import { materials } from "./materials.js";
 import { Material } from "../types/index.js";
 
 export const transparent = Database.Plugin.create({
+    extends: materials,
     components: {
         transparent: True.schema,
     },
@@ -41,6 +42,5 @@ export const transparent = Database.Plugin.create({
             schedule: { during: ["update"] }
         }
     },
-    extends: materials
 });
 

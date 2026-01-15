@@ -4,6 +4,7 @@ import { copyToGPUBuffer, createTypedBuffer } from "@adobe/data/typed-buffer";
 import { Material } from "../types/index.js";
 
 export const materials = Database.Plugin.create({
+    extends: physics,
     resources: {
         materialsDataBuffer: { default: createTypedBuffer(Material.schema, Material.materials.length), transient: true },
         materialsGpuBuffer: { default: null as GPUBuffer | null, transient: true },
@@ -29,5 +30,4 @@ export const materials = Database.Plugin.create({
             schedule: { during: ["preRender"] }
         }
     },
-    extends: physics
 })

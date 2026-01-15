@@ -14,6 +14,7 @@ import {
 } from './render-helpers.js';
 
 export const particleRenderingRotation = Database.Plugin.create({
+    extends: Database.Plugin.combine(particle, materials, scene),
     resources: {
         rotationBindGroupLayout: { default: null as GPUBindGroupLayout | null },
         rotationPipeline: { default: null as GPURenderPipeline | null },
@@ -80,6 +81,5 @@ export const particleRenderingRotation = Database.Plugin.create({
             schedule: { during: ["render"] }
         },
     },
-    extends: Database.Plugin.combine(particle, materials, scene)
 });
 

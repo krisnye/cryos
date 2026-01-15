@@ -14,6 +14,7 @@ import {
 } from './render-helpers.js';
 
 export const particleRenderingScale = Database.Plugin.create({
+    extends: Database.Plugin.combine(particle, materials, scene),
     resources: {
         scaleBindGroupLayout: { default: null as GPUBindGroupLayout | null },
         scalePipeline: { default: null as GPURenderPipeline | null },
@@ -80,6 +81,5 @@ export const particleRenderingScale = Database.Plugin.create({
             schedule: { during: ["render"] }
         },
     },
-    extends: Database.Plugin.combine(particle, materials, scene)
 });
 

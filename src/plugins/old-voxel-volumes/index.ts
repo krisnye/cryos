@@ -4,6 +4,7 @@ import { geometry } from "../geometry.js";
 import { Volume, Rgba } from "../../types/index.js";
 
 export const voxelVolumes = Database.Plugin.create({
+    extends: geometry,
     components: {
         voxelColor: { default: null as unknown as Volume<Rgba> },
         centerOfMass: Vec3.schema,
@@ -25,6 +26,5 @@ export const voxelVolumes = Database.Plugin.create({
                 centerOfMass,
             });
         },
-    },
-    extends: geometry,
+    }
 });

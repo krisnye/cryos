@@ -4,6 +4,7 @@ import { KeyState } from "../types/key-state.js";
 import { graphics } from "./graphics.js";
 
 export const keyInput = Database.Plugin.create({
+    extends: graphics,
     resources: {
         pressedKeys: { default: {} as Partial<Record<KeyCode, KeyState>>, transient: true },
     },
@@ -98,6 +99,5 @@ export const keyInput = Database.Plugin.create({
             schedule: { during: ["input"] }
         }
     },
-    extends: graphics
 });
 

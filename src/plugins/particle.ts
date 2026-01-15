@@ -5,6 +5,7 @@ import { physics } from "./physics/physics.js";
 import { Material } from "../types/index.js";
 
 export const particle = Database.Plugin.create({
+    extends: physics,
     components: {
         particle: True.schema,
     },
@@ -176,5 +177,4 @@ export const particle = Database.Plugin.create({
             }
         },
     },
-    extends: physics
 })

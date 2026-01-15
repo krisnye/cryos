@@ -4,6 +4,7 @@ import { particleRendering, cameraControl } from "../../plugins/index.js";
 export function createParticleSampleService() {
     return Database.create(
         Database.Plugin.create({
+            extends: Database.Plugin.combine(particleRendering, cameraControl),
             systems: {
                 particle_sample_init: {
                     create: db => {
@@ -29,7 +30,6 @@ export function createParticleSampleService() {
                     }
                 }
             },
-            extends: Database.Plugin.combine(particleRendering, cameraControl)
         })
     );
 }

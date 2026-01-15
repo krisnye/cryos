@@ -13,6 +13,7 @@ const VoxelScaleSchema = Vec3.schema;
 const VoxelRotationSchema = Quat.schema;
 
 export const voxelRendering = Database.Plugin.create({
+    extends: Database.Plugin.combine(voxels, scene),
     resources: {
         // GPU rendering resources (lazy initialized)
         voxelBindGroupLayout: { default: null as GPUBindGroupLayout | null },
@@ -213,7 +214,6 @@ export const voxelRendering = Database.Plugin.create({
             },
             schedule: { during: ["render"] }
         }
-    },
-    extends: Database.Plugin.combine(voxels, scene)
+    }
 });
 

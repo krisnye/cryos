@@ -58,6 +58,7 @@ function createTestVolume(size: Vec3 = [8, 8, 8]): Volume<Rgba> {
 export function createHelloModelService() {
     return Database.create(
         Database.Plugin.create({
+            extends: Database.Plugin.combine(voxelRendering, voxelVolumeRendering, cameraControl),
             systems: {
                 hello_model_init: {
                     create: db => {
@@ -78,8 +79,7 @@ export function createHelloModelService() {
                         // this is an init only system so it doesn't return a system function.
                     }
                 }
-            },
-            extends: Database.Plugin.combine(voxelRendering, voxelVolumeRendering, cameraControl)
+            }
         })
     );
 }

@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adobe/data':
-        specifier: ^0.9.4
-        version: 0.9.4(lit@3.3.1)
+        specifier: ^0.9.5
+        version: 0.9.5(lit@3.3.1)
       '@lit/context':
         specifier: ^1.1.5
         version: 1.1.6
@@ -96,8 +96,8 @@ importers:
 
 packages:
 
-  '@adobe/data@0.9.4':
-    resolution: {integrity: sha512-l+atsjJrM1mdcn98dU0n6P9KXOy0Ah8ptp3rhp7th8OFYy+nRGDFbjDBKJp8Ssh3aZQApyF7zSnAd3VYvGIeLw==}
+  '@adobe/data@0.9.5':
+    resolution: {integrity: sha512-ZreET1LMlNiPBnDUt3g9w/kB6C2pGNs/KKdfJAbRaCNCJl+vRs2kTxwQ+qTYrn7Yv0KGDF+mLFS/Yv/MHFRNag==}
     peerDependencies:
       lit: ^3.3.1
 
@@ -3112,7 +3112,7 @@ packages:
 
 snapshots:
 
-  '@adobe/data@0.9.4(lit@3.3.1)':
+  '@adobe/data@0.9.5(lit@3.3.1)':
     dependencies:
       '@cfworker/json-schema': 4.1.1
       '@lit/context': 1.1.6

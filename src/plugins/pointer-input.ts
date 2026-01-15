@@ -22,6 +22,7 @@ type PointerState = {
 };
 
 export const pointerInput = Database.Plugin.create({
+    extends: graphics,
     resources: {
         activePointers: { default: {} as Record<PointerId, PointerState>, transient: true },
     },
@@ -139,6 +140,5 @@ export const pointerInput = Database.Plugin.create({
             schedule: { during: ["input"] }
         }
     },
-    extends: graphics
 });
 
