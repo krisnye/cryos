@@ -1,9 +1,7 @@
 // Particle rendering plugin for particles with rotation only
 import { Database } from "@adobe/data/ecs";
 import { copyColumnToGPUBuffer } from "@adobe/data/table";
-import { particle } from "../particle.js";
-import { materials } from "../materials.js";
-import { scene } from "../scene.js";
+import { particleRenderingBaseDependencies } from "./dependencies.js";
 import shaderSourceRotation from './particles-rotation.wgsl.js';
 import {
     createBindGroupLayout,
@@ -14,7 +12,7 @@ import {
 } from './render-helpers.js';
 
 export const particleRenderingRotation = Database.Plugin.create({
-    extends: Database.Plugin.combine(particle, materials, scene),
+    extends: particleRenderingBaseDependencies,
     resources: {
         rotationBindGroupLayout: { default: null as GPUBindGroupLayout | null },
         rotationPipeline: { default: null as GPURenderPipeline | null },
@@ -29,7 +27,7 @@ export const particleRenderingRotation = Database.Plugin.create({
                     const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvas } = db.store.resources;
                     if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer || !canvas) return;
 
-                    const particleTables = db.store.queryArchetypes(["particle", "position", "material", "rotation"], { exclude: ["scale"] });
+                    const particleTables = db.store.queryArchetypes(["particle", "position", "material", "rotation"], { exclude: ["scale", "transparent"] });
                     if (particleTables.length === 0) return;
 
                     const particleCount = particleTables.reduce((acc, table) => acc + table.rowCount, 0);

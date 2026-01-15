@@ -7,13 +7,6 @@ interface SampleDefinition {
 }
 
 const samples: Record<string, SampleDefinition> = {
-    "hello-model": {
-        name: "Hello Model",
-        render: () => {
-            import("./hello-model/hello-model-application.js");
-            return html`<hello-model-application></hello-model-application>`;
-        }
-    },
     "particle-sample": {
         name: "Particle Sample",
         render: () => {
