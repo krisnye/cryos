@@ -2,7 +2,7 @@
 import { Database } from "@adobe/data/ecs";
 import { copyColumnToGPUBuffer } from "@adobe/data/table";
 import { particleRenderingTransparentDependencies } from "./dependencies.js";
-import { sortParticlesByDepth } from "./sort-particles.js";
+import { buildFlatPositionBuffer, sortIndicesByDepth } from "./sort-particles.js";
 import shaderSourceScaleRotation from './particles-transparent-scale-rotation.wgsl.js';
 import {
     createTransparentBindGroupLayout,
@@ -24,6 +24,9 @@ export const particleRenderingTransparentScaleRotation = Database.Plugin.create(
         transparentScaleRotationScaleBuffer: { default: null as GPUBuffer | null },
         transparentScaleRotationRotationBuffer: { default: null as GPUBuffer | null },
         transparentScaleRotationSortedIndexBuffer: { default: null as GPUBuffer | null },
+        transparentScaleRotationSortedIndicesCPU: { default: null as Uint32Array | null }, // CPU-side index buffer (only grows, never shrinks)
+        transparentScaleRotationDepthsCPU: { default: null as Float32Array | null }, // CPU-side depth buffer for sorting (only grows, never shrinks)
+        transparentScaleRotationPositionsCPU: { default: null as Float32Array | null }, // CPU-side position buffer for sorting (only grows, never shrinks)
     },
     systems: {
         renderParticlesTransparentScaleRotation: {
@@ -38,23 +41,42 @@ export const particleRenderingTransparentScaleRotation = Database.Plugin.create(
                     const particleCount = particleTables.reduce((acc, table) => acc + table.rowCount, 0);
                     if (particleCount === 0) return;
 
-                    // Sort particles by depth (furthest first, back-to-front)
-                    const sortedRefs = sortParticlesByDepth(particleTables, camera.position);
-                    
-                    // Build flat index mapping
-                    const tableRowCounts: number[] = [];
-                    let flatIndexOffset = 0;
-                    for (let i = 0; i < particleTables.length; i++) {
-                        tableRowCounts.push(flatIndexOffset);
-                        flatIndexOffset += particleTables[i].rowCount;
+                    // Initialize/grow position buffer (CPU-side, only grows, never shrinks)
+                    const requiredPositionSize = particleCount * 3;
+                    let flatPositions = db.store.resources.transparentScaleRotationPositionsCPU;
+                    if (!flatPositions || flatPositions.length < requiredPositionSize) {
+                        // Grow buffer to accommodate current particle count
+                        flatPositions = new Float32Array(requiredPositionSize);
+                        db.store.resources.transparentScaleRotationPositionsCPU = flatPositions;
                     }
                     
-                    // Build sorted index array
-                    const sortedIndices = new Uint32Array(particleCount);
-                    for (let i = 0; i < sortedRefs.length; i++) {
-                        const { tableIndex, rowIndex } = sortedRefs[i];
-                        sortedIndices[i] = tableRowCounts[tableIndex] + rowIndex;
+                    // Build flat position buffer (reusing existing buffer if large enough)
+                    buildFlatPositionBuffer(particleTables, particleCount, flatPositions);
+                    
+                    // Initialize/grow sorted index buffer (CPU-side, only grows, never shrinks)
+                    let sortedIndices = db.store.resources.transparentScaleRotationSortedIndicesCPU;
+                    if (!sortedIndices || sortedIndices.length < particleCount) {
+                        // Grow buffer to accommodate current particle count
+                        sortedIndices = new Uint32Array(particleCount);
+                        db.store.resources.transparentScaleRotationSortedIndicesCPU = sortedIndices;
                     }
+                    
+                    // Initialize/grow depth buffer (CPU-side, only grows, never shrinks)
+                    let depths = db.store.resources.transparentScaleRotationDepthsCPU;
+                    if (!depths || depths.length < particleCount) {
+                        depths = new Float32Array(particleCount);
+                        db.store.resources.transparentScaleRotationDepthsCPU = depths;
+                    }
+                    
+                    // Reset indices to [0, 1, 2, ..., count-1] for current particle count
+                    // (even if buffer is larger, we only reset up to particleCount)
+                    const indicesView = sortedIndices.subarray(0, particleCount);
+                    for (let i = 0; i < particleCount; i++) {
+                        indicesView[i] = i;
+                    }
+                    
+                    // Sort indices by depth (furthest first, back-to-front)
+                    sortIndicesByDepth(flatPositions, indicesView, camera.position, depths);
 
                     // Initialize bind group layout and pipeline
                     let bindGroupLayout = db.store.resources.transparentScaleRotationBindGroupLayout;
@@ -78,16 +100,17 @@ export const particleRenderingTransparentScaleRotation = Database.Plugin.create(
                     scaleBuffer = copyColumnToGPUBuffer(particleTables, "scale", device, scaleBuffer);
                     rotationBuffer = copyColumnToGPUBuffer(particleTables, "rotation", device, rotationBuffer);
                     
-                    // Create/update sorted index buffer
+                    // Create/update sorted index buffer (GPU-side, only grows)
                     let sortedIndexBuffer = getOrCreateSortedIndexBuffer(device, particleCount, db.store.resources.transparentScaleRotationSortedIndexBuffer);
-                    if (sortedIndexBuffer.size < sortedIndices.byteLength) {
+                    const sortedIndicesSubarray = indicesView;
+                    if (sortedIndexBuffer.size < sortedIndicesSubarray.byteLength) {
                         sortedIndexBuffer.destroy();
                         sortedIndexBuffer = device.createBuffer({
-                            size: sortedIndices.byteLength,
+                            size: sortedIndicesSubarray.byteLength,
                             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
                         });
                     }
-                    device.queue.writeBuffer(sortedIndexBuffer, 0, sortedIndices);
+                    device.queue.writeBuffer(sortedIndexBuffer, 0, sortedIndicesSubarray.buffer, sortedIndicesSubarray.byteOffset, sortedIndicesSubarray.byteLength);
                     
                     db.store.resources.transparentScaleRotationPositionBuffer = positionBuffer;
                     db.store.resources.transparentScaleRotationMaterialIndexBuffer = materialIndexBuffer;
