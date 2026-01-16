@@ -23,13 +23,7 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     }
     
     // Material IDs for convenience
-    const air = Material.id.air;
-    const concrete = Material.id.concrete;
-    const reinforcedConcrete = Material.id.reinforcedConcrete;
-    const woodHard = Material.id.woodHard;
-    const glass = Material.id.glass;
-    const steel = Material.id.steel;
-    const dirt = Material.id.dirt;
+    const { air, concrete, reinforcedConcrete, woodHard, glass, steel } = Material.id;
     
     // Foundation layer (z=0,1) - reinforced concrete
     for (let z = 0; z < 2; z++) {
@@ -66,14 +60,58 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
         }
     }
     
-    // Windows on front wall (y=0) at z=4-6 (eye level)
-    for (let z = 4; z < 7; z++) {
-        for (let x = 4; x < 8; x++) {
+    // Large windows on front wall (y=0) at z=3-7 (larger, eye level)
+    for (let z = 3; z < 8; z++) {
+        // Left window (x=2-7, 6 voxels wide)
+        for (let x = 2; x < 8; x++) {
             const index = VolumeNamespace.index(volume, x, 0, z);
             volume.data.set(index, glass);
         }
-        for (let x = 8; x < 12; x++) {
+        // Right window (x=8-13, 6 voxels wide)
+        for (let x = 8; x < 14; x++) {
             const index = VolumeNamespace.index(volume, x, 0, z);
+            volume.data.set(index, glass);
+        }
+    }
+    
+    // Large windows on back wall (y=15) at z=3-7
+    for (let z = 3; z < 8; z++) {
+        // Left window (x=2-7)
+        for (let x = 2; x < 8; x++) {
+            const index = VolumeNamespace.index(volume, x, 15, z);
+            volume.data.set(index, glass);
+        }
+        // Right window (x=8-13)
+        for (let x = 8; x < 14; x++) {
+            const index = VolumeNamespace.index(volume, x, 15, z);
+            volume.data.set(index, glass);
+        }
+    }
+    
+    // Windows on left wall (x=0) at z=3-7
+    for (let z = 3; z < 8; z++) {
+        // Front window (y=2-7)
+        for (let y = 2; y < 8; y++) {
+            const index = VolumeNamespace.index(volume, 0, y, z);
+            volume.data.set(index, glass);
+        }
+        // Back window (y=8-13)
+        for (let y = 8; y < 14; y++) {
+            const index = VolumeNamespace.index(volume, 0, y, z);
+            volume.data.set(index, glass);
+        }
+    }
+    
+    // Windows on right wall (x=15) at z=3-7
+    for (let z = 3; z < 8; z++) {
+        // Front window (y=2-7)
+        for (let y = 2; y < 8; y++) {
+            const index = VolumeNamespace.index(volume, 15, y, z);
+            volume.data.set(index, glass);
+        }
+        // Back window (y=8-13)
+        for (let y = 8; y < 14; y++) {
+            const index = VolumeNamespace.index(volume, 15, y, z);
             volume.data.set(index, glass);
         }
     }
@@ -128,10 +166,58 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
         }
     }
     
-    // Windows on second floor front wall
-    for (let z = 10; z < 13; z++) {
-        for (let x = 4; x < 12; x++) {
+    // Large windows on second floor front wall (y=0) at z=9-13
+    for (let z = 9; z < 14; z++) {
+        // Left window (x=2-7)
+        for (let x = 2; x < 8; x++) {
             const index = VolumeNamespace.index(volume, x, 0, z);
+            volume.data.set(index, glass);
+        }
+        // Right window (x=8-13)
+        for (let x = 8; x < 14; x++) {
+            const index = VolumeNamespace.index(volume, x, 0, z);
+            volume.data.set(index, glass);
+        }
+    }
+    
+    // Large windows on second floor back wall (y=15) at z=9-13
+    for (let z = 9; z < 14; z++) {
+        // Left window (x=2-7)
+        for (let x = 2; x < 8; x++) {
+            const index = VolumeNamespace.index(volume, x, 15, z);
+            volume.data.set(index, glass);
+        }
+        // Right window (x=8-13)
+        for (let x = 8; x < 14; x++) {
+            const index = VolumeNamespace.index(volume, x, 15, z);
+            volume.data.set(index, glass);
+        }
+    }
+    
+    // Windows on second floor left wall (x=0) at z=9-13
+    for (let z = 9; z < 14; z++) {
+        // Front window (y=2-7)
+        for (let y = 2; y < 8; y++) {
+            const index = VolumeNamespace.index(volume, 0, y, z);
+            volume.data.set(index, glass);
+        }
+        // Back window (y=8-13)
+        for (let y = 8; y < 14; y++) {
+            const index = VolumeNamespace.index(volume, 0, y, z);
+            volume.data.set(index, glass);
+        }
+    }
+    
+    // Windows on second floor right wall (x=15) at z=9-13
+    for (let z = 9; z < 14; z++) {
+        // Front window (y=2-7)
+        for (let y = 2; y < 8; y++) {
+            const index = VolumeNamespace.index(volume, 15, y, z);
+            volume.data.set(index, glass);
+        }
+        // Back window (y=8-13)
+        for (let y = 8; y < 14; y++) {
+            const index = VolumeNamespace.index(volume, 15, y, z);
             volume.data.set(index, glass);
         }
     }

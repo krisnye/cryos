@@ -1,3 +1,2 @@
-
-export * from "./position-color-normal.js";
-export * from "./position-normal-material.js";
+export * from "./position-color-normal/index.js";
+export * from "./position-normal-material/index.js";

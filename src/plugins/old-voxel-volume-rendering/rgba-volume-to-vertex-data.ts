@@ -1,7 +1,7 @@
 import { TypedBuffer, createStructBuffer } from "@adobe/data/typed-buffer";
 import { Mutable } from "@adobe/data";
 import { Vec3, Vec4 } from "@adobe/data/math";
-import { PositionColorNormalVertex } from "../../types/vertices/index.js";
+import { PositionColorNormalVertex } from "../../types/vertices/position-color-normal/index.js";
 import { Rgba, Volume } from "types/index.js";
 
 // Pre-computed direction vectors for performance

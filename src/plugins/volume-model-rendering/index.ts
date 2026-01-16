@@ -5,7 +5,7 @@ import { TypedBuffer, copyToGPUBuffer, createStructBuffer } from "@adobe/data/ty
 import { volumeModel } from "../volume-model.js";
 import { scene } from "../scene.js";
 import { materials } from "../materials.js";
-import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material.js";
+import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/index.js";
 import { Volume } from "../../types/volume/volume.js";
 import { MaterialId } from "../../types/material/material-id.js";
 import { materialVolumeToVertexData } from "./material-volume-to-vertex-data.js";
@@ -36,8 +36,8 @@ type ModelGroup = {
 export const volumeModelRendering = Database.Plugin.create({
     extends: Database.Plugin.combine(volumeModel, scene, materials),
     components: {
-        vertexData: { default: null as unknown as TypedBuffer<PositionNormalMaterialVertex> },
-        volumeVertexSource: { default: null as unknown as Volume<MaterialId> },
+        volumeModelVertexData: { default: null as unknown as TypedBuffer<PositionNormalMaterialVertex> },
+        volumeModelVertexSource: { default: null as unknown as Volume<MaterialId> },
         modelVertexBuffer: { default: null as unknown as GPUBuffer, transient: true }, // GPUBuffer is not serializable
         modelVertexBufferSource: { default: null as unknown as TypedBuffer<PositionNormalMaterialVertex> },
     },
@@ -45,7 +45,7 @@ export const volumeModelRendering = Database.Plugin.create({
         generateVertexData: {
             create: (db) => {
                 // Cache computed vertex data by materialVolume identity (in closure)
-                // Multiple entities can share the same materialVolume and thus the same vertexData
+                // Multiple entities can share the same materialVolume and thus the same volumeModelVertexData
                 const vertexDataCache = new Map<Volume<MaterialId>, TypedBuffer<PositionNormalMaterialVertex>>();
 
                 return () => {
@@ -62,7 +62,7 @@ export const volumeModelRendering = Database.Plugin.create({
                             if (!materialVolume) continue;
 
                             // Check current vertex source using get() for single component
-                            const currentVertexSource = db.store.get(entityId, "volumeVertexSource") as Volume<MaterialId> | undefined;
+                            const currentVertexSource = db.store.get(entityId, "volumeModelVertexSource") as Volume<MaterialId> | undefined;
 
                             // Check if we need to regenerate vertex data (object identity changed)
                             if (currentVertexSource !== materialVolume) {
@@ -79,8 +79,8 @@ export const volumeModelRendering = Database.Plugin.create({
 
                                 // Store both the vertex data and track the source
                                 db.store.update(entityId, {
-                                    vertexData,
-                                    volumeVertexSource: materialVolume,
+                                    volumeModelVertexData: vertexData,
+                                    volumeModelVertexSource: materialVolume,
                                 });
                             }
                         }
@@ -91,32 +91,32 @@ export const volumeModelRendering = Database.Plugin.create({
         },
         createVertexBuffers: {
             create: (db) => {
-                // Cache GPU buffers by vertexData identity (in closure)
+                // Cache GPU buffers by volumeModelVertexData identity (in closure)
                 const bufferCache = new Map<TypedBuffer<PositionNormalMaterialVertex>, {
                     buffer: GPUBuffer;
                     refCount: number;
                 }>();
 
-                // Track which entities are using which vertexData (by identity)
+                // Track which entities are using which volumeModelVertexData (by identity)
                 const entityToVertexData = new Map<number, TypedBuffer<PositionNormalMaterialVertex>>();
 
                 return () => {
                     const device = db.store.resources.device;
                     if (!device) return; // Skip if no GPU device available
 
-                    // Query all entities that have vertexData
-                    const tables = db.store.queryArchetypes(["vertexData"]);
+                    // Query all entities that have volumeModelVertexData
+                    const tables = db.store.queryArchetypes(["volumeModelVertexData"]);
 
                     for (const table of tables) {
                         const entityIds = table.columns.id.getTypedArray();
 
                         for (let i = 0; i < table.rowCount; i++) {
                             const entityId = entityIds[i];
-                            const vertexData = table.columns.vertexData?.get(i) as TypedBuffer<PositionNormalMaterialVertex> | undefined;
+                            const vertexData = table.columns.volumeModelVertexData?.get(i) as TypedBuffer<PositionNormalMaterialVertex> | undefined;
 
                             if (!vertexData) continue;
 
-                            // Check if vertexData has changed (by object identity)
+                            // Check if volumeModelVertexData has changed (by object identity)
                             // We track this separately from the component to handle entities moving between tables
                             const oldVertexData = entityToVertexData.get(entityId);
 
@@ -136,7 +136,7 @@ export const volumeModelRendering = Database.Plugin.create({
                                     }
                                 }
 
-                                // Get or create cached GPU buffer for this vertexData
+                                // Get or create cached GPU buffer for this volumeModelVertexData
                                 let cacheEntry = bufferCache.get(vertexData);
 
                                 if (!cacheEntry) {

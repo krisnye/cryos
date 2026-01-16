@@ -4,7 +4,6 @@ import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { Volume } from "../../types/volume/volume.js";
 import { MaterialId } from "../../types/material/material-id.js";
 import { materialVolumeToVertexData } from "./material-volume-to-vertex-data.js";
-import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material.js";
 
 test("materialVolumeToVertexData generates vertices for visible faces only", () => {
     // Create a 2x2x2 volume with one solid voxel

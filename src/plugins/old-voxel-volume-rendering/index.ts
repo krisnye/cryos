@@ -5,7 +5,8 @@ import { TypedBuffer, copyToGPUBuffer, createStructBuffer } from "@adobe/data/ty
 import { voxelVolumes } from "../old-voxel-volumes/index.js";
 import { scene } from "../scene.js";
 import { rgbaVolumeToVertexData } from "./rgba-volume-to-vertex-data.js";
-import { PositionColorNormalVertex, Volume, Rgba } from "../../types/index.js";
+import { PositionColorNormalVertex } from "../../types/vertices/position-color-normal/index.js";
+import { Volume, Rgba } from "../../types/index.js";
 import instancedShaderSource from "./instanced-models.wgsl.js";
 
 // Instanced transform data schema (per-instance vertex attributes)

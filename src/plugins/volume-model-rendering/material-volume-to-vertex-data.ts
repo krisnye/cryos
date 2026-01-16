@@ -1,7 +1,7 @@
 import { TypedBuffer, createStructBuffer } from "@adobe/data/typed-buffer";
 import { Mutable } from "@adobe/data";
 import { Vec3 } from "@adobe/data/math";
-import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material.js";
+import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/index.js";
 import { Volume } from "../../types/volume/volume.js";
 import { MaterialId } from "../../types/material/material-id.js";
 

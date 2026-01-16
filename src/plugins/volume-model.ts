@@ -52,7 +52,7 @@ export const volumeModel = Database.Plugin.create({
             }
             
             return t.archetypes.VolumeModel.insert({
-                volumeModel: true as const,
+                volumeModel: true,
                 position: props.position,
                 materialVolume: props.materialVolume,
             });
