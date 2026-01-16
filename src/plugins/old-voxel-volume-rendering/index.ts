@@ -40,7 +40,7 @@ export const voxelVolumeRendering = Database.Plugin.create({
         modelVertexBufferSource: { default: null as unknown as TypedBuffer<PositionColorNormalVertex> },
     },
     systems: {
-        generateVertexData: {
+        generateVoxelVertexData: {
             create: (db) => {
                 // Cache computed vertex data by voxelColor identity (in closure)
                 // Multiple entities can share the same voxelColor and thus the same vertexData
