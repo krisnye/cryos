@@ -49,7 +49,7 @@ function isVisible(materialId: MaterialId): boolean {
 }
 
 export function materialVolumeToVertexData(volume: Volume<MaterialId>, options: { center?: Vec3 } = {}): TypedBuffer<PositionNormalMaterialVertex> {
-    const { center = Vec3.scale(volume.size, 0.5) } = options;
+    const { center = [0, 0, 0] } = options;
     const [width, height, depth] = volume.size;
     
     // First pass: count visible faces

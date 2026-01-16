@@ -43,9 +43,8 @@ export const generateVolumeModelVertexData = Database.Plugin.create({
 
                                 if (!vertexData) {
                                     // Convert volume to vertex data (CPU-side operation)
-                                    // Calculate center from volume size (like old system default)
-                                    const center = Vec3.scale(materialVolume.size, 0.5);
-                                    vertexData = materialVolumeToVertexData(materialVolume, { center });
+                                    // Render in model space: 0,0,0 at corner of 0th index, bounds at size
+                                    vertexData = materialVolumeToVertexData(materialVolume);
                                     vertexDataCache.set(materialVolume, vertexData);
                                 }
 

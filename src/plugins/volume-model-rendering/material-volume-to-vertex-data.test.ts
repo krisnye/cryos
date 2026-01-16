@@ -59,7 +59,7 @@ test("materialVolumeToVertexData skips empty voxels (MaterialId === 0)", () => {
     expect(vertexData.capacity).toBe(0);
 });
 
-test("materialVolumeToVertexData applies center offset", () => {
+test("materialVolumeToVertexData renders in model space (0,0,0 at corner)", () => {
     // Create a 2x2x2 volume
     const size: Vec3 = [2, 2, 2];
     const capacity = size[0] * size[1] * size[2];
@@ -71,18 +71,24 @@ test("materialVolumeToVertexData applies center offset", () => {
     // Set one voxel at [0,0,0] to material 1
     volume.data.set(0, 1);
     
-    // Generate with custom center
-    const center: Vec3 = [1, 1, 1];
-    const vertexData = materialVolumeToVertexData(volume, { center });
+    // Generate vertex data (default: no center offset, model space)
+    const vertexData = materialVolumeToVertexData(volume);
     
     // Check that vertices exist and have correct material index
     expect(vertexData.capacity).toBeGreaterThan(0);
     const firstVertex = vertexData.get(0);
     expect(firstVertex.materialIndex).toBe(1);
-    // Position should be offset by center (voxel corners are at integer positions, then offset by center)
-    // The exact position depends on which face/vertex, but it should be defined
+    // Position should be in model space: 0,0,0 at corner of 0th index
+    // Voxel at [0,0,0] should have vertices at [0,0,0] to [1,1,1] range
     expect(firstVertex.position).toBeDefined();
     expect(Array.isArray(firstVertex.position)).toBe(true);
     expect(firstVertex.position.length).toBe(3);
+    // First voxel should have positions in [0,1] range (not centered around 0)
+    expect(firstVertex.position[0]).toBeGreaterThanOrEqual(0);
+    expect(firstVertex.position[0]).toBeLessThanOrEqual(1);
+    expect(firstVertex.position[1]).toBeGreaterThanOrEqual(0);
+    expect(firstVertex.position[1]).toBeLessThanOrEqual(1);
+    expect(firstVertex.position[2]).toBeGreaterThanOrEqual(0);
+    expect(firstVertex.position[2]).toBeLessThanOrEqual(1);
 });
 
