@@ -11,3 +11,5 @@ export * from "./physics/physics.js";
 export * from "./particle.js";
 export * from "./particle-rendering/index.js";
 export * from "./transparent.js";
+export * from "./volume-model.js";
+export * from "./volume-model-rendering/index.js";

@@ -14,6 +14,13 @@ const samples: Record<string, SampleDefinition> = {
             return html`<particle-sample-application></particle-sample-application>`;
         }
     },
+    "volume-model-sample": {
+        name: "Volume Model Sample",
+        render: () => {
+            import("./volume-model-sample/volume-model-sample-application.js");
+            return html`<volume-model-sample-application></volume-model-sample-application>`;
+        }
+    },
 } as const;
 
 type SampleKeys = keyof typeof samples;

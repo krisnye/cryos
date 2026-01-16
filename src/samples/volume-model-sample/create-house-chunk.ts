@@ -1,0 +1,161 @@
+import { Vec3 } from "@adobe/data/math";
+import { createTypedBuffer } from "@adobe/data/typed-buffer";
+import { Volume } from "../../types/volume/volume.js";
+import { MaterialId } from "../../types/material/material-id.js";
+import { Material } from "../../types/index.js";
+import { Volume as VolumeNamespace } from "../../types/volume/volume.js";
+
+/**
+ * Creates a 16x16x16 house chunk volume (4m x 4m x 4m at 25cm per voxel)
+ * Contains foundation, walls, windows, roof, and interior details
+ */
+export function createHouseChunkVolume(): Volume<MaterialId> {
+    const size: Vec3 = [16, 16, 16];
+    const capacity = size[0] * size[1] * size[2];
+    const volume: Volume<MaterialId> = {
+        size,
+        data: createTypedBuffer(MaterialId.schema, capacity),
+    };
+    
+    // Initialize all voxels to air (0)
+    for (let i = 0; i < capacity; i++) {
+        volume.data.set(i, Material.id.air);
+    }
+    
+    // Material IDs for convenience
+    const air = Material.id.air;
+    const concrete = Material.id.concrete;
+    const reinforcedConcrete = Material.id.reinforcedConcrete;
+    const woodHard = Material.id.woodHard;
+    const glass = Material.id.glass;
+    const steel = Material.id.steel;
+    const dirt = Material.id.dirt;
+    
+    // Foundation layer (z=0,1) - reinforced concrete
+    for (let z = 0; z < 2; z++) {
+        for (let y = 0; y < 16; y++) {
+            for (let x = 0; x < 16; x++) {
+                const index = VolumeNamespace.index(volume, x, y, z);
+                volume.data.set(index, reinforcedConcrete);
+            }
+        }
+    }
+    
+    // Ground floor walls (z=2-8, height 7 voxels = 1.75m)
+    // Outer walls
+    for (let z = 2; z < 9; z++) {
+        // Front wall (y=0)
+        for (let x = 0; x < 16; x++) {
+            const index = VolumeNamespace.index(volume, x, 0, z);
+            volume.data.set(index, concrete);
+        }
+        // Back wall (y=15)
+        for (let x = 0; x < 16; x++) {
+            const index = VolumeNamespace.index(volume, x, 15, z);
+            volume.data.set(index, concrete);
+        }
+        // Left wall (x=0)
+        for (let y = 0; y < 16; y++) {
+            const index = VolumeNamespace.index(volume, 0, y, z);
+            volume.data.set(index, concrete);
+        }
+        // Right wall (x=15)
+        for (let y = 0; y < 16; y++) {
+            const index = VolumeNamespace.index(volume, 15, y, z);
+            volume.data.set(index, concrete);
+        }
+    }
+    
+    // Windows on front wall (y=0) at z=4-6 (eye level)
+    for (let z = 4; z < 7; z++) {
+        for (let x = 4; x < 8; x++) {
+            const index = VolumeNamespace.index(volume, x, 0, z);
+            volume.data.set(index, glass);
+        }
+        for (let x = 8; x < 12; x++) {
+            const index = VolumeNamespace.index(volume, x, 0, z);
+            volume.data.set(index, glass);
+        }
+    }
+    
+    // Interior wall dividing the space (x=8, from y=4 to y=12)
+    for (let z = 2; z < 9; z++) {
+        for (let y = 4; y < 12; y++) {
+            const index = VolumeNamespace.index(volume, 8, y, z);
+            volume.data.set(index, concrete);
+        }
+    }
+    
+    // Door opening in interior wall (x=8, y=6-8, z=2-6)
+    for (let z = 2; z < 7; z++) {
+        for (let y = 6; y < 9; y++) {
+            const index = VolumeNamespace.index(volume, 8, y, z);
+            volume.data.set(index, air);
+        }
+    }
+    
+    // Second floor floor (z=8)
+    for (let y = 0; y < 16; y++) {
+        for (let x = 0; x < 16; x++) {
+            const index = VolumeNamespace.index(volume, x, y, 8);
+            volume.data.set(index, woodHard);
+        }
+    }
+    
+    // Second floor walls (z=9-13, height 5 voxels = 1.25m)
+    for (let z = 9; z < 14; z++) {
+        // Front wall (y=0) with windows
+        for (let x = 0; x < 16; x++) {
+            if (x < 4 || x >= 12) {
+                const index = VolumeNamespace.index(volume, x, 0, z);
+                volume.data.set(index, concrete);
+            }
+        }
+        // Back wall (y=15)
+        for (let x = 0; x < 16; x++) {
+            const index = VolumeNamespace.index(volume, x, 15, z);
+            volume.data.set(index, concrete);
+        }
+        // Left wall (x=0)
+        for (let y = 0; y < 16; y++) {
+            const index = VolumeNamespace.index(volume, 0, y, z);
+            volume.data.set(index, concrete);
+        }
+        // Right wall (x=15)
+        for (let y = 0; y < 16; y++) {
+            const index = VolumeNamespace.index(volume, 15, y, z);
+            volume.data.set(index, concrete);
+        }
+    }
+    
+    // Windows on second floor front wall
+    for (let z = 10; z < 13; z++) {
+        for (let x = 4; x < 12; x++) {
+            const index = VolumeNamespace.index(volume, x, 0, z);
+            volume.data.set(index, glass);
+        }
+    }
+    
+    // Roof (z=14-15, sloping)
+    // Flat roof for simplicity
+    for (let z = 14; z < 16; z++) {
+        for (let y = 0; y < 16; y++) {
+            for (let x = 0; x < 16; x++) {
+                const index = VolumeNamespace.index(volume, x, y, z);
+                volume.data.set(index, woodHard);
+            }
+        }
+    }
+    
+    // Add some structural beams (steel) in corners
+    for (let z = 2; z < 14; z++) {
+        // Corner beams
+        volume.data.set(VolumeNamespace.index(volume, 0, 0, z), steel);
+        volume.data.set(VolumeNamespace.index(volume, 15, 0, z), steel);
+        volume.data.set(VolumeNamespace.index(volume, 0, 15, z), steel);
+        volume.data.set(VolumeNamespace.index(volume, 15, 15, z), steel);
+    }
+    
+    return volume;
+}
+
