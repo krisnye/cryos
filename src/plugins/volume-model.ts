@@ -1,12 +1,14 @@
 import { Database } from "@adobe/data/ecs";
+import { Entity } from "@adobe/data/ecs";
 import { True } from "@adobe/data/schema";
 import { Vec3, Quat } from "@adobe/data/math";
 import { geometry } from "./geometry.js";
 import { MaterialId } from "../types/material/material-id.js";
 import { Volume } from "../types/volume/volume.js";
+import { materialVertexBuffers } from "./material-vertex-buffers.js";
 
 export const volumeModel = Database.Plugin.create({
-    extends: geometry,
+    extends: Database.Plugin.combine(geometry, materialVertexBuffers),
     components: {
         volumeModel: True.schema,
         materialVolume: { default: null as unknown as Volume<MaterialId> },
@@ -55,6 +57,18 @@ export const volumeModel = Database.Plugin.create({
                 volumeModel: true,
                 position: props.position,
                 materialVolume: props.materialVolume,
+            });
+        },
+        setVolumeModel(t, props: {
+            entityId: Entity;
+            materialVolume: Volume<MaterialId>;
+        }) {
+            // Update materialVolume and remove buffer components
+            // Setting components to undefined removes them from the entity
+            t.update(props.entityId, {
+                materialVolume: props.materialVolume,
+                opaqueVertexBuffer: undefined,
+                transparentVertexBuffer: undefined,
             });
         },
     },

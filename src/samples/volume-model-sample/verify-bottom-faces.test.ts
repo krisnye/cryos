@@ -10,7 +10,7 @@ import { extractBottomFaceVertices, countBottomFaces, verifyBottomFaceGeometry }
 describe("verify-bottom-faces", () => {
     test("extractBottomFaceVertices should extract all vertices with normal [0, -1, 0]", () => {
         const volume = createTestVolume2x2x2();
-        const vertexData = materialVolumeToVertexData(volume);
+        const vertexData = materialVolumeToVertexData(volume, { opaque: true });
         
         const bottomVertices = extractBottomFaceVertices(vertexData);
         
@@ -31,7 +31,7 @@ describe("verify-bottom-faces", () => {
 
     test("countBottomFaces should return the number of bottom faces", () => {
         const volume = createTestVolume2x2x2();
-        const vertexData = materialVolumeToVertexData(volume);
+        const vertexData = materialVolumeToVertexData(volume, { opaque: true });
         
         const faceCount = countBottomFaces(vertexData);
         
@@ -45,7 +45,7 @@ describe("verify-bottom-faces", () => {
 
     test("verifyBottomFaceGeometry should verify bottom faces have correct geometry and winding", () => {
         const volume = createTestVolume2x2x2();
-        const vertexData = materialVolumeToVertexData(volume);
+        const vertexData = materialVolumeToVertexData(volume, { opaque: true });
         
         const bottomVertices = extractBottomFaceVertices(vertexData);
         const faceCount = countBottomFaces(vertexData);
@@ -88,7 +88,7 @@ describe("verify-bottom-faces", () => {
             emptyVolume.data.set(i, 0);
         }
         
-        const vertexData = materialVolumeToVertexData(emptyVolume);
+        const vertexData = materialVolumeToVertexData(emptyVolume, { opaque: true });
         const faceCount = countBottomFaces(vertexData);
         
         expect(faceCount).toBe(0);

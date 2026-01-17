@@ -1,12 +1,13 @@
 import { Database } from "@adobe/data/ecs";
 import { Vec3 } from "@adobe/data/math";
 import { particleRendering, cameraControl, volumeModelRendering } from "../../plugins/index.js";
+import { materialVolumeToVertexBuffers } from "../../plugins/material-volume-to-vertex-buffers.js";
 import { createHouseChunkVolume } from "./create-house-chunk.js";
 
 export function createVolumeModelSampleService() {
     return Database.create(
         Database.Plugin.create({
-            extends: Database.Plugin.combine(particleRendering, volumeModelRendering, cameraControl),
+            extends: Database.Plugin.combine(particleRendering, volumeModelRendering, materialVolumeToVertexBuffers, cameraControl),
             systems: {
                 volume_model_sample_init: {
                     create: db => {

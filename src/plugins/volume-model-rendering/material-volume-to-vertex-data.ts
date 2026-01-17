@@ -54,7 +54,7 @@ function isVisible(materialId: MaterialId): boolean {
  * For opaque rendering: only opaque materials are solid (transparent treated as empty)
  * For transparent rendering: only transparent materials are solid (opaque treated as empty)
  */
-function isSolid(materialId: MaterialId, opaqueOnly: boolean): boolean {
+function isSolid(materialId: MaterialId, opaque: boolean): boolean {
     if (materialId === 0) return false; // Air is never solid
     
     // Check if material exists
@@ -65,7 +65,7 @@ function isSolid(materialId: MaterialId, opaqueOnly: boolean): boolean {
     
     const isTransparent = material.baseColor[3] < 1.0;
     
-    if (opaqueOnly) {
+    if (opaque) {
         // For opaque rendering: only opaque materials are solid
         return !isTransparent;
     } else {
@@ -76,9 +76,9 @@ function isSolid(materialId: MaterialId, opaqueOnly: boolean): boolean {
 
 export function materialVolumeToVertexData(
     volume: Volume<MaterialId>, 
-    options: { center?: Vec3; opaqueOnly?: boolean } = {}
+    options: { center?: Vec3; opaque: boolean }
 ): TypedBuffer<PositionNormalMaterialVertex> {
-    const { center = [0, 0, 0], opaqueOnly = true } = options;
+    const { center = [0, 0, 0], opaque } = options;
     const [width, height, depth] = volume.size;
     
     // First pass: count visible faces
@@ -114,7 +114,7 @@ export function materialVolumeToVertexData(
                 const materialId = volume.data.get(voxelIndex);
                 
                 // Skip if voxel is not solid for this rendering mode
-                if (!isSolid(materialId, opaqueOnly)) continue;
+                if (!isSolid(materialId, opaque)) continue;
                 
                 // Check all 6 directions for adjacent non-solid voxels
                 for (const [dx, dy, dz] of DIRECTIONS) {
@@ -129,7 +129,7 @@ export function materialVolumeToVertexData(
                     
                     // Check if adjacent voxel is not solid (empty or opposite type)
                     const adjacentMaterialId = !isBoundary ? volume.data.get(Volume.index(volume, nx, ny, nz)) : 0;
-                    const isAdjacentSolid = isSolid(adjacentMaterialId, opaqueOnly);
+                    const isAdjacentSolid = isSolid(adjacentMaterialId, opaque);
                     
                     // Generate face if adjacent is boundary or not solid
                     if (isBoundary || !isAdjacentSolid) {

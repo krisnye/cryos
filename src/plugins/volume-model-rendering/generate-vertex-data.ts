@@ -45,7 +45,7 @@ export const generateVolumeModelVertexData = Database.Plugin.create({
                                     // Convert volume to vertex data (CPU-side operation)
                                     // Render in model space: 0,0,0 at corner of 0th index, bounds at size
                                     // Generate opaque faces only (treat transparent voxels as empty)
-                                    vertexData = materialVolumeToVertexData(materialVolume, { opaqueOnly: true });
+                                    vertexData = materialVolumeToVertexData(materialVolume, { opaque: true });
                                     vertexDataCache.set(materialVolume, vertexData);
                                 }
 

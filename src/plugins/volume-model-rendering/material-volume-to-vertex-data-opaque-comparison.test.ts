@@ -7,8 +7,8 @@ describe("materialVolumeToVertexData opaque rendering comparison", () => {
         const volumeWithAir = createTestVolume2x2x2({ middleLayer: "air" });
         const volumeWithGlass = createTestVolume2x2x2({ middleLayer: "glass" });
 
-        const vertexDataWithAir = materialVolumeToVertexData(volumeWithAir, { opaqueOnly: true });
-        const vertexDataWithGlass = materialVolumeToVertexData(volumeWithGlass, { opaqueOnly: true });
+        const vertexDataWithAir = materialVolumeToVertexData(volumeWithAir, { opaque: true });
+        const vertexDataWithGlass = materialVolumeToVertexData(volumeWithGlass, { opaque: true });
 
         expect(vertexDataWithGlass.capacity).toBe(vertexDataWithAir.capacity);
 

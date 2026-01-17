@@ -32,8 +32,8 @@ test("materialVolumeToVertexData generates vertices for visible faces only", () 
     const index = 0; // x=0, y=0, z=0
     volume.data.set(index, opaqueMaterialId);
     
-    // Generate vertex data
-    const vertexData = materialVolumeToVertexData(volume);
+    // Generate vertex data (opaque rendering)
+    const vertexData = materialVolumeToVertexData(volume, { opaque: true });
     
     // Should have 6 faces (one voxel exposed on all sides)
     // Each face has 2 triangles = 6 vertices
@@ -61,8 +61,8 @@ test("materialVolumeToVertexData skips empty voxels (MaterialId === 0)", () => {
         volume.data.set(i, 0);
     }
     
-    // Generate vertex data
-    const vertexData = materialVolumeToVertexData(volume);
+    // Generate vertex data (opaque rendering)
+    const vertexData = materialVolumeToVertexData(volume, { opaque: true });
     
     // Should have no vertices (all air)
     expect(vertexData.capacity).toBe(0);
@@ -87,8 +87,8 @@ test("materialVolumeToVertexData renders in model space (0,0,0 at corner)", () =
     }
     volume.data.set(0, opaqueMaterialId);
     
-    // Generate vertex data (default: no center offset, model space, opaqueOnly=true)
-    const vertexData = materialVolumeToVertexData(volume);
+    // Generate vertex data (opaque rendering)
+    const vertexData = materialVolumeToVertexData(volume, { opaque: true });
     
     // Check that vertices exist and have correct material index
     expect(vertexData.capacity).toBeGreaterThan(0);
@@ -127,8 +127,8 @@ test("materialVolumeToVertexData generates bottom faces with correct winding (co
     }
     volume.data.set(0, opaqueMaterialId); // Voxel at (0,0,0)
     
-    // Generate vertex data
-    const vertexData = materialVolumeToVertexData(volume);
+    // Generate vertex data (opaque rendering)
+    const vertexData = materialVolumeToVertexData(volume, { opaque: true });
     
     // Find bottom face vertices (normal [0, -1, 0])
     const bottomVertices: Vec3[] = [];
