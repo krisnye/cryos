@@ -10,20 +10,20 @@ import * as Volume from "../volume/namespace.js";
  * - TRANSPARENT_ONLY = transparent only
  * - BOTH = both opaque and transparent
  */
-export const MaterialType = {
+export const VisibilityType = {
     NEITHER: 0,
     OPAQUE_ONLY: 1,
     TRANSPARENT_ONLY: 2,
     BOTH: 3,
 } as const;
 
-export type MaterialType = typeof MaterialType[keyof typeof MaterialType];
+export type VisibilityType = typeof VisibilityType[keyof typeof VisibilityType];
 
 /**
  * Memoization cache for checkMaterialTypes results.
  * Uses WeakMap keyed by volume identity for automatic garbage collection.
  */
-const materialTypesCache = new WeakMap<VolumeMaterial, MaterialType>();
+const materialTypesCache = new WeakMap<VolumeMaterial, VisibilityType>();
 
 /**
  * Module-level material transparency cache.
@@ -50,7 +50,7 @@ function updateMaterialTransparentCache(): void {
  * Returns a MaterialType: NEITHER, OPAQUE_ONLY, TRANSPARENT_ONLY, or BOTH.
  * Results are memoized using a WeakMap keyed by volume identity.
  */
-export function checkMaterialTypes(volume: VolumeMaterial): MaterialType {
+export function checkMaterialTypes(volume: VolumeMaterial): VisibilityType {
     // Check cache first
     const cached = materialTypesCache.get(volume);
     if (cached !== undefined) {
@@ -87,11 +87,11 @@ export function checkMaterialTypes(volume: VolumeMaterial): MaterialType {
     }
 
     // Determine result based on flags found
-    const result: MaterialType = 
-        !hasOpaque && !hasTransparent ? MaterialType.NEITHER :
-        hasOpaque && !hasTransparent ? MaterialType.OPAQUE_ONLY :
-        !hasOpaque && hasTransparent ? MaterialType.TRANSPARENT_ONLY :
-        MaterialType.BOTH; // hasOpaque && hasTransparent
+    const result: VisibilityType = 
+        !hasOpaque && !hasTransparent ? VisibilityType.NEITHER :
+        hasOpaque && !hasTransparent ? VisibilityType.OPAQUE_ONLY :
+        !hasOpaque && hasTransparent ? VisibilityType.TRANSPARENT_ONLY :
+        VisibilityType.BOTH; // hasOpaque && hasTransparent
 
     // Cache and return result
     materialTypesCache.set(volume, result);

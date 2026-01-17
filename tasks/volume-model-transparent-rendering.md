@@ -86,26 +86,32 @@ Sort transparent volume model instances by distance from camera before rendering
 - Should reuse sorting logic from particle rendering where possible
 
 **Implementation Approach**:
-- Create sorting utility function similar to `sortIndicesByDepth` from particle rendering
+- Use **Option B: Indirect indexing** (matches particle rendering): sorted index buffer on GPU; shader uses `sortedIndices[instanceIndex]` to look up instance data.
 - For each vertex buffer group:
-  - Collect instance transforms (position, scale, rotation)
-  - Calculate world-space center/bounds for each instance
-  - Compute distance from camera to instance center
-  - Sort instance data by depth (descending: furthest first)
-  - Reorder instance data buffer before GPU upload
-- Alternative: Use indirect indexing (like particles) with sorted index buffer
+  - Collect instance transforms (position, scale, rotation) and keep in original order
+  - Produce flat positions (see **Reusing sort code** below) and call `sortIndicesByDepth`
+  - Upload sorted index buffer to GPU; upload instance data (position, scale, rotation) as storage buffer in original order
+  - Shader reads `originalIndex = sortedIndices[instanceIndex]`, then fetches instance transform from instance data storage buffer at `originalIndex`
+- Transparent pipeline uses storage buffers for instance data and sorted indices (not vertex buffers for instance data), so the shader can do indirect lookup. This requires a shader variant or changes to `instanced-pbr.wgsl` for the transparent pass.
+
+**Reusing sort code**:
+- Reuse `sortIndicesByDepth` and `buildFlatPositionBuffer` from `cryos/src/plugins/particle-rendering/transparent/sort-particles.ts`.
+- The sorting algorithm only requires a data source with positions. `buildFlatPositionBuffer` produces a flat `Float32Array` from tables that have a `position` column (`columns.position.getTypedArray()`, `rowCount`). `sortIndicesByDepth` then sorts indices by depth.
+- Volume model render tables have a `position` column. For each vertex-buffer group we have `group.positions` (Vec3[]) collected from those tables. Either:
+  - Present the group as a table-like `{ columns: { position: { getTypedArray() } }, rowCount }` and use `buildFlatPositionBuffer`, or
+  - Flatten `group.positions` to `Float32Array` and pass directly to `sortIndicesByDepth`.
+- In both cases we reuse the existing sorting code; the only requirement is a way to get positions (e.g. a Table with a Position column or an array of Vec3).
 
 **Challenges**:
-- Volume models have complex geometry (not just point particles)
-- Need to determine representative point for sorting (center of volume in world space)
-- With scale and rotation, center calculation needs to account for transform
-- Maintain grouping efficiency while sorting
+- Transparent pass needs a different bind group layout: instance data and sorted indices as storage buffers; shader must use indirect indexing.
+- Need to determine representative point for sorting: use instance position (center of volume at origin) to match particle approach; can enhance later for scale/rotation.
 
 **Files to Create**:
-- `cryos/src/plugins/volume-model-rendering/sort-volume-model-instances.ts` - Sorting utilities
+- None required if reusing `sort-particles.ts`. Optionally: `sort-volume-model-instances.ts` only if we add a small `flattenPositions(Vec3[])` helper and still want it in the volume-model plugin; otherwise that helper can live in `sort-particles.ts`.
 
 **Files to Modify**:
-- `cryos/src/plugins/volume-model-rendering/render-volume-models-transparent.ts` - Use sorting before rendering
+- `cryos/src/plugins/volume-model-rendering/render-volume-models-transparent.ts` - Use `sortIndicesByDepth` (and `buildFlatPositionBuffer` or a flatten step), add storage buffers for instance data and sorted indices, and ensure the transparent shader uses indirect indexing.
+- `cryos/src/plugins/volume-model-rendering/instanced-pbr.wgsl.ts` (or a new `instanced-pbr-transparent.wgsl.ts`) - Vertex shader must read instance data and `sortedIndices` from storage buffers and use `originalIndex = sortedIndices[instanceIndex]` for lookups.
 
 ---
 
@@ -159,19 +165,20 @@ Ensure transparent rendering happens after opaque rendering in the render schedu
 
 ### Instance Sorting Strategy
 
-**Option A: Reorder Instance Data Buffer** (Recommended for simplicity)
-- Sort instance transforms within each group
-- Reorder instance data buffer before GPU upload
-- Simple, maintains current instancing structure
-- Cost: CPU sort per frame (similar to particles)
+**Option A: Reorder Instance Data Buffer**
+- Sort instance transforms within each group and reorder the instance data buffer before GPU upload.
+- Keeps current instancing structure and shader; no extra GPU buffer.
+- Does not match the particle rendering pattern (particles use Option B).
 
-**Option B: Indirect Indexing** (More complex, potentially more efficient)
-- Use sorted index buffer (like particles)
-- Shader uses indirect indexing via sorted indices
-- More complex shader, but could be more efficient for many instances
-- Cost: More complex implementation, extra GPU buffer
+**Option B: Indirect Indexing** (Recommended; matches particle rendering)
+- Use a sorted index buffer on the GPU (same pattern as `particle-rendering/transparent`).
+- Instance data (position, scale, rotation) lives in a storage buffer in **original** order.
+- Sorted index buffer maps draw order to original index: `originalIndex = sortedIndices[instanceIndex]`.
+- Shader uses `originalIndex` to fetch from the instance data storage buffer.
+- Requires: (1) storage buffers for instance data and sorted indices, (2) shader changes for indirect lookup.
+- Reuse `sortIndicesByDepth` from `sort-particles.ts`; the sort only needs positions (e.g. from a Table with a Position column via `buildFlatPositionBuffer`, or from `group.positions` flattened to `Float32Array`).
 
-**Recommendation**: Start with Option A (reorder buffer), similar to current particle rendering pattern.
+**Recommendation**: Use Option B to align with particle transparent rendering and to reuse the existing sort and buffer pattern.
 
 ### Volume Transparency Detection
 
@@ -278,10 +285,13 @@ cryos/src/plugins/volume-model-rendering/
   generate-vertex-data.ts                 ✅ (existing)
   create-vertex-buffers.ts                ✅ (existing)
   render-volume-models.ts                 ✅ (existing)
-  render-volume-models-transparent.ts     ⬜ (new)
-  sort-volume-model-instances.ts          ⬜ (new - optional, could inline)
-  instanced-pbr.wgsl.ts                   ✅ (existing, may need verification)
+  render-volume-models-transparent.ts     ✅ (existing; modify for Option B: storage buffers, sort, indirect indexing)
+  instanced-pbr.wgsl.ts                   ✅ (existing; may need verification)
+  instanced-pbr-transparent.wgsl.ts        ⬜ (optional: shader variant with indirect indexing for instance data + sortedIndices)
   index.ts                                ⬜ (modify - combine transparent plugin)
+
+cryos/src/plugins/particle-rendering/transparent/
+  sort-particles.ts                       ✅ (reuse: sortIndicesByDepth, buildFlatPositionBuffer; only needs Table with Position column)
 ```
 
 ---
@@ -292,6 +302,7 @@ cryos/src/plugins/volume-model-rendering/
 - `scene` plugin - For camera position (sorting)
 - `materials` plugin - For material transparency lookup
 - Existing volume model rendering systems
+- `sort-particles.ts` (particle-rendering/transparent) - Reuse `sortIndicesByDepth` and `buildFlatPositionBuffer`. The sorting logic only requires a data source with positions (e.g. a Table with a Position column). Consider moving to a shared util (e.g. `cryos/src/utils/sort-by-depth.ts`) if introducing a dependency from `volume-model-rendering` to `particle-rendering` is undesirable.
 
 ---
 

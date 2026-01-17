@@ -7,7 +7,7 @@ import { MaterialId } from "../../types/material/material-id.js";
 import { Material } from "../../types/index.js";
 import * as VolumeNamespace from "../../types/volume/namespace.js";
 import { renderVolumeModels } from "./render-volume-models.js";
-import { checkMaterialTypes, MaterialType } from "../../types/volume-material/index.js";
+import { checkMaterialTypes, VisibilityType } from "../../types/volume-material/index.js";
 
 describe("renderVolumeModels", () => {
     test("given a volume with BOTH opaque and transparent materials, should not skip it from opaque rendering", () => {
@@ -41,14 +41,14 @@ describe("renderVolumeModels", () => {
         
         // Verify the volume has BOTH opaque and transparent materials
         const materialType = checkMaterialTypes(volume);
-        expect(materialType).toBe(MaterialType.BOTH);
+        expect(materialType).toBe(VisibilityType.BOTH);
         
         // The key test: volumes with BOTH should NOT be skipped by opaque rendering
         // This is verified by the fact that renderVolumeModels should process entities with BOTH type
         // We can't easily test the rendering system directly, but we can verify the logic
         // The system should only skip TRANSPARENT_ONLY, not BOTH
-        expect(materialType === MaterialType.TRANSPARENT_ONLY).toBe(false);
-        expect(materialType === MaterialType.BOTH).toBe(true);
+        expect(materialType === VisibilityType.TRANSPARENT_ONLY).toBe(false);
+        expect(materialType === VisibilityType.BOTH).toBe(true);
     });
     
     test("given a volume with ONLY transparent materials, should be skipped from opaque rendering", () => {
@@ -68,10 +68,10 @@ describe("renderVolumeModels", () => {
         
         // Verify the volume has ONLY transparent materials
         const materialType = checkMaterialTypes(volume);
-        expect(materialType).toBe(MaterialType.TRANSPARENT_ONLY);
+        expect(materialType).toBe(VisibilityType.TRANSPARENT_ONLY);
         
         // Volumes with TRANSPARENT_ONLY should be skipped by opaque rendering
-        expect(materialType === MaterialType.TRANSPARENT_ONLY).toBe(true);
+        expect(materialType === VisibilityType.TRANSPARENT_ONLY).toBe(true);
     });
     
     test("given a volume with ONLY opaque materials, should be rendered by opaque rendering", () => {
@@ -91,11 +91,11 @@ describe("renderVolumeModels", () => {
         
         // Verify the volume has ONLY opaque materials
         const materialType = checkMaterialTypes(volume);
-        expect(materialType).toBe(MaterialType.OPAQUE_ONLY);
+        expect(materialType).toBe(VisibilityType.OPAQUE_ONLY);
         
         // Volumes with OPAQUE_ONLY should be rendered by opaque rendering
-        expect(materialType === MaterialType.TRANSPARENT_ONLY).toBe(false);
-        expect(materialType === MaterialType.OPAQUE_ONLY).toBe(true);
+        expect(materialType === VisibilityType.TRANSPARENT_ONLY).toBe(false);
+        expect(materialType === VisibilityType.OPAQUE_ONLY).toBe(true);
     });
 });
 

@@ -6,7 +6,7 @@ import { scene } from "../scene.js";
 import { materials } from "../materials.js";
 import { createVertexBuffers } from "./create-vertex-buffers.js";
 import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/index.js";
-import { VolumeMaterial, MaterialType, checkMaterialTypes } from "../../types/volume-material/index.js";
+import { VolumeMaterial, VisibilityType, checkMaterialTypes } from "../../types/volume-material/index.js";
 import { Volume } from "../../types/volume/volume.js";
 import { MaterialId } from "../../types/material/material-id.js";
 import instancedShaderSource from "./instanced-pbr.wgsl.js";
@@ -90,7 +90,7 @@ export const renderVolumeModels = Database.Plugin.create({
                                 const materialType = checkMaterialTypes(materialVolume);
                                 // Skip if volume contains ONLY transparent materials (no opaque materials)
                                 // Volumes with BOTH opaque and transparent should still render (opaque parts)
-                                if (materialType === MaterialType.TRANSPARENT_ONLY) {
+                                if (materialType === VisibilityType.TRANSPARENT_ONLY) {
                                     continue;
                                 }
                             }
