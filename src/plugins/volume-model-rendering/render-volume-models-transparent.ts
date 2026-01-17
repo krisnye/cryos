@@ -1,3 +1,5 @@
+// Transparent volume model rendering plugin
+// Renders volume models with transparent materials, using blending and depth-sorted instancing
 import { Database } from "@adobe/data/ecs";
 import { Vec3, Quat } from "@adobe/data/math";
 import { Schema } from "@adobe/data/schema";
@@ -6,7 +8,7 @@ import { scene } from "../scene.js";
 import { materials } from "../materials.js";
 import { createVertexBuffers } from "./create-vertex-buffers.js";
 import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/index.js";
-import { VolumeMaterial, MaterialType, checkMaterialTypes } from "../../types/volume-material/index.js";
+import { MaterialType, checkMaterialTypes } from "../../types/volume-material/index.js";
 import { Volume } from "../../types/volume/volume.js";
 import { MaterialId } from "../../types/material/material-id.js";
 import instancedShaderSource from "./instanced-pbr.wgsl.js";
@@ -34,13 +36,15 @@ type ModelGroup = {
 };
 
 /**
- * System that renders volume models using instanced rendering.
+ * System that renders volume models with transparent materials using instanced rendering.
+ * Only renders entities that contain transparent materials.
  * Groups entities by shared vertex buffer and batches them into single draw calls.
+ * TODO: Phase 3 will add depth sorting for back-to-front rendering.
  */
-export const renderVolumeModels = Database.Plugin.create({
+export const renderVolumeModelsTransparent = Database.Plugin.create({
     extends: Database.Plugin.combine(createVertexBuffers, scene, materials),
     systems: {
-        renderVolumeModels: {
+        renderVolumeModelsTransparent: {
             create: (db) => {
                 // Pipeline state - initialized once when device is available (in closure)
                 let bindGroupLayout: GPUBindGroupLayout | null = null;
@@ -52,8 +56,8 @@ export const renderVolumeModels = Database.Plugin.create({
                 const groupGpuBuffers = new Map<GPUBuffer, GPUBuffer>();
 
                 return () => {
-                    const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, depthTexture } = db.store.resources;
-                    if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer) return;
+                    const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, depthTexture, canvas } = db.store.resources;
+                    if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer || !canvas) return;
 
                     // Query entities with modelVertexBuffer component
                     // Query for all possible combinations (with/without scale/rotation)
@@ -83,16 +87,15 @@ export const renderVolumeModels = Database.Plugin.create({
 
                             if (!vertexBuffer) continue;
 
-                            // Exclude entities with ONLY transparent materials (only render opaque)
-                            // Check if entity has materialVolume and skip if it contains ONLY transparent materials
+                            // Only include entities with transparent materials
+                            // Check if entity has materialVolume and only include if it contains transparent materials
                             const materialVolume = db.store.get(entityId, "materialVolume") as Volume<MaterialId> | undefined;
-                            if (materialVolume) {
-                                const materialType = checkMaterialTypes(materialVolume);
-                                // Skip if volume contains ONLY transparent materials (no opaque materials)
-                                // Volumes with BOTH opaque and transparent should still render (opaque parts)
-                                if (materialType === MaterialType.TRANSPARENT_ONLY) {
-                                    continue;
-                                }
+                            if (!materialVolume) continue;
+
+                            const materialType = checkMaterialTypes(materialVolume);
+                            // Only include if volume contains transparent materials (TRANSPARENT_ONLY or BOTH)
+                            if (materialType !== MaterialType.TRANSPARENT_ONLY && materialType !== MaterialType.BOTH) {
+                                continue;
                             }
 
                             // Initialize group if needed
@@ -166,27 +169,33 @@ export const renderVolumeModels = Database.Plugin.create({
                         fragment: {
                             module: device.createShaderModule({ code: instancedShaderSource }),
                             entryPoint: 'fragmentMain',
-                            targets: [{ format: 'bgra8unorm' }] // Default format
+                            targets: [{
+                                format: navigator.gpu.getPreferredCanvasFormat(),
+                                blend: {
+                                    color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
+                                    alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' }
+                                }
+                            }]
                         },
                         primitive: {
                             topology: 'triangle-list',
                             cullMode: 'back'
                         },
                         depthStencil: {
-                            depthWriteEnabled: true,
-                            depthCompare: 'less-equal', // Use less-equal to match transparent rendering and reduce z-fighting
-                            format: depthTexture?.format ?? 'depth24plus'
+                            depthWriteEnabled: false, // Don't write depth for transparent volumes
+                            depthCompare: 'less-equal', // Still test depth for proper occlusion
+                            format: 'depth24plus'
                         }
                     });
 
-                    // Process each model group for instanced rendering
+                    // Render each group
                     for (const [vertexBuffer, group] of modelGroups) {
-                        // Ensure typed buffer has sufficient capacity
+                        // Ensure instance data buffer is large enough
                         if (instanceDataBuffer.capacity < group.instanceCount) {
                             instanceDataBuffer.capacity = group.instanceCount;
                         }
 
-                        // Populate instance data
+                        // Fill instance data buffer
                         for (let i = 0; i < group.instanceCount; i++) {
                             instanceDataBuffer.set(i, {
                                 position: group.positions[i],
@@ -195,11 +204,14 @@ export const renderVolumeModels = Database.Plugin.create({
                             });
                         }
 
-                        // Get or create GPU buffer for this specific group
+                        // Get or create GPU buffer for this group's instance data
                         let gpuBuffer = groupGpuBuffers.get(vertexBuffer);
                         const instanceDataArray = instanceDataBuffer.getTypedArray();
-
+                        
                         if (!gpuBuffer || gpuBuffer.size < instanceDataArray.byteLength) {
+                            if (gpuBuffer) {
+                                gpuBuffer.destroy(); // Destroy old buffer if too small
+                            }
                             gpuBuffer = device.createBuffer({
                                 size: instanceDataArray.byteLength,
                                 usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
@@ -208,16 +220,15 @@ export const renderVolumeModels = Database.Plugin.create({
                             groupGpuBuffers.set(vertexBuffer, gpuBuffer);
                         }
 
-                        // Copy typed data to GPU buffer
+                        // Copy instance data to GPU buffer
                         gpuBuffer = copyToGPUBuffer(instanceDataBuffer, device, gpuBuffer);
 
-                        // Set up vertex buffers (one for geometry, one for instance data)
+                        // Set up rendering state
                         renderPassEncoder.setVertexBuffer(0, vertexBuffer, 0);
                         renderPassEncoder.setVertexBuffer(1, gpuBuffer, 0);
-
-                        // Set up pipeline and bind group
                         renderPassEncoder.setPipeline(pipeline!);
 
+                        // Create bind group and set it
                         const bindGroup = device.createBindGroup({
                             layout: bindGroupLayout!,
                             entries: [
@@ -225,16 +236,20 @@ export const renderVolumeModels = Database.Plugin.create({
                                 { binding: 1, resource: { buffer: materialsGpuBuffer } }
                             ]
                         });
-
                         renderPassEncoder.setBindGroup(0, bindGroup);
 
+                        // Calculate vertex count from buffer size
                         const vertexCount = vertexBuffer.size / PositionNormalMaterialVertex.layout.size;
-                        // Execute instanced draw call - use actual vertex count
+
+                        // Draw all instances
                         renderPassEncoder.draw(vertexCount, group.instanceCount, 0, 0);
                     }
                 };
             },
-            schedule: { during: ["render"] },
+            schedule: { 
+                during: ["render"]
+                // Will run after opaque systems due to plugin combination order
+            }
         },
     },
 });

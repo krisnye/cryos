@@ -7,6 +7,7 @@ struct SceneUniforms {
     lightDirection: vec3<f32>,
     ambientStrength: f32,
     lightColor: vec3<f32>,
+    cameraPosition: vec3<f32>,
 }
 
 // Material struct matching Material.schema (std140 layout)
@@ -87,7 +88,8 @@ fn fragmentMain(input: VertexOutput) -> FragmentOutput {
     // Normalize vectors
     let N = normalize(input.normal);
     let L = normalize(-sceneUniforms.lightDirection); // Light direction (toward light)
-    let V = normalize(-input.worldPosition); // View direction (approximate)
+    // View direction: from fragment to camera
+    let V = normalize(sceneUniforms.cameraPosition - input.worldPosition);
     
     // Material properties
     let metallic = input.metallic;

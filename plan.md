@@ -63,10 +63,14 @@
 
 ### Short-term Enhancements
 
-1. **Transparent Material Support**:
+1. **Transparent Material Support** ⬜ (PLANNED):
+   - Detailed plan: See `tasks/volume-model-transparent-rendering.md`
    - Add transparent rendering variant (like particle-rendering)
    - Depth sorting for transparent volumes
    - Separate rendering pipeline for transparent materials
+   - Mark transparent volume models using existing `transparent` plugin
+   - Sort transparent instances by depth from camera
+   - Render transparent volumes after opaque volumes
 
 2. **Volume Manipulation Utilities**:
    - `getVoxel(volume, x, y, z)`: Get material at position
@@ -139,19 +143,27 @@
 cryos/src/
   types/
     vertices/
-      position-normal-material.ts          ✅
-      position-normal-material-namespace.ts ✅
+      position-normal-material/            ✅ (reorganized into folder)
   plugins/
     volume-model.ts                        ✅
     volume-model-rendering/
       index.ts                             ✅
-      material-volume-to-vertex-data.ts     ✅
+      volume-model-rendering-data.ts       ✅ (shared components)
+      generate-vertex-data.ts              ✅ (system)
+      create-vertex-buffers.ts             ✅ (system)
+      render-volume-models.ts              ✅ (system)
+      material-volume-to-vertex-data.ts    ✅
       instanced-pbr.wgsl.ts                ✅
+      render-volume-models-transparent.ts  ⬜ (planned - transparent rendering)
+      sort-volume-model-instances.ts       ⬜ (planned - sorting utilities)
   samples/
     volume-model-sample/
       create-house-chunk.ts                ✅
       volume-model-sample-service.ts        ✅
       volume-model-sample-application.ts    ✅
+  tasks/
+    volume-model-rendering.md              ✅ (original epic)
+    volume-model-transparent-rendering.md  ✅ (new - transparent epic)
 ```
 
 ## Dependencies

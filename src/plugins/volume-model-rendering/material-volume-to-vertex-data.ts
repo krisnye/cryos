@@ -4,6 +4,7 @@ import { Vec3 } from "@adobe/data/math";
 import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/index.js";
 import { Volume } from "../../types/volume/volume.js";
 import { MaterialId } from "../../types/material/material-id.js";
+import { Material } from "../../types/index.js";
 
 // Pre-computed direction vectors for performance
 const DIRECTIONS: readonly Vec3[] = [
@@ -48,8 +49,36 @@ function isVisible(materialId: MaterialId): boolean {
     return materialId !== 0;
 }
 
-export function materialVolumeToVertexData(volume: Volume<MaterialId>, options: { center?: Vec3 } = {}): TypedBuffer<PositionNormalMaterialVertex> {
-    const { center = [0, 0, 0] } = options;
+/**
+ * Check if a material should be treated as "solid" for face visibility.
+ * For opaque rendering: only opaque materials are solid (transparent treated as empty)
+ * For transparent rendering: only transparent materials are solid (opaque treated as empty)
+ */
+function isSolid(materialId: MaterialId, opaqueOnly: boolean): boolean {
+    if (materialId === 0) return false; // Air is never solid
+    
+    // Check if material exists
+    if (materialId >= Material.materials.length) return false; // Invalid material ID
+    
+    const material = Material.materials[materialId];
+    if (!material) return false; // Unknown material
+    
+    const isTransparent = material.baseColor[3] < 1.0;
+    
+    if (opaqueOnly) {
+        // For opaque rendering: only opaque materials are solid
+        return !isTransparent;
+    } else {
+        // For transparent rendering: only transparent materials are solid
+        return isTransparent;
+    }
+}
+
+export function materialVolumeToVertexData(
+    volume: Volume<MaterialId>, 
+    options: { center?: Vec3; opaqueOnly?: boolean } = {}
+): TypedBuffer<PositionNormalMaterialVertex> {
+    const { center = [0, 0, 0], opaqueOnly = true } = options;
     const [width, height, depth] = volume.size;
     
     // First pass: count visible faces
@@ -84,23 +113,26 @@ export function materialVolumeToVertexData(volume: Volume<MaterialId>, options: 
                 const voxelIndex = Volume.index(volume, x, y, z);
                 const materialId = volume.data.get(voxelIndex);
                 
-                // Skip if voxel is empty (MaterialId === 0)
-                if (!isVisible(materialId)) continue;
+                // Skip if voxel is not solid for this rendering mode
+                if (!isSolid(materialId, opaqueOnly)) continue;
                 
-                // Check all 6 directions for adjacent empty voxels
+                // Check all 6 directions for adjacent non-solid voxels
                 for (const [dx, dy, dz] of DIRECTIONS) {
                     const nx = x + dx;
                     const ny = y + dy;
                     const nz = z + dz;
                     
-                    // Check if adjacent voxel is out of bounds or empty
+                    // Check if adjacent voxel is out of bounds
                     const isBoundary = nx < 0 || nx >= width ||
                                        ny < 0 || ny >= height ||
                                        nz < 0 || nz >= depth;
                     
-                    const isEmpty = !isBoundary && !isVisible(volume.data.get(Volume.index(volume, nx, ny, nz)));
+                    // Check if adjacent voxel is not solid (empty or opposite type)
+                    const adjacentMaterialId = !isBoundary ? volume.data.get(Volume.index(volume, nx, ny, nz)) : 0;
+                    const isAdjacentSolid = isSolid(adjacentMaterialId, opaqueOnly);
                     
-                    if (isBoundary || isEmpty) {
+                    // Generate face if adjacent is boundary or not solid
+                    if (isBoundary || !isAdjacentSolid) {
                         faces[faceCount++] = { x, y, z, dx, dy, dz, materialIndex: materialId };
                     }
                 }

@@ -35,7 +35,33 @@ export const createVertexBuffers = Database.Plugin.create({
                             const entityId = entityIds[i];
                             const vertexData = table.columns.volumeModelVertexData?.get(i) as TypedBuffer<PositionNormalMaterialVertex> | undefined;
 
-                            if (!vertexData) continue;
+                            // Only create GPU buffer if vertex data exists and has visible faces (capacity > 0)
+                            if (!vertexData || vertexData.capacity === 0) {
+                                // Remove GPU buffer component if vertex data is empty
+                                const existingBuffer = db.store.get(entityId, "modelVertexBuffer");
+                                if (existingBuffer) {
+                                    // Release old buffer
+                                    const oldVertexData = entityToVertexData.get(entityId);
+                                    if (oldVertexData !== undefined) {
+                                        const oldEntry = bufferCache.get(oldVertexData);
+                                        if (oldEntry) {
+                                            oldEntry.refCount--;
+                                            if (oldEntry.refCount === 0) {
+                                                oldEntry.buffer.destroy();
+                                                bufferCache.delete(oldVertexData);
+                                            }
+                                        }
+                                    }
+                                    entityToVertexData.delete(entityId);
+                                    
+                                    // Remove GPU buffer component
+                                    db.store.update(entityId, {
+                                        modelVertexBuffer: null as unknown as GPUBuffer,
+                                        modelVertexBufferSource: null as unknown as TypedBuffer<PositionNormalMaterialVertex>,
+                                    });
+                                }
+                                continue;
+                            }
 
                             // Check if volumeModelVertexData has changed (by object identity)
                             // We track this separately from the component to handle entities moving between tables
