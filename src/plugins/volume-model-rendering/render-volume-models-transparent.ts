@@ -6,11 +6,9 @@ import { Schema } from "@adobe/data/schema";
 import { TypedBuffer, createStructBuffer, copyToGPUBuffer } from "@adobe/data/typed-buffer";
 import { scene } from "../scene.js";
 import { materials } from "../materials.js";
+import { transparent } from "../transparent.js";
 import { createVertexBuffers } from "./create-vertex-buffers.js";
 import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/index.js";
-import { VisibilityType, checkMaterialTypes } from "../../types/volume-material/index.js";
-import { Volume } from "../../types/volume/volume.js";
-import { MaterialId } from "../../types/material/material-id.js";
 import instancedShaderSource from "./instanced-pbr.wgsl.js";
 
 // Instanced transform data schema (per-instance vertex attributes)
@@ -42,7 +40,7 @@ type ModelGroup = {
  * TODO: Phase 3 will add depth sorting for back-to-front rendering.
  */
 export const renderVolumeModelsTransparent = Database.Plugin.create({
-    extends: Database.Plugin.combine(createVertexBuffers, scene, materials),
+    extends: Database.Plugin.combine(createVertexBuffers, scene, materials, transparent),
     systems: {
         renderVolumeModelsTransparent: {
             create: (db) => {
@@ -59,12 +57,11 @@ export const renderVolumeModelsTransparent = Database.Plugin.create({
                     const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, depthTexture, canvas } = db.store.resources;
                     if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer || !canvas) return;
 
-                    // Query entities with modelVertexBuffer component
-                    // Query for all possible combinations (with/without scale/rotation)
-                    const renderTablesWithScaleRotation = db.store.queryArchetypes(["modelVertexBuffer", "position", "scale", "rotation"]);
-                    const renderTablesWithScale = db.store.queryArchetypes(["modelVertexBuffer", "position", "scale"], { exclude: ["rotation"] });
-                    const renderTablesWithRotation = db.store.queryArchetypes(["modelVertexBuffer", "position", "rotation"], { exclude: ["scale"] });
-                    const renderTablesBase = db.store.queryArchetypes(["modelVertexBuffer", "position"], { exclude: ["scale", "rotation"] });
+                    // Query entities with modelVertexBuffer, position, and transparent (marked by markTransparentVolumeModels)
+                    const renderTablesWithScaleRotation = db.store.queryArchetypes(["modelVertexBuffer", "position", "transparent", "scale", "rotation"]);
+                    const renderTablesWithScale = db.store.queryArchetypes(["modelVertexBuffer", "position", "transparent", "scale"], { exclude: ["rotation"] });
+                    const renderTablesWithRotation = db.store.queryArchetypes(["modelVertexBuffer", "position", "transparent", "rotation"], { exclude: ["scale"] });
+                    const renderTablesBase = db.store.queryArchetypes(["modelVertexBuffer", "position", "transparent"], { exclude: ["scale", "rotation"] });
                     const renderTables = [...renderTablesWithScaleRotation, ...renderTablesWithScale, ...renderTablesWithRotation, ...renderTablesBase];
 
                     // Group entities by vertex buffer (model type)
@@ -86,17 +83,6 @@ export const renderVolumeModelsTransparent = Database.Plugin.create({
                             const rotation = (rotationColumn ? rotationColumn.get(i) : [0, 0, 0, 1]) as Quat;
 
                             if (!vertexBuffer) continue;
-
-                            // Only include entities with transparent materials
-                            // Check if entity has materialVolume and only include if it contains transparent materials
-                            const materialVolume = db.store.get(entityId, "materialVolume") as Volume<MaterialId> | undefined;
-                            if (!materialVolume) continue;
-
-                            const materialType = checkMaterialTypes(materialVolume);
-                            // Only include if volume contains transparent materials (TRANSPARENT_ONLY or BOTH)
-                            if (materialType !== VisibilityType.TRANSPARENT_ONLY && materialType !== VisibilityType.BOTH) {
-                                continue;
-                            }
 
                             // Initialize group if needed
                             if (!modelGroups.has(vertexBuffer)) {
