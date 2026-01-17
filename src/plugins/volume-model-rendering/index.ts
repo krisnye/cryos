@@ -1,10 +1,11 @@
 // Combined volume model rendering plugin
-// Combines all volume model rendering systems into a single plugin
+// Note: Rendering is now handled by material-vertex-buffer-renderer (generic, not volume-specific)
+// This plugin is kept for backward compatibility but no longer includes renderers or buffer generation
+// All volume-specific rendering logic has been migrated to the new architecture
 import { Database } from "@adobe/data/ecs";
-import { renderVolumeModels } from "./render-volume-models.js";
-import { renderVolumeModelsTransparent } from "./render-volume-models-transparent.js";
 
-export const volumeModelRendering = Database.Plugin.combine(
-    renderVolumeModels,
-    renderVolumeModelsTransparent
-);
+export const volumeModelRendering = Database.Plugin.create({
+    // Empty plugin - rendering moved to material-vertex-buffer-renderer
+    // Buffer generation moved to material-volume-to-vertex-buffers
+    // Keeping this export for backward compatibility
+});

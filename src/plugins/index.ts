@@ -13,3 +13,4 @@ export * from "./particle-rendering/index.js";
 export * from "./transparent.js";
 export * from "./volume-model.js";
 export * from "./volume-model-rendering/index.js";
+export * from "./material-vertex-buffer-renderer/index.js";
