@@ -37,17 +37,9 @@ function getNormalIndex(dx: number, dy: number, dz: number): number {
     return 0; // fallback to +X
 }
 
-// Face data structure for minimal allocation
-interface FaceData {
-    x: number; y: number; z: number;
-    dx: number; dy: number; dz: number; // normal direction
-    materialIndex: number; // Material ID for this face
-}
-
-// Check if a MaterialId is visible (non-empty)
-function isVisible(materialId: MaterialId): boolean {
-    return materialId !== 0;
-}
+// Face data stored as flat array: [x, y, z, dx, dy, dz, materialIndex] per face
+// Access pattern: faces[i * 7 + 0] = x, faces[i * 7 + 1] = y, etc.
+const FACE_DATA_SIZE = 7;
 
 /**
  * Check if a material should be treated as "solid" for face visibility.
@@ -81,10 +73,10 @@ export function materialVolumeToVertexData(
     const { center = [0, 0, 0], opaque } = options;
     const [width, height, depth] = volume.size;
     
-    // First pass: count visible faces
-    // Pre-allocate faces array with reasonable capacity estimate
+    // First pass: collect visible faces
+    // Pre-allocate faces array as flat number array: [x, y, z, dx, dy, dz, materialIndex] per face
     const estimatedCapacity = width * height * depth * 3; // conservative estimate
-    const faces: FaceData[] = new Array(estimatedCapacity);
+    const faces = new Array<number>(estimatedCapacity * FACE_DATA_SIZE);
     let faceCount = 0;
 
     // Helper function to mutate reusable vertex position array (zero allocations!)
@@ -132,8 +124,17 @@ export function materialVolumeToVertexData(
                     const isAdjacentSolid = isSolid(adjacentMaterialId, opaque);
                     
                     // Generate face if adjacent is boundary or not solid
+                    // Store face data in flat array: [x, y, z, dx, dy, dz, materialIndex]
                     if (isBoundary || !isAdjacentSolid) {
-                        faces[faceCount++] = { x, y, z, dx, dy, dz, materialIndex: materialId };
+                        const faceOffset = faceCount * FACE_DATA_SIZE;
+                        faces[faceOffset + 0] = x;
+                        faces[faceOffset + 1] = y;
+                        faces[faceOffset + 2] = z;
+                        faces[faceOffset + 3] = dx;
+                        faces[faceOffset + 4] = dy;
+                        faces[faceOffset + 5] = dz;
+                        faces[faceOffset + 6] = materialId;
+                        faceCount++;
                     }
                 }
             }
@@ -158,42 +159,49 @@ export function materialVolumeToVertexData(
     
     // Only iterate over initialized faces
     for (let i = 0; i < faceCount; i++) {
-        const face = faces[i];
-        if (!face) continue; // Safety check
+        // Access face data from flat array: [x, y, z, dx, dy, dz, materialIndex]
+        const faceOffset = i * FACE_DATA_SIZE;
+        const x = faces[faceOffset + 0];
+        const y = faces[faceOffset + 1];
+        const z = faces[faceOffset + 2];
+        const dx = faces[faceOffset + 3];
+        const dy = faces[faceOffset + 4];
+        const dz = faces[faceOffset + 5];
+        const materialId = faces[faceOffset + 6];
         
         // Set normal once per face (reuse array)
-        normal[0] = face.dx; normal[1] = face.dy; normal[2] = face.dz;
-        vertex.materialIndex = face.materialIndex; // Set material index once per face
+        normal[0] = dx; normal[1] = dy; normal[2] = dz;
+        vertex.materialIndex = materialId; // Set material index once per face
 
         // Use pre-computed quad indices based on face direction
         // Direct integer index - no string operations!
-        const normalIndex = getNormalIndex(face.dx, face.dy, face.dz);
+        const normalIndex = getNormalIndex(dx, dy, dz);
         const quadIndices = FACE_QUADS[normalIndex];
 
         // Generate vertices on-demand to minimize allocations
         const v0I = quadIndices[0], v1I = quadIndices[1], v2I = quadIndices[2], v3I = quadIndices[3];
         
         // Pre-calculate the offset values for efficiency
-        const x1 = face.x + 1, y1 = face.y + 1, z1 = face.z + 1;
+        const x1 = x + 1, y1 = y + 1, z1 = z + 1;
         
         // Triangle 1: v0, v1, v2 (zero object allocations!)
-        setVertexPosition(position, face.x, face.y, face.z, v0I, x1, y1, z1);
+        setVertexPosition(position, x, y, z, v0I, x1, y1, z1);
         vertexBuffer.set(vertexIndex++, vertex);
         
-        setVertexPosition(position, face.x, face.y, face.z, v1I, x1, y1, z1);
+        setVertexPosition(position, x, y, z, v1I, x1, y1, z1);
         vertexBuffer.set(vertexIndex++, vertex);
         
-        setVertexPosition(position, face.x, face.y, face.z, v2I, x1, y1, z1);
+        setVertexPosition(position, x, y, z, v2I, x1, y1, z1);
         vertexBuffer.set(vertexIndex++, vertex);
         
         // Triangle 2: v0, v2, v3 (zero object allocations!)
-        setVertexPosition(position, face.x, face.y, face.z, v0I, x1, y1, z1);
+        setVertexPosition(position, x, y, z, v0I, x1, y1, z1);
         vertexBuffer.set(vertexIndex++, vertex);
         
-        setVertexPosition(position, face.x, face.y, face.z, v2I, x1, y1, z1);
+        setVertexPosition(position, x, y, z, v2I, x1, y1, z1);
         vertexBuffer.set(vertexIndex++, vertex);
         
-        setVertexPosition(position, face.x, face.y, face.z, v3I, x1, y1, z1);
+        setVertexPosition(position, x, y, z, v3I, x1, y1, z1);
         vertexBuffer.set(vertexIndex++, vertex);
     }
     

@@ -6,7 +6,7 @@ import { scene } from "../scene.js";
 import { materials } from "../materials.js";
 import { materialVertexBuffers } from "../material-vertex-buffers.js";
 import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/index.js";
-import instancedShaderSource from "../volume-model-rendering/instanced-pbr.wgsl.js";
+import instancedShaderSource from "./instanced-pbr.wgsl.js";
 
 // Instanced transform data schema (per-instance vertex attributes)
 const instanceTransformSchema = {

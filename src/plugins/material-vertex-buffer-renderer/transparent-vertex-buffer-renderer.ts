@@ -6,7 +6,7 @@ import { scene } from "../scene.js";
 import { materials } from "../materials.js";
 import { materialVertexBuffers } from "../material-vertex-buffers.js";
 import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/index.js";
-import instancedShaderSource from "../volume-model-rendering/instanced-pbr.wgsl.js";
+import instancedShaderSource from "./instanced-pbr.wgsl.js";
 
 // Instanced transform data schema (per-instance vertex attributes)
 const instanceTransformSchema = {
@@ -51,7 +51,7 @@ export const renderTransparentVertexBuffers = Database.Plugin.create({
                 const groupGpuBuffers = new Map<GPUBuffer, GPUBuffer>();
 
                 return () => {
-                    const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, depthTexture, canvas } = db.store.resources;
+                    const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvas } = db.store.resources;
                     if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer || !canvas) return;
 
                     // Query entities with transparentVertexBuffer component

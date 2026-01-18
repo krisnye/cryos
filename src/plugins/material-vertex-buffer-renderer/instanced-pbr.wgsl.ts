@@ -1,5 +1,5 @@
-// Instanced PBR rendering shader for volume models
-// Uses material lookup from materials buffer
+// Instanced PBR rendering shader for material vertex buffers
+// Generic shader that works with PositionNormalMaterialVertex and materials buffer
 
 export default `
 struct SceneUniforms {
