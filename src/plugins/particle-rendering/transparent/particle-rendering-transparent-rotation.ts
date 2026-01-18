@@ -30,8 +30,8 @@ export const particleRenderingTransparentRotation = Database.Plugin.create({
         renderParticlesTransparentRotation: {
             create: (db) => {
                 return () => {
-                    const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvas, camera } = db.store.resources;
-                    if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer || !canvas || !camera) return;
+                    const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvasFormat, camera } = db.store.resources;
+                    if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer || !camera) return;
 
                     const particleTables = db.store.queryArchetypes(["particle", "position", "material", "rotation", "transparent"], { exclude: ["scale"] });
                     if (particleTables.length === 0) return;
@@ -84,7 +84,7 @@ export const particleRenderingTransparentRotation = Database.Plugin.create({
 
                     let pipeline = db.store.resources.transparentRotationPipeline;
                     if (!pipeline && bindGroupLayout) {
-                        pipeline = db.store.resources.transparentRotationPipeline = createTransparentRenderPipeline(device, bindGroupLayout, shaderSourceRotation);
+                        pipeline = db.store.resources.transparentRotationPipeline = createTransparentRenderPipeline(device, bindGroupLayout, shaderSourceRotation, canvasFormat);
                     }
 
                     // Initialize and update buffers

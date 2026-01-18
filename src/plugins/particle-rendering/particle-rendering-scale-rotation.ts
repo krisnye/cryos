@@ -26,8 +26,8 @@ export const particleRenderingScaleRotation = Database.Plugin.create({
         renderParticlesScaleRotation: {
             create: (db) => {
                 return () => {
-                    const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvas } = db.store.resources;
-                    if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer || !canvas) return;
+                    const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvasFormat } = db.store.resources;
+                    if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer) return;
 
                     const particleTables = db.store.queryArchetypes(["particle", "position", "material", "scale", "rotation"], { exclude: ["transparent"] });
                     if (particleTables.length === 0) return;
@@ -43,7 +43,7 @@ export const particleRenderingScaleRotation = Database.Plugin.create({
 
                     let pipeline = db.store.resources.scaleRotationPipeline;
                     if (!pipeline && bindGroupLayout) {
-                        pipeline = db.store.resources.scaleRotationPipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceScaleRotation);
+                        pipeline = db.store.resources.scaleRotationPipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceScaleRotation, canvasFormat);
                     }
 
                     // Initialize and update buffers

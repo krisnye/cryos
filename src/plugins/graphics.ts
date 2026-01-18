@@ -25,6 +25,7 @@ export const graphics = Database.Plugin.create({
         clearColor: { default: [0, 0, 0, 0] as Vec4, transient: true },
         canvas: { default: null as HTMLCanvasElement | null, transient: true },
         canvasContext: { default: null as GPUCanvasContext | null, transient: true },
+        canvasFormat: { default: navigator.gpu.getPreferredCanvasFormat(), transient: true },
     },
     transactions: {
         setCanvas(t, canvas: HTMLCanvasElement | null) {
@@ -40,7 +41,7 @@ export const graphics = Database.Plugin.create({
                 const { device } = db.store.resources;
                 if (device) {
                     db.store.resources.commandEncoder = device.createCommandEncoder();
-                    let { canvas, canvasContext } = db.store.resources;
+                    let { canvas, canvasContext, canvasFormat } = db.store.resources;
                     if (canvas && !canvasContext) {
                         canvasContext = db.store.resources.canvasContext = canvas.getContext('webgpu');
                         if (!canvasContext) {
@@ -48,7 +49,7 @@ export const graphics = Database.Plugin.create({
                         }
                         canvasContext.configure({
                             device,
-                            format: navigator.gpu.getPreferredCanvasFormat(),
+                            format: canvasFormat,
                             alphaMode: 'premultiplied',
                         });
                     }

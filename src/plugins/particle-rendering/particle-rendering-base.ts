@@ -22,8 +22,8 @@ export const particleRenderingBase = Database.Plugin.create({
         renderParticlesBase: {
             create: (db) => {
                 return () => {
-                    const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvas } = db.store.resources;
-                    if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer || !canvas) return;
+                    const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvasFormat } = db.store.resources;
+                    if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer) return;
 
                     const particleTables = db.store.queryArchetypes(["particle", "position", "material"], { exclude: ["scale", "rotation", "transparent"] });
                     if (particleTables.length === 0) return;
@@ -39,7 +39,7 @@ export const particleRenderingBase = Database.Plugin.create({
 
                     let pipeline = db.store.resources.basePipeline;
                     if (!pipeline && bindGroupLayout) {
-                        pipeline = db.store.resources.basePipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceBase);
+                        pipeline = db.store.resources.basePipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceBase, canvasFormat);
                     }
 
                     // Initialize and update buffers
