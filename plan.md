@@ -51,12 +51,26 @@
 
 ### Active Work
 
-1. **Dense Volume Type Renaming** ⬜ (PLANNED):
+1. **Dense Volume Type Renaming** ✅ (COMPLETED):
    - Detailed plan: See `tasks/dense-volume-type-renaming.md`
-   - Rename `Volume<T>` to `DenseVolume<T>` with `type: "dense"` discriminator
-   - Rename `VolumeMaterial` to `DenseVolumeMaterial`
-   - Update all imports, type references, and documentation
-   - Prepare for future volume type variants (sparse, octree, etc.)
+   - Renamed `Volume<T>` to `DenseVolume<T>` with `type: "dense"` discriminator
+   - Renamed `VolumeMaterial` to `DenseVolumeMaterial`
+   - Updated all imports, type references, and documentation
+
+2. **DenseVolume to ColumnVolume Conversion** ✅ (COMPLETED):
+   - Detailed plan: See `tasks/dense-to-column-volume-conversion.md`
+   - Implemented `ColumnVolume.create()` function to convert DenseVolume to ColumnVolume
+   - Enabled sparse storage for volumes with many empty regions
+   - Supports variable column heights and z-offsets for terrain-like data
+   - Helper functions: `packColumnInfo`, `unpackColumnInfo`, `isEmptyColumn`
+   - Comprehensive test coverage (10 tests)
+
+3. **ColumnVolume to DenseVolume Conversion** ⬜ (PLANNED):
+   - Detailed plan: See `tasks/column-volume-to-dense-volume-conversion.md`
+   - Implement `ColumnVolume.toDenseVolume()` function to convert ColumnVolume back to DenseVolume
+   - Enable round-trip conversion for testing and compatibility
+   - Fill empty regions with schema default values
+   - Handle columns with z-offsets and gaps correctly
 
 ### Immediate Testing & Validation
 1. **Visual Testing**: Run the sample application and verify:
@@ -171,9 +185,10 @@ cryos/src/
       volume-model-sample-service.ts        ✅
       volume-model-sample-application.ts    ✅
   tasks/
-    volume-model-rendering.md              ✅ (original epic)
-    volume-model-transparent-rendering.md  ✅ (new - transparent epic)
-    dense-volume-type-renaming.md          ⬜ (planned - type renaming)
+    volume-model-rendering.md                      ✅ (original epic)
+    volume-model-transparent-rendering.md          ✅ (new - transparent epic)
+    dense-volume-type-renaming.md                  ✅ (completed - type renaming)
+    dense-to-column-volume-conversion.md           ⬜ (planned - conversion function)
 ```
 
 ## Dependencies
