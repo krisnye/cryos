@@ -7,18 +7,18 @@ interface SampleDefinition {
 }
 
 const samples: Record<string, SampleDefinition> = {
-    "hello-model": {
-        name: "Hello Model",
-        render: () => {
-            import("./hello-model/hello-model-application.js");
-            return html`<hello-model-application></hello-model-application>`;
-        }
-    },
     "particle-sample": {
         name: "Particle Sample",
         render: () => {
             import("./particle-sample/particle-sample-application.js");
             return html`<particle-sample-application></particle-sample-application>`;
+        }
+    },
+    "volume-model-sample": {
+        name: "Volume Model Sample",
+        render: () => {
+            import("./volume-model-sample/volume-model-sample-application.js");
+            return html`<volume-model-sample-application></volume-model-sample-application>`;
         }
     },
 } as const;

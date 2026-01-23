@@ -1,8 +1,9 @@
 import { Database } from "@adobe/data/ecs";
 import { True } from "@adobe/data/schema";
-import { Quat } from "@adobe/data/math";
+import { Vec3, Quat } from "@adobe/data/math";
 import { physics } from "./physics/physics.js";
 import { Material } from "../types/index.js";
+import { MaterialId } from "../types/material/material-id.js";
 
 export const particle = Database.Plugin.create({
     extends: physics,
@@ -16,6 +17,45 @@ export const particle = Database.Plugin.create({
         ParticleScaleRotation: ["particle", "position", "material", "scale", "rotation"],
     },
     transactions: {
+        createParticle(t, props: {
+            position: Vec3;
+            material: MaterialId;
+            scale?: Vec3;
+            rotation?: Quat;
+        }) {
+            // Add optional scale and rotation if provided
+            if (props.scale && props.rotation) {
+                return t.archetypes.ParticleScaleRotation.insert({
+                    particle: true as const,
+                    position: props.position,
+                    material: props.material,
+                    scale: props.scale,
+                    rotation: props.rotation,
+                });
+            }
+            if (props.scale) {
+                return t.archetypes.ParticleScale.insert({
+                    particle: true as const,
+                    position: props.position,
+                    material: props.material,
+                    scale: props.scale,
+                });
+            }
+            if (props.rotation) {
+                return t.archetypes.ParticleRotation.insert({
+                    particle: true as const,
+                    position: props.position,
+                    material: props.material,
+                    rotation: props.rotation,
+                });
+            }
+            
+            return t.archetypes.Particle.insert({
+                particle: true as const,
+                position: props.position,
+                material: props.material,
+            });
+        },
         createAxis(t) {
             const size = 4; // Extended arm length
             const girth = 0.5;

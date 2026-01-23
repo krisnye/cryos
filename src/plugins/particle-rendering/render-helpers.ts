@@ -39,7 +39,8 @@ export function createBindGroupLayout(
 export function createRenderPipeline(
     device: GPUDevice,
     bindGroupLayout: GPUBindGroupLayout,
-    shaderSource: string
+    shaderSource: string,
+    canvasFormat: GPUTextureFormat
 ): GPURenderPipeline {
     return device.createRenderPipeline({
         layout: device.createPipelineLayout({ bindGroupLayouts: [bindGroupLayout] }),
@@ -51,7 +52,7 @@ export function createRenderPipeline(
             module: device.createShaderModule({ code: shaderSource }),
             entryPoint: 'fragmentMain',
             targets: [{
-                format: navigator.gpu.getPreferredCanvasFormat(),
+                format: canvasFormat,
                 blend: {
                     color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' },
                     alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' }

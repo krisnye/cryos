@@ -1,9 +1,7 @@
 // Particle rendering plugin for particles with both scale and rotation
 import { Database } from "@adobe/data/ecs";
 import { copyColumnToGPUBuffer } from "@adobe/data/table";
-import { particle } from "../particle.js";
-import { materials } from "../materials.js";
-import { scene } from "../scene.js";
+import { particleRenderingBaseDependencies } from "./dependencies.js";
 import shaderSourceScaleRotation from './particles-scale-rotation.wgsl.js';
 import {
     createBindGroupLayout,
@@ -15,7 +13,7 @@ import {
 } from './render-helpers.js';
 
 export const particleRenderingScaleRotation = Database.Plugin.create({
-    extends: Database.Plugin.combine(particle, materials, scene),
+    extends: particleRenderingBaseDependencies,
     resources: {
         scaleRotationBindGroupLayout: { default: null as GPUBindGroupLayout | null },
         scaleRotationPipeline: { default: null as GPURenderPipeline | null },
@@ -28,10 +26,10 @@ export const particleRenderingScaleRotation = Database.Plugin.create({
         renderParticlesScaleRotation: {
             create: (db) => {
                 return () => {
-                    const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvas } = db.store.resources;
-                    if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer || !canvas) return;
+                    const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvasFormat } = db.store.resources;
+                    if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer) return;
 
-                    const particleTables = db.store.queryArchetypes(["particle", "position", "material", "scale", "rotation"]);
+                    const particleTables = db.store.queryArchetypes(["particle", "position", "material", "scale", "rotation"], { exclude: ["transparent"] });
                     if (particleTables.length === 0) return;
 
                     const particleCount = particleTables.reduce((acc, table) => acc + table.rowCount, 0);
@@ -45,7 +43,7 @@ export const particleRenderingScaleRotation = Database.Plugin.create({
 
                     let pipeline = db.store.resources.scaleRotationPipeline;
                     if (!pipeline && bindGroupLayout) {
-                        pipeline = db.store.resources.scaleRotationPipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceScaleRotation);
+                        pipeline = db.store.resources.scaleRotationPipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceScaleRotation, canvasFormat);
                     }
 
                     // Initialize and update buffers

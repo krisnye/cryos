@@ -13,8 +13,9 @@ const SceneUniformsSchema = {
         lightDirection: Vec3.schema,
         ambientStrength: F32.schema,
         lightColor: Vec3.schema,
+        cameraPosition: Vec3.schema,
     },
-    required: ["viewProjectionMatrix", "lightDirection", "ambientStrength", "lightColor"],
+    required: ["viewProjectionMatrix", "lightDirection", "ambientStrength", "lightColor", "cameraPosition"],
     additionalProperties: false,
 } as const satisfies Schema;
 
@@ -96,6 +97,7 @@ export const scene = Database.Plugin.create({
                         lightDirection,
                         ambientStrength,
                         lightColor,
+                        cameraPosition: camera.position,
                     });
 
                     // Copy to GPU buffer
