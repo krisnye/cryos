@@ -1,17 +1,14 @@
 import { Database } from "@adobe/data/ecs";
 import { createStructBuffer } from "@adobe/data/typed-buffer";
-import { scene } from "../scene.js";
-import { materials } from "../materials.js";
-import { materialVertexBuffers } from "../material-vertex-buffers.js";
 import {
     instanceTransformSchema,
     queryAndGroupEntities,
     getOrCreateBindGroupLayout,
     getOrCreatePipeline,
     renderGroup,
-    type ModelGroup,
     type PipelineConfig
 } from "./render-helpers.js";
+import { baseVertexBufferRenderer } from "./base-vertex-buffer-renderer.js";
 
 /**
  * System that renders opaque vertex buffers using instanced rendering.
@@ -19,7 +16,7 @@ import {
  * Generic renderer - works with any entity that has opaqueVertexBuffer component.
  */
 export const renderOpaqueVertexBuffers = Database.Plugin.create({
-    extends: Database.Plugin.combine(materialVertexBuffers, scene, materials),
+    extends: baseVertexBufferRenderer,
     systems: {
         renderOpaqueVertexBuffers: {
             create: (db) => {
@@ -37,7 +34,7 @@ export const renderOpaqueVertexBuffers = Database.Plugin.create({
                     if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer || !depthTexture) return;
 
                     // Query and group entities by vertex buffer
-                    const modelGroups = queryAndGroupEntities(db, "opaqueVertexBuffer");
+                    const modelGroups = queryAndGroupEntities(db.store, "opaqueVertexBuffer");
                     if (modelGroups.size === 0) return;
 
                     // Initialize pipeline once if needed

@@ -1,18 +1,19 @@
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
-import { Volume } from "../../types/volume/volume.js";
+import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { MaterialId } from "../../types/material/material-id.js";
 import { Material } from "../../types/index.js";
-import { Volume as VolumeNamespace } from "../../types/volume/volume.js";
+import * as DenseVolumeNamespace from "../../types/dense-volume/namespace.js";
 
 /**
  * Creates a 16x16x16 house chunk volume (4m x 4m x 4m at 25cm per voxel)
  * Contains foundation, walls, windows, roof, and interior details
  */
-export function createHouseChunkVolume(): Volume<MaterialId> {
+export function createHouseChunkVolume(): DenseVolume<MaterialId> {
     const size: Vec3 = [16, 16, 16];
     const capacity = size[0] * size[1] * size[2];
-    const volume: Volume<MaterialId> = {
+    const volume: DenseVolume<MaterialId> = {
+        type: "dense",
         size,
         data: createTypedBuffer(MaterialId.schema, capacity),
     };
@@ -29,7 +30,7 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     for (let z = 0; z < 2; z++) {
         for (let y = 0; y < 16; y++) {
             for (let x = 0; x < 16; x++) {
-                const index = VolumeNamespace.index(volume, x, y, z);
+                const index = DenseVolumeNamespace.index(volume, x, y, z);
                 volume.data.set(index, reinforcedConcrete);
             }
         }
@@ -40,22 +41,22 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     for (let z = 2; z < 9; z++) {
         // Front wall (y=0)
         for (let x = 0; x < 16; x++) {
-            const index = VolumeNamespace.index(volume, x, 0, z);
+            const index = DenseVolumeNamespace.index(volume, x, 0, z);
             volume.data.set(index, concrete);
         }
         // Back wall (y=15)
         for (let x = 0; x < 16; x++) {
-            const index = VolumeNamespace.index(volume, x, 15, z);
+            const index = DenseVolumeNamespace.index(volume, x, 15, z);
             volume.data.set(index, concrete);
         }
         // Left wall (x=0)
         for (let y = 0; y < 16; y++) {
-            const index = VolumeNamespace.index(volume, 0, y, z);
+            const index = DenseVolumeNamespace.index(volume, 0, y, z);
             volume.data.set(index, concrete);
         }
         // Right wall (x=15)
         for (let y = 0; y < 16; y++) {
-            const index = VolumeNamespace.index(volume, 15, y, z);
+            const index = DenseVolumeNamespace.index(volume, 15, y, z);
             volume.data.set(index, concrete);
         }
     }
@@ -64,12 +65,12 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     for (let z = 3; z < 8; z++) {
         // Left window (x=2-7, 6 voxels wide)
         for (let x = 2; x < 8; x++) {
-            const index = VolumeNamespace.index(volume, x, 0, z);
+            const index = DenseVolumeNamespace.index(volume, x, 0, z);
             volume.data.set(index, glass);
         }
         // Right window (x=8-13, 6 voxels wide)
         for (let x = 8; x < 14; x++) {
-            const index = VolumeNamespace.index(volume, x, 0, z);
+            const index = DenseVolumeNamespace.index(volume, x, 0, z);
             volume.data.set(index, glass);
         }
     }
@@ -78,12 +79,12 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     for (let z = 3; z < 8; z++) {
         // Left window (x=2-7)
         for (let x = 2; x < 8; x++) {
-            const index = VolumeNamespace.index(volume, x, 15, z);
+            const index = DenseVolumeNamespace.index(volume, x, 15, z);
             volume.data.set(index, glass);
         }
         // Right window (x=8-13)
         for (let x = 8; x < 14; x++) {
-            const index = VolumeNamespace.index(volume, x, 15, z);
+            const index = DenseVolumeNamespace.index(volume, x, 15, z);
             volume.data.set(index, glass);
         }
     }
@@ -92,12 +93,12 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     for (let z = 3; z < 8; z++) {
         // Front window (y=2-7)
         for (let y = 2; y < 8; y++) {
-            const index = VolumeNamespace.index(volume, 0, y, z);
+            const index = DenseVolumeNamespace.index(volume, 0, y, z);
             volume.data.set(index, glass);
         }
         // Back window (y=8-13)
         for (let y = 8; y < 14; y++) {
-            const index = VolumeNamespace.index(volume, 0, y, z);
+            const index = DenseVolumeNamespace.index(volume, 0, y, z);
             volume.data.set(index, glass);
         }
     }
@@ -106,12 +107,12 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     for (let z = 3; z < 8; z++) {
         // Front window (y=2-7)
         for (let y = 2; y < 8; y++) {
-            const index = VolumeNamespace.index(volume, 15, y, z);
+            const index = DenseVolumeNamespace.index(volume, 15, y, z);
             volume.data.set(index, glass);
         }
         // Back window (y=8-13)
         for (let y = 8; y < 14; y++) {
-            const index = VolumeNamespace.index(volume, 15, y, z);
+            const index = DenseVolumeNamespace.index(volume, 15, y, z);
             volume.data.set(index, glass);
         }
     }
@@ -119,7 +120,7 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     // Interior wall dividing the space (x=8, from y=4 to y=12)
     for (let z = 2; z < 9; z++) {
         for (let y = 4; y < 12; y++) {
-            const index = VolumeNamespace.index(volume, 8, y, z);
+            const index = DenseVolumeNamespace.index(volume, 8, y, z);
             volume.data.set(index, concrete);
         }
     }
@@ -127,7 +128,7 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     // Door opening in interior wall (x=8, y=6-8, z=2-6)
     for (let z = 2; z < 7; z++) {
         for (let y = 6; y < 9; y++) {
-            const index = VolumeNamespace.index(volume, 8, y, z);
+            const index = DenseVolumeNamespace.index(volume, 8, y, z);
             volume.data.set(index, air);
         }
     }
@@ -135,7 +136,7 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     // Second floor floor (z=8)
     for (let y = 0; y < 16; y++) {
         for (let x = 0; x < 16; x++) {
-            const index = VolumeNamespace.index(volume, x, y, 8);
+            const index = DenseVolumeNamespace.index(volume, x, y, 8);
             volume.data.set(index, woodHard);
         }
     }
@@ -145,23 +146,23 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
         // Front wall (y=0) with windows
         for (let x = 0; x < 16; x++) {
             if (x < 4 || x >= 12) {
-                const index = VolumeNamespace.index(volume, x, 0, z);
+                const index = DenseVolumeNamespace.index(volume, x, 0, z);
                 volume.data.set(index, concrete);
             }
         }
         // Back wall (y=15)
         for (let x = 0; x < 16; x++) {
-            const index = VolumeNamespace.index(volume, x, 15, z);
+            const index = DenseVolumeNamespace.index(volume, x, 15, z);
             volume.data.set(index, concrete);
         }
         // Left wall (x=0)
         for (let y = 0; y < 16; y++) {
-            const index = VolumeNamespace.index(volume, 0, y, z);
+            const index = DenseVolumeNamespace.index(volume, 0, y, z);
             volume.data.set(index, concrete);
         }
         // Right wall (x=15)
         for (let y = 0; y < 16; y++) {
-            const index = VolumeNamespace.index(volume, 15, y, z);
+            const index = DenseVolumeNamespace.index(volume, 15, y, z);
             volume.data.set(index, concrete);
         }
     }
@@ -170,12 +171,12 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     for (let z = 9; z < 14; z++) {
         // Left window (x=2-7)
         for (let x = 2; x < 8; x++) {
-            const index = VolumeNamespace.index(volume, x, 0, z);
+            const index = DenseVolumeNamespace.index(volume, x, 0, z);
             volume.data.set(index, glass);
         }
         // Right window (x=8-13)
         for (let x = 8; x < 14; x++) {
-            const index = VolumeNamespace.index(volume, x, 0, z);
+            const index = DenseVolumeNamespace.index(volume, x, 0, z);
             volume.data.set(index, glass);
         }
     }
@@ -184,12 +185,12 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     for (let z = 9; z < 14; z++) {
         // Left window (x=2-7)
         for (let x = 2; x < 8; x++) {
-            const index = VolumeNamespace.index(volume, x, 15, z);
+            const index = DenseVolumeNamespace.index(volume, x, 15, z);
             volume.data.set(index, glass);
         }
         // Right window (x=8-13)
         for (let x = 8; x < 14; x++) {
-            const index = VolumeNamespace.index(volume, x, 15, z);
+            const index = DenseVolumeNamespace.index(volume, x, 15, z);
             volume.data.set(index, glass);
         }
     }
@@ -198,12 +199,12 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     for (let z = 9; z < 14; z++) {
         // Front window (y=2-7)
         for (let y = 2; y < 8; y++) {
-            const index = VolumeNamespace.index(volume, 0, y, z);
+            const index = DenseVolumeNamespace.index(volume, 0, y, z);
             volume.data.set(index, glass);
         }
         // Back window (y=8-13)
         for (let y = 8; y < 14; y++) {
-            const index = VolumeNamespace.index(volume, 0, y, z);
+            const index = DenseVolumeNamespace.index(volume, 0, y, z);
             volume.data.set(index, glass);
         }
     }
@@ -212,12 +213,12 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     for (let z = 9; z < 14; z++) {
         // Front window (y=2-7)
         for (let y = 2; y < 8; y++) {
-            const index = VolumeNamespace.index(volume, 15, y, z);
+            const index = DenseVolumeNamespace.index(volume, 15, y, z);
             volume.data.set(index, glass);
         }
         // Back window (y=8-13)
         for (let y = 8; y < 14; y++) {
-            const index = VolumeNamespace.index(volume, 15, y, z);
+            const index = DenseVolumeNamespace.index(volume, 15, y, z);
             volume.data.set(index, glass);
         }
     }
@@ -227,7 +228,7 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     for (let z = 14; z < 16; z++) {
         for (let y = 0; y < 16; y++) {
             for (let x = 0; x < 16; x++) {
-                const index = VolumeNamespace.index(volume, x, y, z);
+                const index = DenseVolumeNamespace.index(volume, x, y, z);
                 volume.data.set(index, woodHard);
             }
         }
@@ -236,10 +237,10 @@ export function createHouseChunkVolume(): Volume<MaterialId> {
     // Add some structural beams (steel) in corners
     for (let z = 2; z < 14; z++) {
         // Corner beams
-        volume.data.set(VolumeNamespace.index(volume, 0, 0, z), steel);
-        volume.data.set(VolumeNamespace.index(volume, 15, 0, z), steel);
-        volume.data.set(VolumeNamespace.index(volume, 0, 15, z), steel);
-        volume.data.set(VolumeNamespace.index(volume, 15, 15, z), steel);
+        volume.data.set(DenseVolumeNamespace.index(volume, 0, 0, z), steel);
+        volume.data.set(DenseVolumeNamespace.index(volume, 15, 0, z), steel);
+        volume.data.set(DenseVolumeNamespace.index(volume, 0, 15, z), steel);
+        volume.data.set(DenseVolumeNamespace.index(volume, 15, 15, z), steel);
     }
     
     return volume;

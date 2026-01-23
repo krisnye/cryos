@@ -1,17 +1,14 @@
 import { Database } from "@adobe/data/ecs";
 import { createStructBuffer } from "@adobe/data/typed-buffer";
-import { scene } from "../scene.js";
-import { materials } from "../materials.js";
-import { materialVertexBuffers } from "../material-vertex-buffers.js";
 import {
     instanceTransformSchema,
     queryAndGroupEntities,
     getOrCreateBindGroupLayout,
     getOrCreatePipeline,
     renderGroup,
-    type ModelGroup,
     type PipelineConfig
 } from "./render-helpers.js";
+import { baseVertexBufferRenderer } from "./base-vertex-buffer-renderer.js";
 
 /**
  * System that renders transparent vertex buffers using instanced rendering.
@@ -20,7 +17,7 @@ import {
  * TODO: Phase 3 of transparent epic will add depth sorting for back-to-front rendering.
  */
 export const renderTransparentVertexBuffers = Database.Plugin.create({
-    extends: Database.Plugin.combine(materialVertexBuffers, scene, materials),
+    extends: baseVertexBufferRenderer,
     systems: {
         renderTransparentVertexBuffers: {
             create: (db) => {
@@ -38,7 +35,7 @@ export const renderTransparentVertexBuffers = Database.Plugin.create({
                     if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer) return;
 
                     // Query and group entities by vertex buffer
-                    const modelGroups = queryAndGroupEntities(db, "transparentVertexBuffer");
+                    const modelGroups = queryAndGroupEntities(db.store, "transparentVertexBuffer");
                     if (modelGroups.size === 0) return;
 
                     // Initialize pipeline once if needed

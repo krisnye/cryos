@@ -49,6 +49,15 @@
 
 ## Next Steps & Future Enhancements
 
+### Active Work
+
+1. **Dense Volume Type Renaming** ⬜ (PLANNED):
+   - Detailed plan: See `tasks/dense-volume-type-renaming.md`
+   - Rename `Volume<T>` to `DenseVolume<T>` with `type: "dense"` discriminator
+   - Rename `VolumeMaterial` to `DenseVolumeMaterial`
+   - Update all imports, type references, and documentation
+   - Prepare for future volume type variants (sparse, octree, etc.)
+
 ### Immediate Testing & Validation
 1. **Visual Testing**: Run the sample application and verify:
    - House chunk renders correctly with proper materials
@@ -164,6 +173,7 @@ cryos/src/
   tasks/
     volume-model-rendering.md              ✅ (original epic)
     volume-model-transparent-rendering.md  ✅ (new - transparent epic)
+    dense-volume-type-renaming.md          ⬜ (planned - type renaming)
 ```
 
 ## Dependencies

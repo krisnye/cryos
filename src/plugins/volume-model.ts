@@ -4,14 +4,14 @@ import { True } from "@adobe/data/schema";
 import { Vec3, Quat } from "@adobe/data/math";
 import { geometry } from "./geometry.js";
 import { MaterialId } from "../types/material/material-id.js";
-import { Volume } from "../types/volume/volume.js";
+import { DenseVolume } from "../types/dense-volume/dense-volume.js";
 import { materialVertexBuffers } from "./material-vertex-buffers.js";
 
 export const volumeModel = Database.Plugin.create({
     extends: Database.Plugin.combine(geometry, materialVertexBuffers),
     components: {
         volumeModel: True.schema,
-        materialVolume: { default: null as unknown as Volume<MaterialId> },
+        materialVolume: { default: null as unknown as DenseVolume<MaterialId> },
     },
     archetypes: {
         VolumeModel: ["volumeModel", "materialVolume", "position"],
@@ -22,7 +22,7 @@ export const volumeModel = Database.Plugin.create({
     transactions: {
         createVolumeModel(t, props: {
             position: Vec3;
-            materialVolume: Volume<MaterialId>;
+            materialVolume: DenseVolume<MaterialId>;
             scale?: Vec3;
             rotation?: Quat;
         }) {
@@ -61,7 +61,7 @@ export const volumeModel = Database.Plugin.create({
         },
         setVolumeModel(t, props: {
             entityId: Entity;
-            materialVolume: Volume<MaterialId>;
+            materialVolume: DenseVolume<MaterialId>;
         }) {
             // Update materialVolume and remove buffer components
             // Setting components to undefined removes them from the entity

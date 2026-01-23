@@ -2,7 +2,7 @@ import { expect, test, describe } from "vitest";
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { MaterialId } from "../../types/material/material-id.js";
-import { Volume } from "../../types/volume/volume.js";
+import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { materialVolumeToVertexData } from "../../plugins/volume-model-rendering/material-volume-to-vertex-data.js";
 import { createTestVolume2x2x2 } from "./create-test-volume.js";
 import { extractBottomFaceVertices, countBottomFaces, verifyBottomFaceGeometry } from "./verify-bottom-faces.js";
@@ -78,7 +78,8 @@ describe("verify-bottom-faces", () => {
         // Create an empty volume (all air)
         const size: Vec3 = [2, 2, 2];
         const capacity = size[0] * size[1] * size[2];
-        const emptyVolume: Volume<MaterialId> = {
+        const emptyVolume: DenseVolume<MaterialId> = {
+            type: "dense",
             size,
             data: createTypedBuffer(MaterialId.schema, capacity),
         };

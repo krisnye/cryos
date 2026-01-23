@@ -1,9 +1,13 @@
 import { Database } from "@adobe/data/ecs";
 import { Vec3, Quat } from "@adobe/data/math";
 import { Schema } from "@adobe/data/schema";
-import { TypedBuffer, createStructBuffer, copyToGPUBuffer } from "@adobe/data/typed-buffer";
+import { TypedBuffer, copyToGPUBuffer } from "@adobe/data/typed-buffer";
 import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/index.js";
 import instancedShaderSource from "./instanced-pbr.wgsl.js";
+import { materialVertexBuffers } from "plugins/material-vertex-buffers.js";
+import { CombinePlugins } from "@adobe/data/ecs/database/combine-plugins";
+import { materials } from "plugins/materials.js";
+import { geometry } from "plugins/geometry.js";
 
 // Instanced transform data schema (per-instance vertex attributes)
 export const instanceTransformSchema = {
@@ -37,14 +41,14 @@ export type PipelineConfig = {
  * Returns a map of vertex buffers to their instance groups.
  */
 export function queryAndGroupEntities(
-    db: { store: { queryArchetypes: Database["store"]["queryArchetypes"] } },
+    store: Database.Plugin.ToStore<CombinePlugins<[typeof materialVertexBuffers, typeof geometry]>>,
     vertexBufferComponentName: "opaqueVertexBuffer" | "transparentVertexBuffer"
 ): Map<GPUBuffer, ModelGroup> {
     // Query for all possible combinations (with/without scale/rotation)
-    const renderTablesWithScaleRotation = db.store.queryArchetypes([vertexBufferComponentName, "position", "scale", "rotation"]);
-    const renderTablesWithScale = db.store.queryArchetypes([vertexBufferComponentName, "position", "scale"], { exclude: ["rotation"] });
-    const renderTablesWithRotation = db.store.queryArchetypes([vertexBufferComponentName, "position", "rotation"], { exclude: ["scale"] });
-    const renderTablesBase = db.store.queryArchetypes([vertexBufferComponentName, "position"], { exclude: ["scale", "rotation"] });
+    const renderTablesWithScaleRotation = store.queryArchetypes([vertexBufferComponentName, "position", "scale", "rotation"]);
+    const renderTablesWithScale = store.queryArchetypes([vertexBufferComponentName, "position", "scale"], { exclude: ["rotation"] });
+    const renderTablesWithRotation = store.queryArchetypes([vertexBufferComponentName, "position", "rotation"], { exclude: ["scale"] });
+    const renderTablesBase = store.queryArchetypes([vertexBufferComponentName, "position"], { exclude: ["scale", "rotation"] });
     const renderTables = [...renderTablesWithScaleRotation, ...renderTablesWithScale, ...renderTablesWithRotation, ...renderTablesBase];
 
     // Group entities by vertex buffer (model type)
@@ -52,11 +56,11 @@ export function queryAndGroupEntities(
 
     for (const table of renderTables) {
         const entityCount = table.rowCount;
-        const entityIds = table.columns.id.getTypedArray();
+        // const entityIds = table.columns.id.getTypedArray();
 
         // Extract per-entity data directly
         for (let i = 0; i < entityCount; i++) {
-            const entityId = entityIds[i];
+            // const entityId = entityIds[i];
             const vertexBuffer = table.columns[vertexBufferComponentName]?.get(i) as GPUBuffer | undefined;
             const position = table.columns.position.get(i);
             // Default scale and rotation if not present (check if column exists in columns object)

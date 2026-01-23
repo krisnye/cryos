@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
-import { Volume } from "../../types/volume/volume.js";
+import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { MaterialId } from "../../types/material/material-id.js";
 import { Material } from "../../types/index.js";
 import { materialVolumeToVertexData } from "./material-volume-to-vertex-data.js";
@@ -10,7 +10,8 @@ test("materialVolumeToVertexData generates vertices for visible faces only", () 
     // Create a 2x2x2 volume with one solid voxel
     const size: Vec3 = [2, 2, 2];
     const capacity = size[0] * size[1] * size[2];
-    const volume: Volume<MaterialId> = {
+    const volume: DenseVolume<MaterialId> = {
+        type: "dense",
         size,
         data: createTypedBuffer(MaterialId.schema, capacity),
     };
@@ -51,7 +52,8 @@ test("materialVolumeToVertexData skips empty voxels (MaterialId === 0)", () => {
     // Create a 2x2x2 volume with all air
     const size: Vec3 = [2, 2, 2];
     const capacity = size[0] * size[1] * size[2];
-    const volume: Volume<MaterialId> = {
+    const volume: DenseVolume<MaterialId> = {
+        type: "dense",
         size,
         data: createTypedBuffer(MaterialId.schema, capacity),
     };
@@ -72,7 +74,8 @@ test("materialVolumeToVertexData renders in model space (0,0,0 at corner)", () =
     // Create a 2x2x2 volume
     const size: Vec3 = [2, 2, 2];
     const capacity = size[0] * size[1] * size[2];
-    const volume: Volume<MaterialId> = {
+    const volume: DenseVolume<MaterialId> = {
+        type: "dense",
         size,
         data: createTypedBuffer(MaterialId.schema, capacity),
     };
@@ -112,7 +115,8 @@ test("materialVolumeToVertexData generates bottom faces with correct winding (co
     // Create a 1x1x1 volume with one solid voxel at (0,0,0)
     const size: Vec3 = [1, 1, 1];
     const capacity = size[0] * size[1] * size[2];
-    const volume: Volume<MaterialId> = {
+    const volume: DenseVolume<MaterialId> = {
+        type: "dense",
         size,
         data: createTypedBuffer(MaterialId.schema, capacity),
     };
