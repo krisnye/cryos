@@ -51,11 +51,17 @@
 
 ### Active Work
 
-1. **Dense Volume Type Renaming** ⬜ (PLANNED):
+1. **Dense Volume Type Renaming** ✅ (COMPLETED):
    - Detailed plan: See `tasks/dense-volume-type-renaming.md`
-   - Rename `Volume<T>` to `DenseVolume<T>` with `type: "dense"` discriminator
-   - Rename `VolumeMaterial` to `DenseVolumeMaterial`
-   - Update all imports, type references, and documentation
+   - Renamed `Volume<T>` to `DenseVolume<T>` with `type: "dense"` discriminator
+   - Renamed `VolumeMaterial` to `DenseVolumeMaterial`
+   - Updated all imports, type references, and documentation
+
+2. **DenseVolume to ColumnVolume Conversion** ⬜ (PLANNED):
+   - Detailed plan: See `tasks/dense-to-column-volume-conversion.md`
+   - Implement `ColumnVolume.create()` function to convert DenseVolume to ColumnVolume
+   - Enable sparse storage for volumes with many empty regions
+   - Support variable column heights and z-offsets for terrain-like data
    - Prepare for future volume type variants (sparse, octree, etc.)
 
 ### Immediate Testing & Validation
@@ -171,9 +177,10 @@ cryos/src/
       volume-model-sample-service.ts        ✅
       volume-model-sample-application.ts    ✅
   tasks/
-    volume-model-rendering.md              ✅ (original epic)
-    volume-model-transparent-rendering.md  ✅ (new - transparent epic)
-    dense-volume-type-renaming.md          ⬜ (planned - type renaming)
+    volume-model-rendering.md                      ✅ (original epic)
+    volume-model-transparent-rendering.md          ✅ (new - transparent epic)
+    dense-volume-type-renaming.md                  ✅ (completed - type renaming)
+    dense-to-column-volume-conversion.md           ⬜ (planned - conversion function)
 ```
 
 ## Dependencies
