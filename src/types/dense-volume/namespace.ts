@@ -1,6 +1,8 @@
 import { Vec3 } from "@adobe/data/math";
 import type { DenseVolume } from "./dense-volume.js";
 
+export * from "./equals.js";
+
 export type Index = number;
 
 /**
