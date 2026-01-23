@@ -53,7 +53,7 @@ export default defineConfig({
         strictPort: true
     },
     build: {
-        target: 'esnext',
+        target: 'es2022',
         minify: true,
         sourcemap: true,
         emptyOutDir: true,
@@ -79,6 +79,9 @@ export default defineConfig({
     },
     optimizeDeps: {
         include: ['@rollup/plugin-terser'],
-        exclude: ['@webgpu/types']
+        exclude: ['@webgpu/types'],
+        esbuildOptions: {
+            target: 'es2022'
+        }
     }
 } as UserConfig); 
