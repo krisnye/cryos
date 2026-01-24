@@ -28,6 +28,7 @@ export function createParticleSampleService() {
                         db.store.resources.cameraControlType = "orbit";
                         // this is an init only system so it doesn't return a system function.
                     }
+
                 }
             },
         })

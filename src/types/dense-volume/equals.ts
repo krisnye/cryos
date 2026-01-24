@@ -1,13 +1,7 @@
 // © 2026 Adobe. MIT License. See /LICENSE for details.
+import { TypedBuffer } from "@adobe/data/typed-buffer";
 import type { DenseVolume } from "./dense-volume.js";
-import { typedBufferEquals } from "@adobe/data/typed-buffer/typed-buffer-equals";
-
-/**
- * Compare two Vec3 arrays for equality.
- */
-const vec3Equals = (a: readonly [number, number, number], b: readonly [number, number, number]): boolean => {
-    return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
-};
+import { Vec3 } from "@adobe/data/math";
 
 /**
  * Compare two DenseVolume instances for equality.
@@ -18,7 +12,7 @@ const vec3Equals = (a: readonly [number, number, number], b: readonly [number, n
 export const equals = <T>(a: DenseVolume<T>, b: DenseVolume<T>): boolean => {
     if (a === b) return true; // fast path
     if (a.type !== b.type) return false;
-    if (!vec3Equals(a.size, b.size)) return false;
-    return typedBufferEquals(a.data, b.data);
+    if (!Vec3.equals(a.size, b.size)) return false;
+    return TypedBuffer.equals(a.data, b.data);
 };
 

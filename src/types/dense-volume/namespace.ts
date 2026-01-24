@@ -1,7 +1,7 @@
 import { Vec3 } from "@adobe/data/math";
 import type { DenseVolume } from "./dense-volume.js";
 
-export * from "./equals.js";
+export { equals } from "./equals.js";
 
 export type Index = number;
 
@@ -26,7 +26,10 @@ export const coordinates = <T>(volume: DenseVolume<T>, index: Index): Vec3 => {
     return [x, y, z];
 };
 
-export const create = <T>(volume: DenseVolume<T>): DenseVolume<T> => {
-    return volume;
+export const create = <T>(volume: Omit<DenseVolume<T>, "type">): DenseVolume<T> => {
+    return {
+        type: "dense",
+        ...volume,
+    };
 };
 

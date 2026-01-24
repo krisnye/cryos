@@ -9,7 +9,7 @@ import { toDenseVolume } from "./to-dense-volume.js";
 import { create } from "./create.js";
 import * as ColumnVolumeNamespace from "./namespace.js";
 import * as DenseVolumeNamespace from "../dense-volume/namespace.js";
-import { EMPTY_COLUMN, packColumnInfo } from "./column-info.js";
+import { ColumnInfo } from "./column-info/column-info.js";
 
 describe("toDenseVolume", () => {
     describe("empty volume", () => {
@@ -22,7 +22,7 @@ describe("toDenseVolume", () => {
             };
 
             // All tiles are empty
-            columnVolume.tile.fill(EMPTY_COLUMN);
+            columnVolume.tile.fill(0);
 
             const result = toDenseVolume(columnVolume);
 
@@ -52,10 +52,10 @@ describe("toDenseVolume", () => {
             };
 
             // All columns have data
-            columnVolume.tile[0] = packColumnInfo(0, 2, 0); // (0,0): offset 0, length 2, zStart 0
-            columnVolume.tile[1] = packColumnInfo(2, 2, 0); // (1,0): offset 2, length 2, zStart 0
-            columnVolume.tile[2] = packColumnInfo(4, 2, 0); // (0,1): offset 4, length 2, zStart 0
-            columnVolume.tile[3] = packColumnInfo(6, 2, 0); // (1,1): offset 6, length 2, zStart 0
+            columnVolume.tile[0] = ColumnInfo.pack(0, 2, 0); // (0,0): offset 0, length 2, zStart 0
+            columnVolume.tile[1] = ColumnInfo.pack(2, 2, 0); // (1,0): offset 2, length 2, zStart 0
+            columnVolume.tile[2] = ColumnInfo.pack(4, 2, 0); // (0,1): offset 4, length 2, zStart 0
+            columnVolume.tile[3] = ColumnInfo.pack(6, 2, 0); // (1,1): offset 6, length 2, zStart 0
 
             const result = toDenseVolume(columnVolume);
 
@@ -85,9 +85,9 @@ describe("toDenseVolume", () => {
             };
 
             // Only column (1,1) has data
-            columnVolume.tile.fill(EMPTY_COLUMN);
+            columnVolume.tile.fill(0);
             const tileIdx = 1 + 1 * 3;
-            columnVolume.tile[tileIdx] = packColumnInfo(0, 3, 0);
+            columnVolume.tile[tileIdx] = ColumnInfo.pack(0, 3, 0);
 
             const result = toDenseVolume(columnVolume);
 
@@ -118,8 +118,8 @@ describe("toDenseVolume", () => {
             };
 
             // Column (0,0) starts at z=2 with 3 voxels
-            columnVolume.tile.fill(EMPTY_COLUMN);
-            columnVolume.tile[0] = packColumnInfo(0, 3, 2);
+            columnVolume.tile.fill(0);
+            columnVolume.tile[0] = ColumnInfo.pack(0, 3, 2);
 
             const result = toDenseVolume(columnVolume);
 
