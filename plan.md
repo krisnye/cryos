@@ -65,12 +65,19 @@
    - Helper functions: `packColumnInfo`, `unpackColumnInfo`, `isEmptyColumn`
    - Comprehensive test coverage (10 tests)
 
-3. **ColumnVolume to DenseVolume Conversion** ⬜ (PLANNED):
+3. **ColumnVolume to DenseVolume Conversion** ✅ (COMPLETED):
    - Detailed plan: See `tasks/column-volume-to-dense-volume-conversion.md`
-   - Implement `ColumnVolume.toDenseVolume()` function to convert ColumnVolume back to DenseVolume
-   - Enable round-trip conversion for testing and compatibility
+   - Implemented `ColumnVolume.toDenseVolume()` function to convert ColumnVolume back to DenseVolume
+   - Enabled round-trip conversion for testing and compatibility
    - Fill empty regions with schema default values
    - Handle columns with z-offsets and gaps correctly
+
+4. **Volume Type Unification** ⬜ (PLANNED):
+   - Detailed plan: See `tasks/volume-type-unification.md`
+   - Update `volumeModel` plugin to accept `Volume<MaterialId>` (union of DenseVolume and ColumnVolume)
+   - Update `material-volume-to-vertex-buffers` to handle both types
+   - Convert ColumnVolume to DenseVolume on-the-fly for rendering (temporary, not retained)
+   - Enable sparse volume storage in ECS while maintaining dense rendering pipeline
 
 ### Immediate Testing & Validation
 1. **Visual Testing**: Run the sample application and verify:

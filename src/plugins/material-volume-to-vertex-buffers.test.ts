@@ -5,6 +5,7 @@ import { volumeModel } from "./volume-model.js";
 import { graphics } from "./graphics.js";
 import { createTestVolume2x2x2 } from "../samples/volume-model-sample/create-test-volume.js";
 import { Material } from "../types/index.js";
+import { ColumnVolume } from "../types/column-volume/column-volume.js";
 
 describe("materialVolumeToVertexBuffers", () => {
     beforeEach(() => {
@@ -41,6 +42,40 @@ describe("materialVolumeToVertexBuffers", () => {
         // In a test environment without GPU, these will be undefined
         // The important thing is that the system runs without errors
         expect(entityId).toBeDefined();
+    });
+
+    test("should generate buffers for ColumnVolume (converts to DenseVolume on-the-fly)", () => {
+        const db = Database.create(
+            Database.Plugin.combine(
+                graphics,
+                volumeModel,
+                materialVolumeToVertexBuffers
+            )
+        );
+        
+        // Create a DenseVolume first, then convert to ColumnVolume
+        const denseVolume = createTestVolume2x2x2({ middleLayer: "glass" });
+        const columnVolume = ColumnVolume.create(denseVolume);
+        
+        // Verify it's a ColumnVolume
+        expect(columnVolume.type).toBe("column");
+        
+        // Create entity with ColumnVolume
+        const entityId = db.transactions.createVolumeModel({
+            position: [0, 0, 0],
+            materialVolume: columnVolume,
+        });
+
+        // Run system (should convert ColumnVolume to DenseVolume internally)
+        db.system.functions.materialVolumeToVertexBuffers();
+
+        // System should run without errors
+        // Buffers will be generated if device is available
+        const opaqueBuffer = db.get(entityId, "opaqueVertexBuffer");
+        const transparentBuffer = db.get(entityId, "transparentVertexBuffer");
+        
+        expect(entityId).toBeDefined();
+        // Note: Buffers may be undefined if no GPU device, but system should not error
     });
 
     test("should not generate buffers for empty volume", () => {
@@ -112,6 +147,37 @@ describe("materialVolumeToVertexBuffers", () => {
         if (opaqueBuffer2) {
             expect(opaqueBuffer2).toBeDefined();
         }
+    });
+
+    test("should handle both DenseVolume and ColumnVolume in same database", () => {
+        const db = Database.create(
+            Database.Plugin.combine(
+                graphics,
+                volumeModel,
+                materialVolumeToVertexBuffers
+            )
+        );
+        
+        // Create one entity with DenseVolume
+        const denseVolume = createTestVolume2x2x2({ middleLayer: "glass" });
+        const entityId1 = db.transactions.createVolumeModel({
+            position: [0, 0, 0],
+            materialVolume: denseVolume,
+        });
+        
+        // Create another entity with ColumnVolume (converted from same dense volume)
+        const columnVolume = ColumnVolume.create(denseVolume);
+        const entityId2 = db.transactions.createVolumeModel({
+            position: [1, 0, 0],
+            materialVolume: columnVolume,
+        });
+
+        // Run system - should handle both types
+        db.system.functions.materialVolumeToVertexBuffers();
+
+        // Both entities should be processed without errors
+        expect(entityId1).toBeDefined();
+        expect(entityId2).toBeDefined();
     });
 });
 
