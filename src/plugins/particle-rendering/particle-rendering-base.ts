@@ -12,15 +12,15 @@ import {
 
 export const particleRenderingBase = Database.Plugin.create({
     extends: particleRenderingBaseDependencies,
-    resources: {
-        baseBindGroupLayout: { default: null as GPUBindGroupLayout | null },
-        basePipeline: { default: null as GPURenderPipeline | null },
-        basePositionBuffer: { default: null as GPUBuffer | null },
-        baseMaterialIndexBuffer: { default: null as GPUBuffer | null },
-    },
     systems: {
         renderParticlesBase: {
             create: (db) => {
+                // Closure variables for caching GPU objects across frames
+                let bindGroupLayout: GPUBindGroupLayout | null = null;
+                let pipeline: GPURenderPipeline | null = null;
+                let positionBuffer: GPUBuffer | null = null;
+                let materialIndexBuffer: GPUBuffer | null = null;
+
                 return () => {
                     const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvasFormat } = db.store.resources;
                     if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer) return;
@@ -32,25 +32,20 @@ export const particleRenderingBase = Database.Plugin.create({
                     if (particleCount === 0) return;
 
                     // Initialize bind group layout and pipeline
-                    let bindGroupLayout = db.store.resources.baseBindGroupLayout;
                     if (!bindGroupLayout) {
-                        bindGroupLayout = db.store.resources.baseBindGroupLayout = createBindGroupLayout(device, 0);
+                        bindGroupLayout = createBindGroupLayout(device, 0);
                     }
 
-                    let pipeline = db.store.resources.basePipeline;
                     if (!pipeline && bindGroupLayout) {
-                        pipeline = db.store.resources.basePipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceBase, canvasFormat);
+                        pipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceBase, canvasFormat);
                     }
 
                     // Initialize and update buffers
-                    let positionBuffer = getOrCreatePositionBuffer(device, db.store.resources.basePositionBuffer);
-                    let materialIndexBuffer = getOrCreateMaterialIndexBuffer(device, particleCount, db.store.resources.baseMaterialIndexBuffer);
+                    positionBuffer = getOrCreatePositionBuffer(device, positionBuffer);
+                    materialIndexBuffer = getOrCreateMaterialIndexBuffer(device, particleCount, materialIndexBuffer);
                     
                     positionBuffer = copyColumnToGPUBuffer(particleTables, "position", device, positionBuffer);
                     materialIndexBuffer = copyColumnToGPUBuffer(particleTables, "material", device, materialIndexBuffer);
-                    
-                    db.store.resources.basePositionBuffer = positionBuffer;
-                    db.store.resources.baseMaterialIndexBuffer = materialIndexBuffer;
 
                     // Render
                     if (bindGroupLayout && pipeline && positionBuffer && materialIndexBuffer) {

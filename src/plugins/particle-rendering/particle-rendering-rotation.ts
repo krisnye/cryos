@@ -13,16 +13,16 @@ import {
 
 export const particleRenderingRotation = Database.Plugin.create({
     extends: particleRenderingBaseDependencies,
-    resources: {
-        rotationBindGroupLayout: { default: null as GPUBindGroupLayout | null },
-        rotationPipeline: { default: null as GPURenderPipeline | null },
-        rotationPositionBuffer: { default: null as GPUBuffer | null },
-        rotationMaterialIndexBuffer: { default: null as GPUBuffer | null },
-        rotationBuffer: { default: null as GPUBuffer | null },
-    },
     systems: {
         renderParticlesRotation: {
             create: (db) => {
+                // Closure variables for caching GPU objects across frames
+                let bindGroupLayout: GPUBindGroupLayout | null = null;
+                let pipeline: GPURenderPipeline | null = null;
+                let positionBuffer: GPUBuffer | null = null;
+                let materialIndexBuffer: GPUBuffer | null = null;
+                let rotationBuffer: GPUBuffer | null = null;
+
                 return () => {
                     const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvasFormat } = db.store.resources;
                     if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer) return;
@@ -34,28 +34,22 @@ export const particleRenderingRotation = Database.Plugin.create({
                     if (particleCount === 0) return;
 
                     // Initialize bind group layout and pipeline
-                    let bindGroupLayout = db.store.resources.rotationBindGroupLayout;
                     if (!bindGroupLayout) {
-                        bindGroupLayout = db.store.resources.rotationBindGroupLayout = createBindGroupLayout(device, 1);
+                        bindGroupLayout = createBindGroupLayout(device, 1);
                     }
 
-                    let pipeline = db.store.resources.rotationPipeline;
                     if (!pipeline && bindGroupLayout) {
-                        pipeline = db.store.resources.rotationPipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceRotation, canvasFormat);
+                        pipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceRotation, canvasFormat);
                     }
 
                     // Initialize and update buffers
-                    let positionBuffer = getOrCreatePositionBuffer(device, db.store.resources.rotationPositionBuffer);
-                    let materialIndexBuffer = getOrCreateMaterialIndexBuffer(device, particleCount, db.store.resources.rotationMaterialIndexBuffer);
-                    let rotationBuffer = getOrCreateRotationBuffer(device, db.store.resources.rotationBuffer);
+                    positionBuffer = getOrCreatePositionBuffer(device, positionBuffer);
+                    materialIndexBuffer = getOrCreateMaterialIndexBuffer(device, particleCount, materialIndexBuffer);
+                    rotationBuffer = getOrCreateRotationBuffer(device, rotationBuffer);
                     
                     positionBuffer = copyColumnToGPUBuffer(particleTables, "position", device, positionBuffer);
                     materialIndexBuffer = copyColumnToGPUBuffer(particleTables, "material", device, materialIndexBuffer);
                     rotationBuffer = copyColumnToGPUBuffer(particleTables, "rotation", device, rotationBuffer);
-                    
-                    db.store.resources.rotationPositionBuffer = positionBuffer;
-                    db.store.resources.rotationMaterialIndexBuffer = materialIndexBuffer;
-                    db.store.resources.rotationBuffer = rotationBuffer;
 
                     // Render
                     if (bindGroupLayout && pipeline && positionBuffer && materialIndexBuffer && rotationBuffer) {

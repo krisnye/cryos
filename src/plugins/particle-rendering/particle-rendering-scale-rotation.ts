@@ -14,17 +14,17 @@ import {
 
 export const particleRenderingScaleRotation = Database.Plugin.create({
     extends: particleRenderingBaseDependencies,
-    resources: {
-        scaleRotationBindGroupLayout: { default: null as GPUBindGroupLayout | null },
-        scaleRotationPipeline: { default: null as GPURenderPipeline | null },
-        scaleRotationPositionBuffer: { default: null as GPUBuffer | null },
-        scaleRotationMaterialIndexBuffer: { default: null as GPUBuffer | null },
-        scaleRotationScaleBuffer: { default: null as GPUBuffer | null },
-        scaleRotationRotationBuffer: { default: null as GPUBuffer | null },
-    },
     systems: {
         renderParticlesScaleRotation: {
             create: (db) => {
+                // Closure variables for caching GPU objects across frames
+                let bindGroupLayout: GPUBindGroupLayout | null = null;
+                let pipeline: GPURenderPipeline | null = null;
+                let positionBuffer: GPUBuffer | null = null;
+                let materialIndexBuffer: GPUBuffer | null = null;
+                let scaleBuffer: GPUBuffer | null = null;
+                let rotationBuffer: GPUBuffer | null = null;
+
                 return () => {
                     const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvasFormat } = db.store.resources;
                     if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer) return;
@@ -36,31 +36,24 @@ export const particleRenderingScaleRotation = Database.Plugin.create({
                     if (particleCount === 0) return;
 
                     // Initialize bind group layout and pipeline
-                    let bindGroupLayout = db.store.resources.scaleRotationBindGroupLayout;
                     if (!bindGroupLayout) {
-                        bindGroupLayout = db.store.resources.scaleRotationBindGroupLayout = createBindGroupLayout(device, 2);
+                        bindGroupLayout = createBindGroupLayout(device, 2);
                     }
 
-                    let pipeline = db.store.resources.scaleRotationPipeline;
                     if (!pipeline && bindGroupLayout) {
-                        pipeline = db.store.resources.scaleRotationPipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceScaleRotation, canvasFormat);
+                        pipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceScaleRotation, canvasFormat);
                     }
 
                     // Initialize and update buffers
-                    let positionBuffer = getOrCreatePositionBuffer(device, db.store.resources.scaleRotationPositionBuffer);
-                    let materialIndexBuffer = getOrCreateMaterialIndexBuffer(device, particleCount, db.store.resources.scaleRotationMaterialIndexBuffer);
-                    let scaleBuffer = getOrCreateScaleBuffer(device, db.store.resources.scaleRotationScaleBuffer);
-                    let rotationBuffer = getOrCreateRotationBuffer(device, db.store.resources.scaleRotationRotationBuffer);
+                    positionBuffer = getOrCreatePositionBuffer(device, positionBuffer);
+                    materialIndexBuffer = getOrCreateMaterialIndexBuffer(device, particleCount, materialIndexBuffer);
+                    scaleBuffer = getOrCreateScaleBuffer(device, scaleBuffer);
+                    rotationBuffer = getOrCreateRotationBuffer(device, rotationBuffer);
                     
                     positionBuffer = copyColumnToGPUBuffer(particleTables, "position", device, positionBuffer);
                     materialIndexBuffer = copyColumnToGPUBuffer(particleTables, "material", device, materialIndexBuffer);
                     scaleBuffer = copyColumnToGPUBuffer(particleTables, "scale", device, scaleBuffer);
                     rotationBuffer = copyColumnToGPUBuffer(particleTables, "rotation", device, rotationBuffer);
-                    
-                    db.store.resources.scaleRotationPositionBuffer = positionBuffer;
-                    db.store.resources.scaleRotationMaterialIndexBuffer = materialIndexBuffer;
-                    db.store.resources.scaleRotationScaleBuffer = scaleBuffer;
-                    db.store.resources.scaleRotationRotationBuffer = rotationBuffer;
 
                     // Render
                     if (bindGroupLayout && pipeline && positionBuffer && materialIndexBuffer && scaleBuffer && rotationBuffer) {

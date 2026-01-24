@@ -42,7 +42,8 @@ export const materialVolumeToVertexBuffers = Database.Plugin.create({
                         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
                         mappedAtCreation: false
                     });
-                    return copyToGPUBuffer(vertexData, device, gpuBuffer);
+                    const result = copyToGPUBuffer(vertexData, device, gpuBuffer);
+                    return result;
                     // denseVolume will be garbage collected if it was converted
                 });
 
@@ -70,7 +71,8 @@ export const materialVolumeToVertexBuffers = Database.Plugin.create({
                         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
                         mappedAtCreation: false
                     });
-                    return copyToGPUBuffer(vertexData, device, gpuBuffer);
+                    const result = copyToGPUBuffer(vertexData, device, gpuBuffer);
+                    return result;
                     // denseVolume will be garbage collected if it was converted
                 });
 

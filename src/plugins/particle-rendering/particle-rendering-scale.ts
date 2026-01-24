@@ -13,16 +13,16 @@ import {
 
 export const particleRenderingScale = Database.Plugin.create({
     extends: particleRenderingBaseDependencies,
-    resources: {
-        scaleBindGroupLayout: { default: null as GPUBindGroupLayout | null },
-        scalePipeline: { default: null as GPURenderPipeline | null },
-        scalePositionBuffer: { default: null as GPUBuffer | null },
-        scaleMaterialIndexBuffer: { default: null as GPUBuffer | null },
-        scaleBuffer: { default: null as GPUBuffer | null },
-    },
     systems: {
         renderParticlesScale: {
             create: (db) => {
+                // Closure variables for caching GPU objects across frames
+                let bindGroupLayout: GPUBindGroupLayout | null = null;
+                let pipeline: GPURenderPipeline | null = null;
+                let positionBuffer: GPUBuffer | null = null;
+                let materialIndexBuffer: GPUBuffer | null = null;
+                let scaleBuffer: GPUBuffer | null = null;
+
                 return () => {
                     const { device, renderPassEncoder, sceneUniformsBuffer, materialsGpuBuffer, canvasFormat } = db.store.resources;
                     if (!device || !renderPassEncoder || !sceneUniformsBuffer || !materialsGpuBuffer) return;
@@ -34,28 +34,22 @@ export const particleRenderingScale = Database.Plugin.create({
                     if (particleCount === 0) return;
 
                     // Initialize bind group layout and pipeline
-                    let bindGroupLayout = db.store.resources.scaleBindGroupLayout;
                     if (!bindGroupLayout) {
-                        bindGroupLayout = db.store.resources.scaleBindGroupLayout = createBindGroupLayout(device, 1);
+                        bindGroupLayout = createBindGroupLayout(device, 1);
                     }
 
-                    let pipeline = db.store.resources.scalePipeline;
                     if (!pipeline && bindGroupLayout) {
-                        pipeline = db.store.resources.scalePipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceScale, canvasFormat);
+                        pipeline = createRenderPipeline(device, bindGroupLayout, shaderSourceScale, canvasFormat);
                     }
 
                     // Initialize and update buffers
-                    let positionBuffer = getOrCreatePositionBuffer(device, db.store.resources.scalePositionBuffer);
-                    let materialIndexBuffer = getOrCreateMaterialIndexBuffer(device, particleCount, db.store.resources.scaleMaterialIndexBuffer);
-                    let scaleBuffer = getOrCreateScaleBuffer(device, db.store.resources.scaleBuffer);
+                    positionBuffer = getOrCreatePositionBuffer(device, positionBuffer);
+                    materialIndexBuffer = getOrCreateMaterialIndexBuffer(device, particleCount, materialIndexBuffer);
+                    scaleBuffer = getOrCreateScaleBuffer(device, scaleBuffer);
                     
                     positionBuffer = copyColumnToGPUBuffer(particleTables, "position", device, positionBuffer);
                     materialIndexBuffer = copyColumnToGPUBuffer(particleTables, "material", device, materialIndexBuffer);
                     scaleBuffer = copyColumnToGPUBuffer(particleTables, "scale", device, scaleBuffer);
-                    
-                    db.store.resources.scalePositionBuffer = positionBuffer;
-                    db.store.resources.scaleMaterialIndexBuffer = materialIndexBuffer;
-                    db.store.resources.scaleBuffer = scaleBuffer;
 
                     // Render
                     if (bindGroupLayout && pipeline && positionBuffer && materialIndexBuffer && scaleBuffer) {

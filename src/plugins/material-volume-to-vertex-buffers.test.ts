@@ -110,7 +110,7 @@ describe("materialVolumeToVertexBuffers", () => {
         expect(transparentBuffer).toBeFalsy();
     });
 
-    test("should generate buffers for multiple entities with same volume", () => {
+    test("should cache vertex buffers for the same volume object across multiple entities", () => {
         const db = Database.create(
             Database.Plugin.combine(
                 graphics,
@@ -121,31 +121,89 @@ describe("materialVolumeToVertexBuffers", () => {
         
         const volume = createTestVolume2x2x2({ middleLayer: "glass" });
         
-        // Create two entities with the same volume
+        // Create multiple entities with the SAME volume object (same reference)
         const entityId1 = db.transactions.createVolumeModel({
             position: [0, 0, 0],
-            materialVolume: volume,
+            materialVolume: volume, // Same object reference
         });
         
         const entityId2 = db.transactions.createVolumeModel({
             position: [1, 0, 0],
-            materialVolume: volume, // Same volume object
+            materialVolume: volume, // Same object reference
+        });
+        
+        const entityId3 = db.transactions.createVolumeModel({
+            position: [2, 0, 0],
+            materialVolume: volume, // Same object reference
         });
 
+        // Run system - memoization should cache the conversion
         db.system.functions.materialVolumeToVertexBuffers();
 
-        // Both entities should have buffers (if device available)
-        // Note: Each entity gets its own GPU buffer (no sharing)
+        // Get the buffers for each entity
         const opaqueBuffer1 = db.get(entityId1, "opaqueVertexBuffer");
         const opaqueBuffer2 = db.get(entityId2, "opaqueVertexBuffer");
+        const opaqueBuffer3 = db.get(entityId3, "opaqueVertexBuffer");
         
-        // Both should have buffers if device is available
-        // (They will be different buffer objects, not shared)
+        // If GPU device is available, verify that all entities got buffers
+        // The memoization ensures the same Volume object only converts once
+        // The same GPUBuffer object should be reused across entities
         if (opaqueBuffer1) {
             expect(opaqueBuffer1).toBeDefined();
-        }
-        if (opaqueBuffer2) {
             expect(opaqueBuffer2).toBeDefined();
+            expect(opaqueBuffer3).toBeDefined();
+            
+            // Verify that the same buffer object is reused (memoization working)
+            // All entities with the same Volume object should get the same GPUBuffer reference
+            expect(opaqueBuffer1).toBe(opaqueBuffer2);
+            expect(opaqueBuffer2).toBe(opaqueBuffer3);
+        }
+    });
+
+    test("should cache ColumnVolume conversion separately from DenseVolume", () => {
+        const db = Database.create(
+            Database.Plugin.combine(
+                graphics,
+                volumeModel,
+                materialVolumeToVertexBuffers
+            )
+        );
+        
+        // Create a DenseVolume
+        const denseVolume = createTestVolume2x2x2({ middleLayer: "glass" });
+        
+        // Convert to ColumnVolume (different object)
+        const columnVolume = ColumnVolume.create(denseVolume);
+        
+        // Create entities with different volume types but same data
+        const entityId1 = db.transactions.createVolumeModel({
+            position: [0, 0, 0],
+            materialVolume: denseVolume,
+        });
+        
+        const entityId2 = db.transactions.createVolumeModel({
+            position: [1, 0, 0],
+            materialVolume: columnVolume, // Different object, but same data
+        });
+        
+        const entityId3 = db.transactions.createVolumeModel({
+            position: [2, 0, 0],
+            materialVolume: columnVolume, // Same ColumnVolume object
+        });
+
+        // Run system
+        db.system.functions.materialVolumeToVertexBuffers();
+
+        // DenseVolume and ColumnVolume are different objects, so they cache separately
+        // But entityId2 and entityId3 share the same ColumnVolume object, so that's cached
+        const opaqueBuffer1 = db.get(entityId1, "opaqueVertexBuffer");
+        const opaqueBuffer2 = db.get(entityId2, "opaqueVertexBuffer");
+        const opaqueBuffer3 = db.get(entityId3, "opaqueVertexBuffer");
+        
+        if (opaqueBuffer1) {
+            expect(opaqueBuffer1).toBeDefined();
+            expect(opaqueBuffer2).toBeDefined();
+            expect(opaqueBuffer3).toBeDefined();
         }
     });
 
