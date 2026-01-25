@@ -15,6 +15,14 @@ module.exports = {
     '@typescript-eslint/no-empty-function': 'off', // Allow empty functions
     '@typescript-eslint/no-unused-vars': 'off', // Allow unused variables
     '@typescript-eslint/no-namespace': 'error', // Prevent TypeScript namespace usage
+    '@typescript-eslint/prefer-as-const': 'error', // Prefer 'as const' over enums
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'TSEnumDeclaration',
+        message: 'Enums are not allowed. Use union types or const objects instead.',
+      },
+    ],
     'prefer-const': 'off', // Allow let/const in same destructuring
   },
   ignorePatterns: ['.eslintrc.cjs', 'docs', 'dist', 'lib', 'node_modules', 'vite.config.ts'],

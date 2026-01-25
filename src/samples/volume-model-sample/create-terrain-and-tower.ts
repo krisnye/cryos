@@ -2,11 +2,8 @@
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
-import type { ColumnVolume } from "../../types/column-volume/column-volume.js";
-import * as ColumnVolumeNamespace from "../../types/column-volume/namespace.js";
-import { MaterialId } from "../../types/material/material-id.js";
+import { ColumnVolume } from "../../types/column-volume/column-volume.js";
 import { Material } from "../../types/index.js";
-import * as DenseVolumeNamespace from "../../types/dense-volume/namespace.js";
 
 /**
  * Creates a ColumnVolume with varied terrain elevations and a sci-fi tower.
@@ -20,7 +17,7 @@ import * as DenseVolumeNamespace from "../../types/dense-volume/namespace.js";
  * This demonstrates sparse volume storage - most of the 16x16 area is empty air,
  * with only terrain columns and the tower columns containing voxels.
  */
-export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
+export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
     const width = 16;
     const height = 16;
     const maxDepth = 60; // Tall enough for smaller tower + spire
@@ -29,19 +26,19 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
     // This is easier for complex structures
     const denseSize: Vec3 = [width, height, maxDepth];
     const capacity = width * height * maxDepth;
-    const denseVolume: DenseVolume<MaterialId> = {
+    const denseVolume: DenseVolume<Material.Id> = {
         type: "dense",
         size: denseSize,
-        data: createTypedBuffer(MaterialId.schema, capacity),
+        data: createTypedBuffer(Material.Id.schema, capacity),
     };
     
     // Initialize all voxels to air (0)
     for (let i = 0; i < capacity; i++) {
-        denseVolume.data.set(i, Material.id.air);
+        denseVolume.data.set(i, Material.ids.air);
     }
     
     // Material IDs for convenience
-    const { air, concrete, steel, glass, rock, dirt, sand, metaCyan, metaBlue, metaTeal, metaWhite, metaGray, iron } = Material.id;
+    const { air, concrete, steel, glass, rock, dirt, sand, metaCyan, metaBlue, metaTeal, metaWhite, metaGray, iron } = Material.ids;
     
     // Create interesting terrain with varied elevations and materials
     // Multiple height patterns: hills, valleys, plateaus
@@ -88,7 +85,7 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
             
             // Fill terrain column
             for (let z = 0; z < clampedElevation; z++) {
-                const index = DenseVolumeNamespace.index(denseVolume, x, y, z);
+                const index = DenseVolume.getIndex(denseVolume, x, y, z);
                 denseVolume.data.set(index, terrainMaterial);
             }
         }
@@ -127,7 +124,7 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
             for (let tx = 0; tx < towerWidth; tx++) {
                 const x = towerX + tx;
                 const y = towerY + ty;
-                const index = DenseVolumeNamespace.index(denseVolume, x, y, z);
+                const index = DenseVolume.getIndex(denseVolume, x, y, z);
                 
                 if (z === groundLevel) {
                     // Base layer: steel platform
@@ -156,7 +153,7 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
                 for (let tx = 0; tx < towerWidth; tx++) {
                     const x = towerX + tx;
                     const y = towerY + ty;
-                    const index = DenseVolumeNamespace.index(denseVolume, x, y, z);
+                    const index = DenseVolume.getIndex(denseVolume, x, y, z);
                     
                     // Floor slab (bottom of each floor)
                     if (z === floorZStart) {
@@ -228,7 +225,7 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
         if (floor % 5 === 0 && floor > 0) {
             for (let z = floorZStart - 1; z < floorZStart; z++) {
                 // Energy conduit at center (for 2x2, use one corner)
-                const centerIndex = DenseVolumeNamespace.index(denseVolume, towerX, towerY, z);
+                const centerIndex = DenseVolume.getIndex(denseVolume, towerX, towerY, z);
                 denseVolume.data.set(centerIndex, metaCyan);
             }
         }
@@ -243,13 +240,13 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
                 const x = towerX + tx;
                 const y = towerY + towerHeight; // One voxel north of tower
                 if (y < height) {
-                    const balconyIndex = DenseVolumeNamespace.index(denseVolume, x, y, balconyZ);
+                    const balconyIndex = DenseVolume.getIndex(denseVolume, x, y, balconyZ);
                     denseVolume.data.set(balconyIndex, steel);
                     // Add a small extension
                     if (tx === 0 || tx === towerWidth - 1) {
                         const extY = towerY + towerHeight + 1;
                         if (extY < height) {
-                            const extIndex = DenseVolumeNamespace.index(denseVolume, x, extY, balconyZ);
+                            const extIndex = DenseVolume.getIndex(denseVolume, x, extY, balconyZ);
                             denseVolume.data.set(extIndex, steel);
                         }
                     }
@@ -261,13 +258,13 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
                 const x = towerX + tx;
                 const y = towerY - 1; // One voxel south of tower
                 if (y >= 0) {
-                    const balconyIndex = DenseVolumeNamespace.index(denseVolume, x, y, balconyZ);
+                    const balconyIndex = DenseVolume.getIndex(denseVolume, x, y, balconyZ);
                     denseVolume.data.set(balconyIndex, steel);
                     // Add a small extension
                     if (tx === 0 || tx === towerWidth - 1) {
                         const extY = towerY - 2;
                         if (extY >= 0) {
-                            const extIndex = DenseVolumeNamespace.index(denseVolume, x, extY, balconyZ);
+                            const extIndex = DenseVolume.getIndex(denseVolume, x, extY, balconyZ);
                             denseVolume.data.set(extIndex, steel);
                         }
                     }
@@ -279,13 +276,13 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
                 const x = towerX + towerWidth; // One voxel east of tower
                 const y = towerY + ty;
                 if (x < width) {
-                    const balconyIndex = DenseVolumeNamespace.index(denseVolume, x, y, balconyZ);
+                    const balconyIndex = DenseVolume.getIndex(denseVolume, x, y, balconyZ);
                     denseVolume.data.set(balconyIndex, steel);
                     // Add a small extension
                     if (ty === 0 || ty === towerHeight - 1) {
                         const extX = towerX + towerWidth + 1;
                         if (extX < width) {
-                            const extIndex = DenseVolumeNamespace.index(denseVolume, extX, y, balconyZ);
+                            const extIndex = DenseVolume.getIndex(denseVolume, extX, y, balconyZ);
                             denseVolume.data.set(extIndex, steel);
                         }
                     }
@@ -297,13 +294,13 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
                 const x = towerX - 1; // One voxel west of tower
                 const y = towerY + ty;
                 if (x >= 0) {
-                    const balconyIndex = DenseVolumeNamespace.index(denseVolume, x, y, balconyZ);
+                    const balconyIndex = DenseVolume.getIndex(denseVolume, x, y, balconyZ);
                     denseVolume.data.set(balconyIndex, steel);
                     // Add a small extension
                     if (ty === 0 || ty === towerHeight - 1) {
                         const extX = towerX - 2;
                         if (extX >= 0) {
-                            const extIndex = DenseVolumeNamespace.index(denseVolume, extX, y, balconyZ);
+                            const extIndex = DenseVolume.getIndex(denseVolume, extX, y, balconyZ);
                             denseVolume.data.set(extIndex, steel);
                         }
                     }
@@ -320,7 +317,7 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
             
             for (const [cx, cy] of corners) {
                 if (cx >= 0 && cx < width && cy >= 0 && cy < height) {
-                    const cornerIndex = DenseVolumeNamespace.index(denseVolume, cx, cy, balconyZ);
+                    const cornerIndex = DenseVolume.getIndex(denseVolume, cx, cy, balconyZ);
                     denseVolume.data.set(cornerIndex, metaCyan); // Glowing corner extensions
                 }
             }
@@ -336,7 +333,7 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
             for (let tx = 0; tx < towerWidth; tx++) {
                 const x = towerX + tx;
                 const y = towerY + ty;
-                const index = DenseVolumeNamespace.index(denseVolume, x, y, z);
+                const index = DenseVolume.getIndex(denseVolume, x, y, z);
                 denseVolume.data.set(index, steel);
             }
         }
@@ -350,7 +347,7 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
     
     for (let z = spireStartZ; z < spireStartZ + spireHeight; z++) {
         // Main spire: steel with energy core
-        const spireIndex = DenseVolumeNamespace.index(denseVolume, spireX, spireY, z);
+        const spireIndex = DenseVolume.getIndex(denseVolume, spireX, spireY, z);
         if (z % 2 === 0) {
             denseVolume.data.set(spireIndex, metaCyan);
         } else {
@@ -360,10 +357,10 @@ export function createTerrainAndTowerVolume(): ColumnVolume<MaterialId> {
     
     // Spire tip (glowing energy)
     const tipZ = spireStartZ + spireHeight;
-    const tipIndex = DenseVolumeNamespace.index(denseVolume, spireX, spireY, tipZ);
+    const tipIndex = DenseVolume.getIndex(denseVolume, spireX, spireY, tipZ);
     denseVolume.data.set(tipIndex, metaCyan);
     
     // Convert dense volume to ColumnVolume (sparse representation)
-    return ColumnVolumeNamespace.create(denseVolume);
+    return ColumnVolume.create(denseVolume);
 }
 

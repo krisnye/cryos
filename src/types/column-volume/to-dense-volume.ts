@@ -35,7 +35,7 @@ export const toDenseVolume = <T>(volume: ColumnVolume<T>): DenseVolume<T> => {
             // Copy column voxels
             for (let i = 0; i < length; i++) {
                 const z = zStart + i;
-                const denseIndex = DenseVolume.index(
+                const denseIndex = DenseVolume.getIndex(
                     denseVolume,
                     x,
                     y,

@@ -5,7 +5,7 @@ import { volumeModel } from "./volume-model.js";
 import { Volume } from "../types/volume.js";
 import { DenseVolume } from "../types/dense-volume/dense-volume.js";
 import { ColumnVolume } from "../types/column-volume/column-volume.js";
-import { MaterialId } from "../types/material/material-id.js";
+import { Material } from "../types/index.js";
 import { materialVolumeToVertexData } from "./volume-model-rendering/material-volume-to-vertex-data.js";
 
 /**
@@ -24,7 +24,7 @@ export const materialVolumeToVertexBuffers = Database.Plugin.create({
                  * Memoized by volume identity using WeakMap.
                  * For ColumnVolume, converts to DenseVolume temporarily (not cached).
                  */
-                const getOpaqueGPUBuffer = memoize((volume: Volume<MaterialId>): GPUBuffer | undefined => {
+                const getOpaqueGPUBuffer = memoize((volume: Volume<Material.Id>): GPUBuffer | undefined => {
                     const device = db.store.resources.device;
                     if (!device) throw new Error();
                     
@@ -53,7 +53,7 @@ export const materialVolumeToVertexBuffers = Database.Plugin.create({
                  * Memoized by volume identity using WeakMap.
                  * For ColumnVolume, converts to DenseVolume temporarily (not cached).
                  */
-                const getTransparentGPUBuffer = memoize((volume: Volume<MaterialId>): GPUBuffer | undefined => {
+                const getTransparentGPUBuffer = memoize((volume: Volume<Material.Id>): GPUBuffer | undefined => {
                     const device = db.store.resources.device;
                     if (!device) throw new Error();
                     
@@ -80,7 +80,7 @@ export const materialVolumeToVertexBuffers = Database.Plugin.create({
                  * Process a single entity: generate and set buffers based on volume material types.
                  * Note: This is only called for entities that don't have both buffers (excluded from query).
                  */
-                function processEntity(entityId: number, materialVolume: Volume<MaterialId>): void {
+                function processEntity(entityId: number, materialVolume: Volume<Material.Id>): void {
                     const opaqueVertexBuffer = getOpaqueGPUBuffer(materialVolume);
                     const transparentVertexBuffer = getTransparentGPUBuffer(materialVolume);
                     

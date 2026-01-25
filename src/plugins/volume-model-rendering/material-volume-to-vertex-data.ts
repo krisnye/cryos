@@ -1,10 +1,9 @@
 import { TypedBuffer, createStructBuffer } from "@adobe/data/typed-buffer";
 import { Mutable } from "@adobe/data";
 import { Vec3 } from "@adobe/data/math";
-import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/index.js";
+import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/position-normal-material.js";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import * as DenseVolumeNamespace from "../../types/dense-volume/namespace.js";
-import { MaterialId } from "../../types/material/material-id.js";
 import { Material } from "../../types/index.js";
 
 // Pre-computed direction vectors for performance
@@ -47,7 +46,7 @@ const FACE_DATA_SIZE = 7;
  * For opaque rendering: only opaque materials are solid (transparent treated as empty)
  * For transparent rendering: only transparent materials are solid (opaque treated as empty)
  */
-function isSolid(materialId: MaterialId, opaque: boolean): boolean {
+function isSolid(materialId: Material.Id, opaque: boolean): boolean {
     if (materialId === 0) return false; // Air is never solid
     
     // Check if material exists
@@ -68,7 +67,7 @@ function isSolid(materialId: MaterialId, opaque: boolean): boolean {
 }
 
 export function materialVolumeToVertexData(
-    volume: DenseVolume<MaterialId>, 
+    volume: DenseVolume<Material.Id>, 
     options: { center?: Vec3; opaque: boolean }
 ): TypedBuffer<PositionNormalMaterialVertex> {
     const { center = [0, 0, 0], opaque } = options;
@@ -103,7 +102,7 @@ export function materialVolumeToVertexData(
     for (let z = 0; z < depth; z++) {
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
-                const voxelIndex = DenseVolumeNamespace.index(volume, x, y, z);
+                const voxelIndex = DenseVolumeNamespace.getIndex(volume, x, y, z);
                 const materialId = volume.data.get(voxelIndex);
                 
                 // Skip if voxel is not solid for this rendering mode
@@ -121,7 +120,7 @@ export function materialVolumeToVertexData(
                                        nz < 0 || nz >= depth;
                     
                     // Check if adjacent voxel is not solid (empty or opposite type)
-                    const adjacentMaterialId = !isBoundary ? volume.data.get(DenseVolumeNamespace.index(volume, nx, ny, nz)) : 0;
+                    const adjacentMaterialId = !isBoundary ? volume.data.get(DenseVolumeNamespace.getIndex(volume, nx, ny, nz)) : 0;
                     const isAdjacentSolid = isSolid(adjacentMaterialId, opaque);
                     
                     // Generate face if adjacent is boundary or not solid

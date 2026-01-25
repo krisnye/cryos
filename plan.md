@@ -215,6 +215,31 @@ cryos/src/
 ✅ No "any" types used
 ✅ All linter checks passing
 
+## Agent Skills Organization ✅
+
+**Skill Refactoring** (Completed):
+- Created `functional-programming` skill for general FP principles (immutability, no classes/enums, code style)
+- Refactored `write-ecs-plugins` skill to focus on ECS-specific patterns (reduced to ~240 lines, kept detailed resources/closure guidance)
+- Created `write-types` skill documenting Material pattern as template for complex types, single file for simple types
+- Skills now reference each other for better organization and reusability
+
+## Types Audit ✅ (COMPLETED)
+
+**Types Standardization** (Completed):
+- Detailed plan: See `tasks/types-audit.md`
+- Audited all types in `src/types/` against Material pattern standard
+- Fixed 7 inconsistent types:
+  - ✅ Camera: Added namespace export, removed `index.ts`
+  - ✅ ColumnVolume: Removed `index.ts`
+  - ✅ DenseVolume: Removed `index.ts`
+  - ✅ DenseVolumeMaterial: Simplified to single file (removed folder)
+  - ✅ SchemaX: Created `schema-x.ts`, removed `index.ts`
+  - ✅ PositionColorNormalVertex: Removed `index.ts`
+  - ✅ PositionNormalMaterialVertex: Removed `index.ts`
+- Updated all import paths in codebase to use `{type-name}/{type-name}.ts` pattern
+- Updated `write-types` skill to explicitly state no `index.ts` files (for convenient Command+P navigation)
+- All types now follow Material pattern: `<type-name>.ts` for simple types, `{type-name}/{type-name}.ts` + `namespace.ts` for complex types
+
 ## Ready for Visual Testing
 
 The system is complete and ready for visual testing. The sample application can be accessed via:

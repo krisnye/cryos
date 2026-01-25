@@ -1,0 +1,14 @@
+// © 2026 Adobe. MIT License. See /LICENSE for details.
+
+import { Vec3 } from "@adobe/data/math";
+import type { DenseVolume } from "./dense-volume.js";
+import type { Index } from "./index-type.js";
+
+export const getCoordinates = <T>(volume: DenseVolume<T>, index: Index): Vec3 => {
+    const [width, height] = volume.size;
+    const z = Math.floor(index / (width * height));
+    const y = Math.floor((index % (width * height)) / width);
+    const x = index % width;
+    return [x, y, z];
+};
+

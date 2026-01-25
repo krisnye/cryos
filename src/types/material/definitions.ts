@@ -14,7 +14,7 @@ const metaMaterialBase: Omit<Material, "baseColor"> = {
     thermalConductivity: 100.0,
 };
 
-export const materialDefinitions = {
+export const definitions = {
     air: {
         baseColor: [1.0, 1.0, 1.0, 0.0],
         metallic: 0,
@@ -293,6 +293,6 @@ export const materialDefinitions = {
         ...metaMaterialBase,
     },
 } as const satisfies Record<string, Material>;
-export type MaterialName = keyof typeof materialDefinitions;
+export type MaterialName = keyof typeof definitions;
 
 

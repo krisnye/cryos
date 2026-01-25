@@ -91,7 +91,7 @@ describe("materialVolumeToVertexBuffers", () => {
         const emptyVolume = createTestVolume2x2x2({ middleLayer: "air" });
         // Make it completely empty by clearing all voxels
         for (let i = 0; i < emptyVolume.data.capacity; i++) {
-            emptyVolume.data.set(i, Material.id.air);
+            emptyVolume.data.set(i, Material.ids.air);
         }
         
         const entityId = db.transactions.createVolumeModel({

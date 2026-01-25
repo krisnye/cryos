@@ -3,7 +3,6 @@ import { True } from "@adobe/data/schema";
 import { Vec3, Quat } from "@adobe/data/math";
 import { physics } from "./physics/physics.js";
 import { Material } from "../types/index.js";
-import { MaterialId } from "../types/material/material-id.js";
 
 export const particle = Database.Plugin.create({
     extends: physics,
@@ -19,7 +18,7 @@ export const particle = Database.Plugin.create({
     transactions: {
         createParticle(t, props: {
             position: Vec3;
-            material: MaterialId;
+            material: Material.Id;
             scale?: Vec3;
             rotation?: Quat;
         }) {
@@ -65,7 +64,7 @@ export const particle = Database.Plugin.create({
                 particle: true,
                 position: [0, 0, 0],
                 scale: [1, 1, 1],
-                material: Material.id.metaBlack
+                material: Material.ids.metaBlack
             });
             
             // Red particle on X-axis
@@ -73,7 +72,7 @@ export const particle = Database.Plugin.create({
                 particle: true,
                 position: [size / 2 + 0.5, 0, 0],
                 scale: [size, girth, girth],
-                material: Material.id.metaRed
+                material: Material.ids.metaRed
             });
             
             // Green particle on Y-axis
@@ -81,7 +80,7 @@ export const particle = Database.Plugin.create({
                 particle: true,
                 position: [0, size / 2 + 0.5, 0],
                 scale: [girth, size, girth],
-                material: Material.id.metaGreen
+                material: Material.ids.metaGreen
             });
             
             // Blue particle on Z-axis
@@ -89,7 +88,7 @@ export const particle = Database.Plugin.create({
                 particle: true,
                 position: [0, 0, size / 2 + 0.5],
                 scale: [girth, girth, size],
-                material: Material.id.metaBlue
+                material: Material.ids.metaBlue
             });
         },
         createSampleParticles(t) {
@@ -102,19 +101,19 @@ export const particle = Database.Plugin.create({
             t.archetypes.ParticleScale.insert({
                 particle: true,
                 position: [baseX, baseY, baseZ],
-                material: Material.id.metaRed,
+                material: Material.ids.metaRed,
                 scale: [2, 1, 1] // Stretched along X
             });
             t.archetypes.ParticleScale.insert({
                 particle: true,
                 position: [baseX, baseY + spacing, baseZ],
-                material: Material.id.metaGreen,
+                material: Material.ids.metaGreen,
                 scale: [1, 2, 1] // Stretched along Y
             });
             t.archetypes.ParticleScale.insert({
                 particle: true,
                 position: [baseX, baseY, baseZ + spacing],
-                material: Material.id.metaBlue,
+                material: Material.ids.metaBlue,
                 scale: [1, 1, 2] // Stretched along Z
             });
             
@@ -122,19 +121,19 @@ export const particle = Database.Plugin.create({
             t.archetypes.ParticleRotation.insert({
                 particle: true,
                 position: [baseX, baseY + spacing * 2, baseZ],
-                material: Material.id.metaRed,
+                material: Material.ids.metaRed,
                 rotation: Quat.fromAxisAngle([1, 0, 0], Math.PI / 4) // 45° around X
             });
             t.archetypes.ParticleRotation.insert({
                 particle: true,
                 position: [baseX, baseY + spacing * 2, baseZ + spacing],
-                material: Material.id.metaGreen,
+                material: Material.ids.metaGreen,
                 rotation: Quat.fromAxisAngle([0, 1, 0], Math.PI / 4) // 45° around Y
             });
             t.archetypes.ParticleRotation.insert({
                 particle: true,
                 position: [baseX, baseY + spacing * 3, baseZ],
-                material: Material.id.metaBlue,
+                material: Material.ids.metaBlue,
                 rotation: Quat.fromAxisAngle([0, 0, 1], Math.PI / 4) // 45° around Z
             });
             
@@ -142,28 +141,28 @@ export const particle = Database.Plugin.create({
             t.archetypes.ParticleScaleRotation.insert({
                 particle: true,
                 position: [baseX, baseY + spacing * 3, baseZ + spacing],
-                material: Material.id.metaRed,
+                material: Material.ids.metaRed,
                 scale: [2, 0.5, 0.5],
                 rotation: Quat.fromAxisAngle([0, 1, 0], Math.PI / 4)
             });
             t.archetypes.ParticleScaleRotation.insert({
                 particle: true,
                 position: [baseX, baseY + spacing * 4, baseZ],
-                material: Material.id.metaGreen,
+                material: Material.ids.metaGreen,
                 scale: [0.5, 2, 0.5],
                 rotation: Quat.fromAxisAngle([1, 0, 0], Math.PI / 4)
             });
             t.archetypes.ParticleScaleRotation.insert({
                 particle: true,
                 position: [baseX, baseY + spacing * 4, baseZ + spacing],
-                material: Material.id.metaBlue,
+                material: Material.ids.metaBlue,
                 scale: [0.5, 0.5, 2],
                 rotation: Quat.fromAxisAngle([0, 0, 1], Math.PI / 4)
             });
         },
         createMaterialPyramid(t) {
             // Get all material names (keys from Material.id)
-            const materialNames = Object.keys(Material.id) as Array<keyof typeof Material.id>;
+            const materialNames = Object.keys(Material.ids) as Array<keyof typeof Material.ids>;
             const totalMaterials = materialNames.length;
             
             // Position the pyramid in the x,y plane with +z as up (base at z=0)
@@ -198,7 +197,7 @@ export const particle = Database.Plugin.create({
                 for (let x = 0; x < layerSize && materialIndex < totalMaterials; x++) {
                     for (let y = 0; y < layerSize && materialIndex < totalMaterials; y++) {
                         const materialName = materialNames[materialIndex];
-                        const materialId = Material.id[materialName];
+                        const materialId = Material.ids[materialName];
                         
                         const posX = pyramidCenterX + (x - (layerSize - 1) / 2) * spacing;
                         const posY = pyramidCenterY + (y - (layerSize - 1) / 2) * spacing;

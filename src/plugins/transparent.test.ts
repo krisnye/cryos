@@ -12,10 +12,10 @@ test("markTransparentMaterials marks entities with non-opaque materials", () => 
         systems: {
             init_test_database: {
                 create: (db) => () => {
-                    db.store.archetypes.TestMaterials.insert({ material: Material.id.air });
-                    db.store.archetypes.TestMaterials.insert({ material: Material.id.water });
-                    db.store.archetypes.TestMaterials.insert({ material: Material.id.rock });
-                    db.store.archetypes.TestMaterials.insert({ material: Material.id.ice });
+                    db.store.archetypes.TestMaterials.insert({ material: Material.ids.air });
+                    db.store.archetypes.TestMaterials.insert({ material: Material.ids.water });
+                    db.store.archetypes.TestMaterials.insert({ material: Material.ids.rock });
+                    db.store.archetypes.TestMaterials.insert({ material: Material.ids.ice });
                 }
             }
         }
@@ -36,13 +36,13 @@ test("markTransparentMaterials marks entities with non-opaque materials", () => 
     for (const entity of transparentEntities) {
         const material = db.get(entity, "material");
         expect(material).toBeDefined();
-        expect(material).not.toBe(Material.id.rock); // Rock should not be transparent
+        expect(material).not.toBe(Material.ids.rock); // Rock should not be transparent
         expect(db.get(entity, "transparent")).toBe(true);
     }
     
     // Verify rock entity does NOT have transparent tag
     const allEntities = db.select(["material"]);
-    const rockEntity = allEntities.find(entity => db.get(entity, "material") === Material.id.rock);
+    const rockEntity = allEntities.find(entity => db.get(entity, "material") === Material.ids.rock);
     expect(rockEntity).toBeDefined();
     expect(db.get(rockEntity!, "transparent")).toBeUndefined();
 });

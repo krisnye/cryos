@@ -1,9 +1,5 @@
 import { expect, test, describe } from "vitest";
-import { Vec3 } from "@adobe/data/math";
-import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
-import { MaterialId } from "../../types/material/material-id.js";
-import { Material } from "../../types/index.js";
-import * as DenseVolumeNamespace from "../../types/dense-volume/namespace.js";
+import { DenseVolume, Material } from "../../types/index.js";
 import { createTestVolume2x2x2 } from "./create-test-volume.js";
 
 describe("createTestVolume2x2x2", () => {
@@ -31,13 +27,13 @@ describe("createTestVolume2x2x2", () => {
 
     test("given no parameters, should have unique materials for bottom and top layers", () => {
         const volume = createTestVolume2x2x2();
-        const materialIds = new Set<MaterialId>();
+        const materialIds = new Set<Material.Id>();
 
         // Collect all material IDs from bottom and top layers
         for (let z = 0; z < 3; z++) {
             for (let y = 0; y < 2; y++) {
                 for (let x = 0; x < 2; x++) {
-                    const index = DenseVolumeNamespace.index<MaterialId>(volume, x, y, z);
+                    const index = DenseVolume.getIndex<Material.Id>(volume, x, y, z);
                     const materialId = volume.data.get(index);
                     if (materialId > 0) { // Skip air
                         materialIds.add(materialId);
@@ -58,7 +54,7 @@ describe("createTestVolume2x2x2", () => {
         for (let z = 0; z < 3; z++) {
             for (let y = 0; y < 2; y++) {
                 for (let x = 0; x < 2; x++) {
-                    const index = DenseVolumeNamespace.index<MaterialId>(volume, x, y, z);
+                    const index = DenseVolume.getIndex<Material.Id>(volume, x, y, z);
                     const materialId = volume.data.get(index);
                     expect(materialId).toBeGreaterThanOrEqual(0);
                     expect(materialId).toBeLessThan(Material.materials.length);

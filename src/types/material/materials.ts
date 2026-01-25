@@ -1,3 +1,3 @@
-import { materialDefinitions } from "./material-definitions.js";
+import { definitions } from "./definitions.js";
 
-export const materials = Object.values(materialDefinitions);
+export const materials = Object.values(definitions);

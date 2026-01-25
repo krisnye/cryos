@@ -38,7 +38,7 @@ export const create = <T>(volume: DenseVolume<T>): ColumnVolume<T> => {
             let zEnd: number | undefined = undefined;
 
             for (let z = 0; z < depth; z++) {
-                const index = DenseVolumeNamespace.index(volume, x, y, z);
+                const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
                 const isEmpty = volume.data.isDefault(index);
 
                 if (!isEmpty) {
@@ -54,7 +54,7 @@ export const create = <T>(volume: DenseVolume<T>): ColumnVolume<T> => {
                 // Collect all voxels from zStart to zEnd (including gaps)
                 const voxels: T[] = [];
                 for (let z = zStart; z <= zEnd; z++) {
-                    const index = DenseVolumeNamespace.index(volume, x, y, z);
+                    const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
                     voxels.push(volume.data.get(index));
                 }
 

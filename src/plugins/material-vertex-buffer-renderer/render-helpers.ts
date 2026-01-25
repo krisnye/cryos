@@ -2,7 +2,7 @@ import { Database } from "@adobe/data/ecs";
 import { Vec3, Quat } from "@adobe/data/math";
 import { Schema } from "@adobe/data/schema";
 import { TypedBuffer, copyToGPUBuffer } from "@adobe/data/typed-buffer";
-import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/index.js";
+import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/position-normal-material.js";
 import instancedShaderSource from "./instanced-pbr.wgsl.js";
 import { materialVertexBuffers } from "plugins/material-vertex-buffers.js";
 import { CombinePlugins } from "@adobe/data/ecs/database/combine-plugins";

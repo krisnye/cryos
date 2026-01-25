@@ -1,6 +1,6 @@
 import { Database } from "@adobe/data/ecs";
 import { Vec3, Mat4x4 } from "@adobe/data/math";
-import type { Camera } from "../types/camera/index.js";
+import type { Camera } from "../types/camera/camera.js";
 import { KeyCode } from "../types/key-code.js";
 import { KeyState } from "../types/key-state.js";
 import { scene } from "./scene.js";

@@ -2,7 +2,6 @@ import { expect, test } from "vitest";
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
-import { MaterialId } from "../../types/material/material-id.js";
 import { Material } from "../../types/index.js";
 import { materialVolumeToVertexData } from "./material-volume-to-vertex-data.js";
 
@@ -10,10 +9,10 @@ test("materialVolumeToVertexData generates vertices for visible faces only", () 
     // Create a 2x2x2 volume with one solid voxel
     const size: Vec3 = [2, 2, 2];
     const capacity = size[0] * size[1] * size[2];
-    const volume: DenseVolume<MaterialId> = {
+    const volume: DenseVolume<Material.Id> = {
         type: "dense",
         size,
-        data: createTypedBuffer(MaterialId.schema, capacity),
+        data: createTypedBuffer(Material.Id.schema, capacity),
     };
     
     // Fill all voxels with air (0)
@@ -23,7 +22,7 @@ test("materialVolumeToVertexData generates vertices for visible faces only", () 
     
     // Set one voxel at [0,0,0] to an opaque material (use first available opaque material)
     // Find first opaque material (alpha === 1.0)
-    let opaqueMaterialId: MaterialId = 1; // Default fallback
+    let opaqueMaterialId: Material.Id = 1; // Default fallback
     for (let i = 1; i < Material.materials.length; i++) {
         if (Material.materials[i].baseColor[3] >= 1.0) {
             opaqueMaterialId = i;
@@ -52,10 +51,10 @@ test("materialVolumeToVertexData skips empty voxels (MaterialId === 0)", () => {
     // Create a 2x2x2 volume with all air
     const size: Vec3 = [2, 2, 2];
     const capacity = size[0] * size[1] * size[2];
-    const volume: DenseVolume<MaterialId> = {
+    const volume: DenseVolume<Material.Id> = {
         type: "dense",
         size,
-        data: createTypedBuffer(MaterialId.schema, capacity),
+        data: createTypedBuffer(Material.Id.schema, capacity),
     };
     
     // Fill all voxels with air (0)
@@ -74,14 +73,14 @@ test("materialVolumeToVertexData renders in model space (0,0,0 at corner)", () =
     // Create a 2x2x2 volume
     const size: Vec3 = [2, 2, 2];
     const capacity = size[0] * size[1] * size[2];
-    const volume: DenseVolume<MaterialId> = {
+    const volume: DenseVolume<Material.Id> = {
         type: "dense",
         size,
-        data: createTypedBuffer(MaterialId.schema, capacity),
+        data: createTypedBuffer(Material.Id.schema, capacity),
     };
     
     // Find first opaque material (alpha === 1.0)
-    let opaqueMaterialId: MaterialId = 1; // Default fallback
+    let opaqueMaterialId: Material.Id = 1; // Default fallback
     for (let i = 1; i < Material.materials.length; i++) {
         if (Material.materials[i].baseColor[3] >= 1.0) {
             opaqueMaterialId = i;
@@ -115,14 +114,14 @@ test("materialVolumeToVertexData generates bottom faces with correct winding (co
     // Create a 1x1x1 volume with one solid voxel at (0,0,0)
     const size: Vec3 = [1, 1, 1];
     const capacity = size[0] * size[1] * size[2];
-    const volume: DenseVolume<MaterialId> = {
+    const volume: DenseVolume<Material.Id> = {
         type: "dense",
         size,
-        data: createTypedBuffer(MaterialId.schema, capacity),
+        data: createTypedBuffer(Material.Id.schema, capacity),
     };
     
     // Find first opaque material
-    let opaqueMaterialId: MaterialId = 1;
+    let opaqueMaterialId: Material.Id = 1;
     for (let i = 1; i < Material.materials.length; i++) {
         if (Material.materials[i].baseColor[3] >= 1.0) {
             opaqueMaterialId = i;
