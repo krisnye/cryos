@@ -1,7 +1,8 @@
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
-import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
-import { Material } from "../../types/index.js";
+import { DenseVolume } from "../dense-volume/dense-volume.js";
+import { Material } from "../material/material.js";
+import type { DenseVolumeMaterial } from "./dense-volume-material.js";
 
 /**
  * Creates a simple 2x2x3 test volume with unique materials for each voxel.
@@ -14,11 +15,11 @@ import { Material } from "../../types/index.js";
  *
  * @param options.middleLayer - 'air' or 'glass' (default 'glass')
  */
-export function createTestVolume2x2x2(options: { middleLayer?: "air" | "glass" } = {}): DenseVolume<Material.Id> {
+export const createTestVolume = (options: { middleLayer?: "air" | "glass" } = {}): DenseVolumeMaterial => {
     const { middleLayer = "glass" } = options;
     const size: Vec3 = [2, 2, 3];
     const capacity = size[0] * size[1] * size[2];
-    const volume: DenseVolume<Material.Id> = {
+    const volume: DenseVolumeMaterial = {
         type: "dense",
         size,
         data: createTypedBuffer(Material.Id.schema, capacity),
@@ -48,5 +49,5 @@ export function createTestVolume2x2x2(options: { middleLayer?: "air" | "glass" }
     volume.data.set(DenseVolume.getIndex(volume, 1, 1, 2), granite);
 
     return volume;
-}
+};
 

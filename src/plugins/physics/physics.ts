@@ -1,7 +1,7 @@
 import { Database } from "@adobe/data/ecs";
 import { Vec3 } from "@adobe/data/math";
 import { geometry } from "../geometry.js";
-import { Material } from "../../types/index.js";
+import { Material } from "../../types/material/material.js";
 
 export const physics = Database.Plugin.create({
     extends: geometry,

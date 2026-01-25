@@ -1,4 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 import type { ColumnVolume } from "./column-volume.js";
 import { TypedBuffer } from "@adobe/data/typed-buffer";
 import { Vec3 } from "@adobe/data/math";

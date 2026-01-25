@@ -1,4 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 import { TypedBuffer } from "@adobe/data/typed-buffer";
 import type { DenseVolume } from "./dense-volume.js";
 import { Vec3 } from "@adobe/data/math";

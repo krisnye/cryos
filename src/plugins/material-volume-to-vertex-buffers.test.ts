@@ -3,8 +3,8 @@ import { Database } from "@adobe/data/ecs";
 import { materialVolumeToVertexBuffers } from "./material-volume-to-vertex-buffers.js";
 import { volumeModel } from "./volume-model.js";
 import { graphics } from "./graphics.js";
-import { createTestVolume2x2x2 } from "../samples/volume-model-sample/create-test-volume.js";
-import { Material } from "../types/index.js";
+import { DenseVolumeMaterial } from "../types/dense-volume-material/dense-volume-material.js";
+import { Material } from "../types/material/material.js";
 import { ColumnVolume } from "../types/column-volume/column-volume.js";
 
 describe("materialVolumeToVertexBuffers", () => {
@@ -23,7 +23,7 @@ describe("materialVolumeToVertexBuffers", () => {
             )
         );
         
-        const volume = createTestVolume2x2x2({ middleLayer: "glass" });
+        const volume = DenseVolumeMaterial.createTestVolume({ middleLayer: "glass" });
         
         // Create entity with volume model
         const entityId = db.transactions.createVolumeModel({
@@ -54,7 +54,7 @@ describe("materialVolumeToVertexBuffers", () => {
         );
         
         // Create a DenseVolume first, then convert to ColumnVolume
-        const denseVolume = createTestVolume2x2x2({ middleLayer: "glass" });
+        const denseVolume = DenseVolumeMaterial.createTestVolume({ middleLayer: "glass" });
         const columnVolume = ColumnVolume.create(denseVolume);
         
         // Verify it's a ColumnVolume
@@ -88,7 +88,7 @@ describe("materialVolumeToVertexBuffers", () => {
         );
         
         // Create empty volume (all air)
-        const emptyVolume = createTestVolume2x2x2({ middleLayer: "air" });
+        const emptyVolume = DenseVolumeMaterial.createTestVolume({ middleLayer: "air" });
         // Make it completely empty by clearing all voxels
         for (let i = 0; i < emptyVolume.data.capacity; i++) {
             emptyVolume.data.set(i, Material.ids.air);
@@ -119,7 +119,7 @@ describe("materialVolumeToVertexBuffers", () => {
             )
         );
         
-        const volume = createTestVolume2x2x2({ middleLayer: "glass" });
+        const volume = DenseVolumeMaterial.createTestVolume({ middleLayer: "glass" });
         
         // Create multiple entities with the SAME volume object (same reference)
         const entityId1 = db.transactions.createVolumeModel({
@@ -170,7 +170,7 @@ describe("materialVolumeToVertexBuffers", () => {
         );
         
         // Create a DenseVolume
-        const denseVolume = createTestVolume2x2x2({ middleLayer: "glass" });
+        const denseVolume = DenseVolumeMaterial.createTestVolume({ middleLayer: "glass" });
         
         // Convert to ColumnVolume (different object)
         const columnVolume = ColumnVolume.create(denseVolume);
@@ -217,7 +217,7 @@ describe("materialVolumeToVertexBuffers", () => {
         );
         
         // Create one entity with DenseVolume
-        const denseVolume = createTestVolume2x2x2({ middleLayer: "glass" });
+        const denseVolume = DenseVolumeMaterial.createTestVolume({ middleLayer: "glass" });
         const entityId1 = db.transactions.createVolumeModel({
             position: [0, 0, 0],
             materialVolume: denseVolume,

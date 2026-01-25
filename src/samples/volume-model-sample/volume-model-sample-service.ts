@@ -2,7 +2,7 @@ import { Database } from "@adobe/data/ecs";
 import { Vec3 } from "@adobe/data/math";
 import { particleRendering, cameraControl, volumeModelRendering, materialVertexBufferRenderer } from "../../plugins/index.js";
 import { materialVolumeToVertexBuffers } from "../../plugins/material-volume-to-vertex-buffers.js";
-import { createHouseChunkVolume } from "./create-house-chunk.js";
+import { DenseVolumeMaterial } from "../../types/dense-volume-material/dense-volume-material.js";
 import { createTerrainAndTowerVolume } from "./create-terrain-and-tower.js";
 
 export function createVolumeModelSampleService() {
@@ -19,7 +19,7 @@ export function createVolumeModelSampleService() {
                         
                         // Create house chunk volume model (DenseVolume)
                         // Each voxel is 25cm, so 16x16x16 = 4m x 4m x 4m
-                        const houseVolume = createHouseChunkVolume();
+                        const houseVolume = DenseVolumeMaterial.createHouseChunk();
                         const houseSize = 16 * voxelSize; // 4m
                         
                         // Position house to the left

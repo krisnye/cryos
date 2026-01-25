@@ -1,4 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENS
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { ColumnVolume } from "./column-volume.js";
 import { DenseVolume } from "types/dense-volume/dense-volume.js";

@@ -1,7 +1,7 @@
 import { Database } from "@adobe/data/ecs";
 import { True } from "@adobe/data/schema";
 import { materials } from "./materials.js";
-import { Material } from "../types/index.js";
+import { Material } from "../types/material/material.js";
 
 export const transparent = Database.Plugin.create({
     extends: materials,

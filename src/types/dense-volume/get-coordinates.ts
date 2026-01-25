@@ -1,4 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 
 import { Vec3 } from "@adobe/data/math";
 import type { DenseVolume } from "./dense-volume.js";

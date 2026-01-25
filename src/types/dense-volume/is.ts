@@ -1,7 +1,6 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 
 import type { DenseVolume } from "./dense-volume.js";
-import type { Volume } from "../volume.js";
+import type { Volume } from "../volume/volume.js";
 
 /**
  * Type guard to check if a volume is a DenseVolume.

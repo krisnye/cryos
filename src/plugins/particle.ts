@@ -2,7 +2,7 @@ import { Database } from "@adobe/data/ecs";
 import { True } from "@adobe/data/schema";
 import { Vec3, Quat } from "@adobe/data/math";
 import { physics } from "./physics/physics.js";
-import { Material } from "../types/index.js";
+import { Material } from "../types/material/material.js";
 
 export const particle = Database.Plugin.create({
     extends: physics,

@@ -1,6 +1,6 @@
 // Helper functions for particle rendering systems
 
-import { SchemaX } from "../../types/index.js";
+import { SchemaX } from "../../types/schema-x/schema-x.js";
 import { Vec3, Quat } from "@adobe/data/math";
 
 // Schema for particle data structures

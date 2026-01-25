@@ -1,11 +1,11 @@
 import { expect, test, describe } from "vitest";
-import { createTestVolume2x2x2 } from "../../samples/volume-model-sample/create-test-volume.js";
+import { DenseVolumeMaterial } from "../../types/dense-volume-material/dense-volume-material.js";
 import { materialVolumeToVertexData } from "./material-volume-to-vertex-data.js";
 
 describe("materialVolumeToVertexData opaque rendering comparison", () => {
     test("given a 2x2x3 volume with air in middle layer, and the same volume with glass in middle layer, opaque render vertices should be identical", () => {
-        const volumeWithAir = createTestVolume2x2x2({ middleLayer: "air" });
-        const volumeWithGlass = createTestVolume2x2x2({ middleLayer: "glass" });
+        const volumeWithAir = DenseVolumeMaterial.createTestVolume({ middleLayer: "air" });
+        const volumeWithGlass = DenseVolumeMaterial.createTestVolume({ middleLayer: "glass" });
 
         const vertexDataWithAir = materialVolumeToVertexData(volumeWithAir, { opaque: true });
         const vertexDataWithGlass = materialVolumeToVertexData(volumeWithGlass, { opaque: true });

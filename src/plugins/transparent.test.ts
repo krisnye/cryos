@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { Database } from "@adobe/data/ecs";
 import { transparent } from "./transparent.js";
-import { Material } from "../types/index.js";
+import { Material } from "../types/material/material.js";
 
 test("markTransparentMaterials marks entities with non-opaque materials", () => {
     const testDatabasePlugin = Database.Plugin.create({

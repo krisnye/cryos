@@ -1,4 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 import { describe, it, expect } from "vitest";
 import { ColumnInfo } from "./column-info/column-info.js";
 

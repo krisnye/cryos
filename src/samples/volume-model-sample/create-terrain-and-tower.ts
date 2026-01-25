@@ -1,9 +1,8 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { ColumnVolume } from "../../types/column-volume/column-volume.js";
-import { Material } from "../../types/index.js";
+import { Material } from "../../types/material/material.js";
 
 /**
  * Creates a ColumnVolume with varied terrain elevations and a sci-fi tower.

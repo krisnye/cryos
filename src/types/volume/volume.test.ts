@@ -1,10 +1,9 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 import { describe, it, expect } from "vitest";
-import { DenseVolume } from "./dense-volume/dense-volume.js";
-import { ColumnVolume } from "./column-volume/column-volume.js";
-import { Material } from "./index.js";
+import { DenseVolume } from "../dense-volume/dense-volume.js";
+import { ColumnVolume } from "../column-volume/column-volume.js";
+import { Material } from "../material/material.js";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
-import { ColumnInfo } from "./column-volume/column-info/column-info.js";
+import { ColumnInfo } from "../column-volume/column-info/column-info.js";
 
 describe("Volume type guards", () => {
     describe("DenseVolume.is", () => {

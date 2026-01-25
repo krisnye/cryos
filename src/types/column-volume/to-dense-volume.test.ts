@@ -1,7 +1,6 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 import { describe, it, expect } from "vitest";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
-import { Material } from "../index.js";
+import { Material } from "../material/material.js";
 import { DenseVolume } from "../dense-volume/dense-volume.js";
 import { ColumnVolume } from "./column-volume.js";
 import { toDenseVolume } from "./to-dense-volume.js";

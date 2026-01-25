@@ -1,7 +1,7 @@
 import { Database } from "@adobe/data/ecs";
 import { physics } from "./physics/physics.js";
 import { copyToGPUBuffer, createTypedBuffer } from "@adobe/data/typed-buffer";
-import { Material } from "../types/index.js";
+import { Material } from "../types/material/material.js";
 
 export const materials = Database.Plugin.create({
     extends: physics,

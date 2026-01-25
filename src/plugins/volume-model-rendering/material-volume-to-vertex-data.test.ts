@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
-import { Material } from "../../types/index.js";
+import { Material } from "../../types/material/material.js";
 import { materialVolumeToVertexData } from "./material-volume-to-vertex-data.js";
 
 test("materialVolumeToVertexData generates vertices for visible faces only", () => {

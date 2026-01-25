@@ -3,8 +3,8 @@ import { Entity } from "@adobe/data/ecs";
 import { True } from "@adobe/data/schema";
 import { Vec3, Quat } from "@adobe/data/math";
 import { geometry } from "./geometry.js";
-import { Material } from "../types/index.js";
-import { Volume } from "../types/volume.js";
+import { Material } from "../types/material/material.js";
+import { Volume } from "../types/volume/volume.js";
 import { materialVertexBuffers } from "./material-vertex-buffers.js";
 
 export const volumeModel = Database.Plugin.create({

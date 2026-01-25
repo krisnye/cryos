@@ -1,4 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 
 export * from "./column-info/column-info.js";
 export * from "./tile-index.js";

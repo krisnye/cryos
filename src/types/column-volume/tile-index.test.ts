@@ -1,8 +1,7 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 import { describe, it, expect } from "vitest";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { ColumnVolume } from "./column-volume.js";
-import { Material } from "../index.js";
+import { Material } from "../material/material.js";
 import { tileIndex } from "./tile-index.js";
 
 describe("tileIndex", () => {

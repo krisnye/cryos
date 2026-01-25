@@ -3,7 +3,7 @@ import { F32, Mat4x4, Vec3 } from "@adobe/data/math";
 import { Schema } from "@adobe/data/schema";
 import { createStructBuffer, copyToGPUBuffer, getStructLayout, TypedBuffer } from "@adobe/data/typed-buffer";
 import { graphics } from "./graphics.js";
-import { Camera } from "../types/index.js";
+import { Camera } from "../types/camera/camera.js";
 
 // Scene uniforms schema
 const SceneUniformsSchema = {

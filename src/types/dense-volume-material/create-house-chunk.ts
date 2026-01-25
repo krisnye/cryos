@@ -1,16 +1,17 @@
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
-import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
-import { Material } from "../../types/index.js";
+import { DenseVolume } from "../dense-volume/dense-volume.js";
+import { Material } from "../material/material.js";
+import type { DenseVolumeMaterial } from "./dense-volume-material.js";
 
 /**
  * Creates a 16x16x16 house chunk volume (4m x 4m x 4m at 25cm per voxel)
  * Contains foundation, walls, windows, roof, and interior details
  */
-export function createHouseChunkVolume(): DenseVolume<Material.Id> {
+export const createHouseChunk = (): DenseVolumeMaterial => {
     const size: Vec3 = [16, 16, 16];
     const capacity = size[0] * size[1] * size[2];
-    const volume: DenseVolume<Material.Id> = {
+    const volume: DenseVolumeMaterial = {
         type: "dense",
         size,
         data: createTypedBuffer(Material.Id.schema, capacity),
@@ -242,5 +243,5 @@ export function createHouseChunkVolume(): DenseVolume<Material.Id> {
     }
     
     return volume;
-}
+};
 

@@ -1,4 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 
 import type { DenseVolume } from "./dense-volume.js";
 

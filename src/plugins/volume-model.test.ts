@@ -2,7 +2,7 @@ import { expect, test, describe } from "vitest";
 import { Database } from "@adobe/data/ecs";
 import { volumeModel } from "./volume-model.js";
 import { graphics } from "./graphics.js";
-import { createTestVolume2x2x2 } from "../samples/volume-model-sample/create-test-volume.js";
+import { DenseVolumeMaterial } from "../types/dense-volume-material/dense-volume-material.js";
 
 describe("volumeModel transactions", () => {
     test("setVolumeModel should update materialVolume and remove buffer components", () => {
@@ -13,8 +13,8 @@ describe("volumeModel transactions", () => {
             )
         );
 
-        const volume1 = createTestVolume2x2x2({ middleLayer: "glass" });
-        const volume2 = createTestVolume2x2x2({ middleLayer: "air" });
+        const volume1 = DenseVolumeMaterial.createTestVolume({ middleLayer: "glass" });
+        const volume2 = DenseVolumeMaterial.createTestVolume({ middleLayer: "air" });
 
         // Create entity with initial volume
         const entityId = db.transactions.createVolumeModel({
