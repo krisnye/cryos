@@ -1,5 +1,7 @@
 import { html, LitElement, TemplateResult, css, CSSResult } from "lit";
 import { customElement } from "lit/decorators.js";
+import { particleSample } from "./particle-sample/particle-sample.js";
+import { volumeModelSample } from "./volume-model-sample/volume-model-sample.js";
 
 interface SampleDefinition {
     name: string;
@@ -9,17 +11,11 @@ interface SampleDefinition {
 const samples: Record<string, SampleDefinition> = {
     "particle-sample": {
         name: "Particle Sample",
-        render: () => {
-            import("./particle-sample/particle-sample-application.js");
-            return html`<particle-sample-application></particle-sample-application>`;
-        }
+        render: particleSample
     },
     "volume-model-sample": {
         name: "Volume Model Sample",
-        render: () => {
-            import("./volume-model-sample/volume-model-sample-application.js");
-            return html`<volume-model-sample-application></volume-model-sample-application>`;
-        }
+        render: volumeModelSample
     },
 } as const;
 

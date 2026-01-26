@@ -1,14 +1,16 @@
 import { Database } from "@adobe/data/ecs";
 import { Vec3 } from "@adobe/data/math";
-import { particleRendering, cameraControl, volumeModelRendering, materialVertexBufferRenderer } from "../../plugins/index.js";
-import { materialVolumeToVertexBuffers } from "../../plugins/material-volume-to-vertex-buffers.js";
+import { particleRendering } from "../../plugins/particle-rendering/particle-rendering.js";
+import { cameraControl } from "../../plugins/camera-control.js";
+import { materialVertexBufferRenderer } from "../../plugins/material-vertex-buffer-renderer/material-vertex-buffer-renderer.js";
+import { materialVolumeToVertexBuffers } from "../../plugins/material-volume-to-vertex-buffers/material-volume-to-vertex-buffers.js";
 import { DenseVolumeMaterial } from "../../types/dense-volume-material/dense-volume-material.js";
 import { createTerrainAndTowerVolume } from "./create-terrain-and-tower.js";
 
 export function createVolumeModelSampleService() {
     return Database.create(
         Database.Plugin.create({
-            extends: Database.Plugin.combine(particleRendering, volumeModelRendering, materialVolumeToVertexBuffers, materialVertexBufferRenderer, cameraControl),
+            extends: Database.Plugin.combine(particleRendering, materialVolumeToVertexBuffers, materialVertexBufferRenderer, cameraControl),
             systems: {
                 volume_model_sample_init: {
                     create: db => {

@@ -1,11 +1,11 @@
 import { expect, test, describe, beforeEach } from "vitest";
 import { Database } from "@adobe/data/ecs";
 import { materialVolumeToVertexBuffers } from "./material-volume-to-vertex-buffers.js";
-import { volumeModel } from "./volume-model.js";
-import { graphics } from "./graphics.js";
-import { DenseVolumeMaterial } from "../types/dense-volume-material/dense-volume-material.js";
-import { Material } from "../types/material/material.js";
-import { ColumnVolume } from "../types/column-volume/column-volume.js";
+import { volumeModel } from "../volume-model.js";
+import { graphics } from "../graphics.js";
+import { DenseVolumeMaterial } from "../../types/dense-volume-material/dense-volume-material.js";
+import { Material } from "../../types/material/material.js";
+import { ColumnVolume } from "../../types/column-volume/column-volume.js";
 
 describe("materialVolumeToVertexBuffers", () => {
     beforeEach(() => {

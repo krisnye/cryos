@@ -10,12 +10,12 @@ export const scene = Database.Plugin.create({
          */
         particleSize: { default: 0.25 as F32 },
         /**
-         * Block size in meters.
+         * Block size in particles.
          */
-        blockSize: { default: 4.0 as F32 },
+        blockSize: { default: 16 as F32 },
         /**
-         * Chunk size in meters.
+         * Chunk size in blocks.
          */
-        chunkSize: { default: 64.0 as F32 },
+        chunkSize: { default: 16 as F32 },
     },
 });

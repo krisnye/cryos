@@ -1,5 +1,6 @@
 import { Database } from "@adobe/data/ecs";
-import { particleRendering, cameraControl } from "../../plugins/index.js";
+import { particleRendering } from "../../plugins/particle-rendering/particle-rendering.js";
+import { cameraControl } from "../../plugins/camera-control.js";
 
 export function createParticleSampleService() {
     return Database.create(

@@ -1,23 +1,23 @@
 import { html, css, CSSResult, TemplateResult, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
-import { createVolumeModelSampleService, VolumeModelSampleService } from "./volume-model-sample-service.js";
+import { createParticleSampleService, ParticleSampleService } from "./particle-sample-service.js";
 
 // UI Component
-export const tagName = "volume-model-sample-application";
+export const tagName = "particle-sample";
 
 declare global {
     interface HTMLElementTagNameMap {
-        [tagName]: VolumeModelSampleApplication;
+        [tagName]: ParticleSampleElement;
     }
 }
 
 @customElement(tagName)
-export class VolumeModelSampleApplication extends LitElement {
-    private service: VolumeModelSampleService;
+export class ParticleSampleElement extends LitElement {
+    private service: ParticleSampleService;
 
     constructor() {
         super();
-        this.service = createVolumeModelSampleService();
+        this.service = createParticleSampleService();
     }
 
     static override styles: CSSResult = css`
@@ -39,7 +39,7 @@ export class VolumeModelSampleApplication extends LitElement {
     override render(): TemplateResult {
         return html`
             <div class="game-container">
-                <div>Volume Model Sample - House Chunk (16x16x16, 25cm per voxel)</div>
+                <div>Particle Sample</div>
                 <canvas width="800" height="600"></canvas>
             </div>
         `;
