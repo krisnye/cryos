@@ -184,7 +184,7 @@ Following the pattern established with `create.ts`:
 cryos/src/types/column-volume/
   to-dense-volume.ts          # Implementation
   to-dense-volume.test.ts     # Tests
-  namespace.ts                # Re-export: export * from "./to-dense-volume.js";
+  public.ts                # Re-export: export * from "./to-dense-volume.js";
 ```
 
 ---

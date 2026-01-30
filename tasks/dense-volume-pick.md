@@ -108,7 +108,7 @@ export const pick = <T>(
 
 ### Phase 3: Namespace Export
 
-**File**: `cryos/src/types/dense-volume/namespace.ts`
+**File**: `cryos/src/types/dense-volume/public.ts`
 
 Add export:
 ```typescript
@@ -179,7 +179,7 @@ if (voxelPick) {
 cryos/src/types/dense-volume/
   pick.ts                   ⬜ (new - pick function)
   pick.test.ts              ⬜ (new - unit tests)
-  namespace.ts              ✅ (update - add pick export)
+  public.ts              ✅ (update - add pick export)
 ```
 
 ## Dependencies

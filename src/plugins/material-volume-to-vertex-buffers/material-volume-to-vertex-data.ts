@@ -3,7 +3,7 @@ import { Mutable } from "@adobe/data";
 import { Vec3 } from "@adobe/data/math";
 import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/position-normal-material.js";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
-import * as DenseVolumeNamespace from "../../types/dense-volume/namespace.js";
+import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
 import { Material } from "../../types/material/material.js";
 
 // Pre-computed direction vectors for performance

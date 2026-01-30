@@ -6,5 +6,5 @@ export type DenseVolume<T> = {
     readonly size: Vec3;
     readonly data: TypedBuffer<T>;
 };
-export * as DenseVolume from "./namespace.js";
+export * as DenseVolume from "./public.js";
 

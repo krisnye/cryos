@@ -1,2 +1,2 @@
-export * as SchemaX from "./namespace.js";
+export * as SchemaX from "./public.js";
 

@@ -1,4 +1,4 @@
 export type Id = number;
 
-export * as Id from "./namespace.js";
+export * as Id from "./public.js";
 

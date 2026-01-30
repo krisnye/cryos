@@ -5,20 +5,20 @@
 **Simple Types**: Single `<type-name>.ts` file (e.g., `key-code.ts`)
 
 **Complex Types**: Folder following Material pattern:
-- `{type-name}.ts` - Exports type and namespace: `export type X = ...; export * as X from "./namespace.js";`
-- `namespace.ts` - Aggregates from separate files: `export * from "./file1.js"; export * from "./file2.js";`
+- `{type-name}.ts` - Exports type and namespace: `export type X = ...; export * as X from "./public.js";`
+- `public.ts` - Aggregates from separate files: `export * from "./file1.js"; export * from "./file2.js";`
 - **No `index.ts`** - Main `types/index.ts` handles re-exports
 
 ## Correct Types ✅
 
 1. **`material/`** - Template pattern, correct
    - `material.ts` exports type and namespace ✓
-   - `namespace.ts` aggregates from separate files ✓
+   - `public.ts` aggregates from separate files ✓
    - No `index.ts` ✓
 
 2. **`rgba/`** - Follows Material pattern
    - `rgba.ts` exports type and namespace ✓
-   - `namespace.ts` aggregates utilities ✓
+   - `public.ts` aggregates utilities ✓
    - No `index.ts` ✓
 
 3. **`key-code.ts`** - Simple type, single file ✓
@@ -32,21 +32,21 @@
 ### 1. `camera/` - Missing namespace export, has index.ts
 
 **Issues**:
-- `camera.ts` doesn't export `export * as Camera from "./namespace.js";`
+- `camera.ts` doesn't export `export * as Camera from "./public.js";`
 - Has `index.ts` (should be removed per Material pattern)
 
 **Current**:
 ```typescript
 // camera/camera.ts
 export type Camera = Schema.ToType<typeof schema>;
-// Missing: export * as Camera from "./namespace.js";
+// Missing: export * as Camera from "./public.js";
 ```
 
 **Should be**:
 ```typescript
 // camera/camera.ts
 export type Camera = Schema.ToType<typeof schema>;
-export * as Camera from "./namespace.js";
+export * as Camera from "./public.js";
 ```
 
 **Files to fix**:
@@ -107,7 +107,7 @@ export type DenseVolumeMaterial = DenseVolume<MaterialId>;
 ### 5. `schema-x/` - Missing main type file
 
 **Issues**:
-- Only has `namespace.ts` and `index.ts`
+- Only has `public.ts` and `index.ts`
 - No `schema-x.ts` file that exports type and namespace
 - Unclear if this is a type or just utilities
 
@@ -116,7 +116,7 @@ export type DenseVolumeMaterial = DenseVolume<MaterialId>;
 schema-x/
   create-struct-gpu-buffer.ts
   index.ts
-  namespace.ts
+  public.ts
 ```
 
 **Questions**:

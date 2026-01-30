@@ -3,4 +3,4 @@ import { schema } from "./schema.js";
 
 export type Camera = Schema.ToType<typeof schema>;
 
-export * as Camera from "./namespace.js";
+export * as Camera from "./public.js";

@@ -42,5 +42,5 @@ export type ColumnVolume<T> = {
      */
     readonly data: TypedBuffer<T>;
 };
-export * as ColumnVolume from "./namespace.js";
+export * as ColumnVolume from "./public.js";
 

@@ -2,7 +2,7 @@ import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import type { ColumnVolume } from "./column-volume.js";
 import { DenseVolume } from "types/dense-volume/dense-volume.js";
-import * as DenseVolumeNamespace from "types/dense-volume/namespace.js";
+import * as DenseVolumeNamespace from "types/dense-volume/public.js";
 import { ColumnInfo } from "./column-info/column-info.js";
 
 /**

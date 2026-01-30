@@ -7,6 +7,6 @@
  */
 export type ColumnInfo = number;
 
-export * as ColumnInfo from "./namespace.js";
+export * as ColumnInfo from "./public.js";
 
 

@@ -3,7 +3,7 @@ import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "./dense-volume.js";
 import { Material } from "../material/material.js";
 import { equals } from "./equals.js";
-import * as DenseVolumeNamespace from "./namespace.js";
+import * as DenseVolumeNamespace from "./public.js";
 
 describe("DenseVolume.equals", () => {
     describe("same reference", () => {

@@ -5,7 +5,7 @@
 
 ## Overview
 
-To ensure consistency and maintainability, all types in `src/types/` should follow the Material pattern standard: simple types use a single file, complex types use a folder with `{type-name}.ts` + `namespace.ts` (no `index.ts`). This audit identifies all types that don't conform to this standard so they can be refactored.
+To ensure consistency and maintainability, all types in `src/types/` should follow the Material pattern standard: simple types use a single file, complex types use a folder with `{type-name}.ts` + `public.ts` (no `index.ts`). This audit identifies all types that don't conform to this standard so they can be refactored.
 
 ---
 
@@ -16,7 +16,7 @@ Review each type in `src/types/` against the Material pattern standard and docum
 **Requirements**:
 - Given a type in `src/types/`, should identify if it's simple (single file) or complex (folder with utilities)
 - Given a complex type folder, should verify it has `{type-name}.ts` exporting both type and namespace
-- Given a complex type folder, should verify it has `namespace.ts` aggregating from separate files
+- Given a complex type folder, should verify it has `public.ts` aggregating from separate files
 - Given a complex type folder, should flag if it has an `index.ts` file (should be removed)
 - Given a simple type, should verify it's a single file without a folder
 - Should document all inconsistencies found with specific file paths and issues
@@ -28,7 +28,7 @@ Review each type in `src/types/` against the Material pattern standard and docum
 Fix `camera/camera.ts` to export namespace and remove `camera/index.ts`.
 
 **Requirements**:
-- Given `camera/camera.ts`, should export `export * as Camera from "./namespace.js";`
+- Given `camera/camera.ts`, should export `export * as Camera from "./public.js";`
 - Given `camera/index.ts`, should be removed (not needed per Material pattern)
 - Given `types/index.ts`, should update to import from `camera/camera.js` instead of `camera/index.js`
 

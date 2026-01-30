@@ -5,8 +5,8 @@ import { DenseVolume } from "../dense-volume/dense-volume.js";
 import { ColumnVolume } from "./column-volume.js";
 import { toDenseVolume } from "./to-dense-volume.js";
 import { create } from "./create.js";
-import * as ColumnVolumeNamespace from "./namespace.js";
-import * as DenseVolumeNamespace from "../dense-volume/namespace.js";
+import * as ColumnVolumeNamespace from "./public.js";
+import * as DenseVolumeNamespace from "../dense-volume/public.js";
 import { ColumnInfo } from "./column-info/column-info.js";
 
 describe("toDenseVolume", () => {

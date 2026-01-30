@@ -6,4 +6,4 @@ import { Material } from "../material/material.js";
  */
 export type DenseVolumeMaterial = DenseVolume<Material.Id>;
 
-export * as DenseVolumeMaterial from "./namespace.js";
+export * as DenseVolumeMaterial from "./public.js";

@@ -6,4 +6,4 @@ export type GridWorldScale = {
     readonly chunkSize: F32;
 };
 
-export * as GridWorldScale from "./namespace.js";
+export * as GridWorldScale from "./public.js";

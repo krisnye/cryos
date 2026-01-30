@@ -238,7 +238,7 @@ cryos/src/
   - ✅ PositionNormalMaterialVertex: Removed `index.ts`
 - Updated all import paths in codebase to use `{type-name}/{type-name}.ts` pattern
 - Updated `write-types` skill to explicitly state no `index.ts` files (for convenient Command+P navigation)
-- All types now follow Material pattern: `<type-name>.ts` for simple types, `{type-name}/{type-name}.ts` + `namespace.ts` for complex types
+- All types now follow Material pattern: `<type-name>.ts` for simple types, `{type-name}/{type-name}.ts` + `public.ts` for complex types
 
 ## Ready for Visual Testing
 

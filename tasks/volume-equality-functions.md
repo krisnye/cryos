@@ -191,12 +191,12 @@ cryos/src/types/
   dense-volume/
     equals.ts              # DenseVolume.equals implementation
     equals.test.ts         # DenseVolume.equals tests
-    namespace.ts           # Re-export: export * from "./equals.js";
+    public.ts           # Re-export: export * from "./equals.js";
   
   column-volume/
     equals.ts              # ColumnVolume.equals implementation
     equals.test.ts         # ColumnVolume.equals tests
-    namespace.ts           # Re-export: export * from "./equals.js";
+    public.ts           # Re-export: export * from "./equals.js";
 ```
 
 ---
