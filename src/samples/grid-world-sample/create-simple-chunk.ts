@@ -5,39 +5,7 @@ import { ColumnVolume } from "../../types/column-volume/column-volume.js";
 import { Material } from "../../types/material/material.js";
 import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
 import * as ColumnVolumeNamespace from "../../types/column-volume/public.js";
-
-/**
- * Simple 2D fractal noise function using multiple octaves of sine waves.
- * Creates a continuous, seamless noise pattern across chunk boundaries.
- * 
- * @param x World X coordinate
- * @param y World Y coordinate
- * @param scale Noise scale (smaller = larger features)
- * @param octaves Number of noise octaves for fractal detail
- * @returns Noise value in range [0, 1]
- */
-const fractalNoise = (x: number, y: number, scale: number = 0.1, octaves: number = 3): number => {
-    let value = 0;
-    let amplitude = 1;
-    let frequency = scale;
-    let maxValue = 0;
-    
-    for (let i = 0; i < octaves; i++) {
-        // Combine multiple sine waves at different frequencies and angles
-        const noise1 = Math.sin(x * frequency) * Math.cos(y * frequency);
-        const noise2 = Math.sin(x * frequency * 1.3 + y * frequency * 0.7) * 0.5;
-        const noise3 = Math.cos(x * frequency * 0.7 + y * frequency * 1.3) * 0.5;
-        
-        value += (noise1 + noise2 + noise3) * amplitude;
-        maxValue += amplitude * 2; // Max possible value for normalization
-        
-        amplitude *= 0.5; // Each octave has half the amplitude
-        frequency *= 2; // Each octave doubles the frequency
-    }
-    
-    // Normalize to [0, 1] range
-    return (value / maxValue + 1) * 0.5;
-};
+import { fractalNoise, MAX_TERRAIN_HEIGHT_BLOCKS } from "./terrain-height.js";
 
 /**
  * Creates a seamless chunk with fractal noise-based elevation.
@@ -58,8 +26,8 @@ export const createCheckerboardChunk = (
 ): ColumnVolume<Material.Id> => {
     // Chunks must be 16x16 in x/y to match blocksPerChunk
     const chunkSize = 16;
-    // Max height in blocks (half of 24 = 12)
-    const maxHeight = 12;
+    // Max height in blocks
+    const maxHeight = MAX_TERRAIN_HEIGHT_BLOCKS;
     // Tower dimensions
     const towerWidth = 4;
     const towerHeight = 7; // Shorter fort structure

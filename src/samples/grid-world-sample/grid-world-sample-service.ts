@@ -4,7 +4,11 @@ import { cameraControl } from "../../plugins/camera-control.js";
 import { materialVertexBufferRenderer } from "../../plugins/material-vertex-buffer-renderer/material-vertex-buffer-renderer.js";
 import { materialVolumeToVertexBuffers } from "../../plugins/material-volume-to-vertex-buffers/material-volume-to-vertex-buffers.js";
 import { scene as gridWorld } from "../../plugins/grid-world.js";
+import { playerModel } from "./player-model.js";
+import { playerModelInput } from "./player-model-input.js";
 import { createCheckerboardChunk } from "./create-simple-chunk.js";
+import { createMechRobot } from "./create-mech-robot.js";
+import { getTerrainHeight, MAX_TERRAIN_HEIGHT_BLOCKS } from "./terrain-height.js";
 import { Material } from "../../types/material/material.js";
 
 export function createGridWorldSampleService() {
@@ -12,6 +16,7 @@ export function createGridWorldSampleService() {
         Database.Plugin.create({
             extends: Database.Plugin.combine(
                 gridWorld,
+                playerModelInput,
                 particleRendering,
                 materialVolumeToVertexBuffers,
                 materialVertexBufferRenderer,
@@ -55,7 +60,7 @@ export function createGridWorldSampleService() {
                             }
                         }
                         
-                        // Set camera to look down at the chunks from far above
+                        // Set camera to look down at the terrain from far above
                         // Center of 3x3 grid: chunk (1,1) at world position (64, 64, 0) assuming chunkSize=64
                         // Position camera high above and far back for top-down view
                         const centerX = 64; // Center of middle chunk
@@ -73,6 +78,37 @@ export function createGridWorldSampleService() {
                         
                         // Enable orbit camera control
                         db.store.resources.cameraControlType = "orbit";
+                        
+                        // Calculate terrain height at player position
+                        const { blockSize } = db.store.resources.worldScale;
+                        const playerWorldX = 5;
+                        const playerWorldY = 5;
+                        
+                        const terrainHeight = getTerrainHeight(playerWorldX, playerWorldY, MAX_TERRAIN_HEIGHT_BLOCKS, blockSize);
+                        
+                        // Create player mech robot on top of terrain
+                        // Create mech robot volume
+                        const mechRobotVolume = createMechRobot();
+                        
+                        // Create player entity with mech robot volume, positioned on top of terrain
+                        const playerEntity = db.transactions.createPlayer({
+                            position: [playerWorldX, playerWorldY, terrainHeight],
+                            materialVolume: mechRobotVolume,
+                        });
+                        
+                        // Verify player was created and can be queried
+                        const playerTables = db.store.queryArchetypes(["player", "position"]);
+                        console.log("After createPlayer - Player tables found:", playerTables.length);
+                        for (let i = 0; i < playerTables.length; i++) {
+                            const table = playerTables[i];
+                            console.log(`  Table ${i}: rowCount=${table.rowCount}`);
+                            if (table.rowCount > 0) {
+                                const entity = table.columns.id.get(0);
+                                const position = table.columns.position.get(0);
+                                console.log(`    Entity: ${entity}, Position:`, position);
+                            }
+                        }
+                        
                         // this is an init only system so it doesn't return a system function.
                     }
                 }
