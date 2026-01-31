@@ -10,6 +10,8 @@ import { createCheckerboardChunk } from "./create-simple-chunk.js";
 import { createMechRobot } from "./create-mech-robot.js";
 import { getTerrainHeight, MAX_TERRAIN_HEIGHT_BLOCKS } from "./terrain-height.js";
 import { Material } from "../../types/material/material.js";
+import { materials } from "types/material/materials.js";
+import { Rgba } from "types/rgba/rgba.js";
 
 export function createGridWorldSampleService() {
     return Database.create(
@@ -33,29 +35,19 @@ export function createGridWorldSampleService() {
                         // Chunk indexes: 0,0, 0,1, 0,2, 1,0, 1,1, 1,2, 2,0, 2,1, 2,2
                         // Position is calculated internally as chunkX * chunkSize, chunkY * chunkSize
                         // Each chunk uses the same checkerboard pattern but with different materials
-                        const materials = [
-                            Material.ids.concrete,
-                            Material.ids.steel,
-                            Material.ids.rock,
-                            Material.ids.iron,
-                            Material.ids.marble,
-                            Material.ids.granite,
-                            Material.ids.woodHard,
-                            Material.ids.dirt,
-                            Material.ids.sand,
-                        ];
                         
                         let materialIndex = 0;
-                        for (let chunkY = 0; chunkY < 3; chunkY++) {
-                            for (let chunkX = 0; chunkX < 3; chunkX++) {
-                                const materialId = materials[materialIndex % materials.length];
-                                const volume = createCheckerboardChunk(materialId, chunkX, chunkY);
-                                
-                                db.transactions.createWorldChunk({
-                                    chunkX,
-                                    chunkY,
-                                    volumeModel: volume,
-                                });
+                        for (let chunkY = 0; chunkY < 16; chunkY++) {
+                            for (let chunkX = 0; chunkX < 16; chunkX++) {
+                                let materialId = materialIndex % materials.length;
+                                if (materials[materialId].baseColor[3] > 0.0) {
+                                    const volume = createCheckerboardChunk(materialId, chunkX, chunkY);                                
+                                    db.transactions.createWorldChunk({
+                                        chunkX,
+                                        chunkY,
+                                        volumeModel: volume,
+                                    });
+                                }
                                 
                                 materialIndex++;
                             }
@@ -96,20 +88,7 @@ export function createGridWorldSampleService() {
                             position: [playerWorldX, playerWorldY, terrainHeight],
                             materialVolume: mechRobotVolume,
                         });
-                        
-                        // Verify player was created and can be queried
-                        const playerTables = db.store.queryArchetypes(["player", "position"]);
-                        console.log("After createPlayer - Player tables found:", playerTables.length);
-                        for (let i = 0; i < playerTables.length; i++) {
-                            const table = playerTables[i];
-                            console.log(`  Table ${i}: rowCount=${table.rowCount}`);
-                            if (table.rowCount > 0) {
-                                const entity = table.columns.id.get(0);
-                                const position = table.columns.position.get(0);
-                                console.log(`    Entity: ${entity}, Position:`, position);
-                            }
-                        }
-                        
+
                         // this is an init only system so it doesn't return a system function.
                     }
                 }

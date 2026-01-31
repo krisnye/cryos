@@ -3,6 +3,7 @@ import { True } from "@adobe/data/schema";
 import { Vec3, Quat } from "@adobe/data/math";
 import { physics } from "./physics/physics.js";
 import { Material } from "../types/material/material.js";
+import type { Particle } from "../types/particle/particle.js";
 
 export const particle = Database.Plugin.create({
     extends: physics,
@@ -16,12 +17,7 @@ export const particle = Database.Plugin.create({
         ParticleScaleRotation: ["particle", "position", "material", "scale", "rotation"],
     },
     transactions: {
-        createParticle(t, props: {
-            position: Vec3;
-            material: Material.Id;
-            scale?: Vec3;
-            rotation?: Quat;
-        }) {
+        createParticle(t, props: Particle) {
             // Add optional scale and rotation if provided
             if (props.scale && props.rotation) {
                 return t.archetypes.ParticleScaleRotation.insert({
@@ -54,6 +50,9 @@ export const particle = Database.Plugin.create({
                 position: props.position,
                 material: props.material,
             });
+        },
+        deleteParticle(t, entityId: number) {
+            t.delete(entityId);
         },
         createAxis(t) {
             const size = 4; // Extended arm length
