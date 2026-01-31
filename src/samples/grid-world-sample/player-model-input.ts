@@ -2,7 +2,7 @@ import { Database, Entity } from "@adobe/data/ecs";
 import { Vec3 } from "@adobe/data/math";
 import { keyInput } from "../../plugins/key-input.js";
 import { playerModel } from "./player-model.js";
-import { scene as gridWorld } from "../../plugins/grid-world.js";
+import { scene as gridWorld } from "../../plugins/grid-world/grid-world.js";
 import { getTerrainHeight, MAX_TERRAIN_HEIGHT_BLOCKS } from "./terrain-height.js";
 
 export const playerModelInput = Database.Plugin.create({
