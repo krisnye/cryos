@@ -198,7 +198,8 @@ export const scene = Database.Plugin.create({
                             entity: candidate.entity,
                             lineAlpha: Math.max(0, Math.min(1, lineAlpha)),
                             worldPosition,
-                            modelPosition: pickResult.coordinates
+                            modelPosition: pickResult.coordinates,
+                            face: pickResult.face
                         };
                     }
                 }

@@ -3,3 +3,5 @@ import { ColumnVolume } from "../column-volume/column-volume.js";
 
 export type Volume<T> = DenseVolume<T> | ColumnVolume<T>;
 
+export * as Volume from "./public.js";
+

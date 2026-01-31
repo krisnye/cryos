@@ -1,5 +1,6 @@
 import { Entity } from "@adobe/data/ecs";
 import { Vec3 } from "@adobe/data/math";
+import type { AabbFace } from "@adobe/data/math/aabb/face/index";
 
 /**
  * Result of picking an entity (e.g., a volume model).
@@ -14,4 +15,6 @@ export interface PickResult {
     worldPosition: Vec3;
     /** Model-space position on the picked entity. */
     modelPosition?: Vec3;
+    /** The AABB face that was hit (if available). */
+    face?: AabbFace;
 }

@@ -4,8 +4,8 @@ import { cameraControl } from "../../plugins/camera-control.js";
 import { materialVertexBufferRenderer } from "../../plugins/material-vertex-buffer-renderer/material-vertex-buffer-renderer.js";
 import { materialVolumeToVertexBuffers } from "../../plugins/material-volume-to-vertex-buffers/material-volume-to-vertex-buffers.js";
 import { scene as gridWorld } from "../../plugins/grid-world/grid-world.js";
-import { playerModel } from "./player-model.js";
 import { playerModelInput } from "./player-model-input.js";
+import { pickInput } from "./pick-input.js";
 import { createCheckerboardChunk } from "./create-simple-chunk.js";
 import { createMechRobot } from "./create-mech-robot.js";
 import { getTerrainHeight, MAX_TERRAIN_HEIGHT_BLOCKS } from "./terrain-height.js";
@@ -17,6 +17,7 @@ export function createGridWorldSampleService() {
             extends: Database.Plugin.combine(
                 gridWorld,
                 playerModelInput,
+                pickInput,
                 particleRendering,
                 materialVolumeToVertexBuffers,
                 materialVertexBufferRenderer,
@@ -39,9 +40,9 @@ export function createGridWorldSampleService() {
                             Material.ids.iron,
                             Material.ids.marble,
                             Material.ids.granite,
-                            Material.ids.metaCyan,
-                            Material.ids.metaBlue,
-                            Material.ids.metaTeal,
+                            Material.ids.woodHard,
+                            Material.ids.dirt,
+                            Material.ids.sand,
                         ];
                         
                         let materialIndex = 0;
