@@ -2,8 +2,8 @@
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import type { ColumnVolume } from "./column-volume.js";
-import { DenseVolume } from "types/dense-volume/dense-volume.js";
-import * as DenseVolumeNamespace from "types/dense-volume/namespace.js";
+import { DenseVolume } from "../dense-volume/dense-volume.js";
+import * as DenseVolumeNamespace from "../dense-volume/public.js";
 import { isEmptyColumn, unpackColumnInfo } from "./column-info.js";
 
 /**
@@ -66,7 +66,7 @@ export const toDenseVolume = <T>(volume: ColumnVolume<T>): DenseVolume<T> => {
             if (isEmptyColumn(columnInfo)) {
                 // Empty column: fill entire z-range with defaults
                 for (let z = 0; z < depth; z++) {
-                    const denseIndex = DenseVolumeNamespace.index(
+                    const denseIndex = DenseVolumeNamespace.getIndex(
                         { type: "dense", size: volume.size, data: denseBuffer } as DenseVolume<T>,
                         x,
                         y,
@@ -82,7 +82,7 @@ export const toDenseVolume = <T>(volume: ColumnVolume<T>): DenseVolume<T> => {
 
                 // Fill region before column data with defaults
                 for (let z = 0; z < zStart; z++) {
-                    const denseIndex = DenseVolumeNamespace.index(
+                    const denseIndex = DenseVolumeNamespace.getIndex(
                         { type: "dense", size: volume.size, data: denseBuffer } as DenseVolume<T>,
                         x,
                         y,
@@ -96,7 +96,7 @@ export const toDenseVolume = <T>(volume: ColumnVolume<T>): DenseVolume<T> => {
                 // Copy column voxels
                 for (let i = 0; i < length; i++) {
                     const z = zStart + i;
-                    const denseIndex = DenseVolumeNamespace.index(
+                    const denseIndex = DenseVolumeNamespace.getIndex(
                         { type: "dense", size: volume.size, data: denseBuffer } as DenseVolume<T>,
                         x,
                         y,
@@ -107,7 +107,7 @@ export const toDenseVolume = <T>(volume: ColumnVolume<T>): DenseVolume<T> => {
 
                 // Fill region after column data with defaults
                 for (let z = zStart + length; z < depth; z++) {
-                    const denseIndex = DenseVolumeNamespace.index(
+                    const denseIndex = DenseVolumeNamespace.getIndex(
                         { type: "dense", size: volume.size, data: denseBuffer } as DenseVolume<T>,
                         x,
                         y,

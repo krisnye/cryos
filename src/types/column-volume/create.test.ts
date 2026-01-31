@@ -2,12 +2,11 @@
 import { describe, it, expect } from "vitest";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../dense-volume/dense-volume.js";
-import { MaterialId } from "../material/material-id.js";
-import { Material } from "../index.js";
+import { Material } from "../material/material.js";
 import { create } from "./create.js";
-import * as ColumnVolume from "./namespace.js";
-import * as DenseVolumeNamespace from "../dense-volume/namespace.js";
-import { EMPTY_COLUMN } from "./column-info.js";
+import * as ColumnVolume from "./public.js";
+import * as DenseVolumeNamespace from "../dense-volume/public.js";
+import { EMPTY_COLUMN, unpackColumnInfo, packColumnInfo } from "./column-info.js";
 
 describe("create", () => {
     describe("schema.default validation", () => {
@@ -40,14 +39,14 @@ describe("create", () => {
             expect(result.type).toBe("column");
         });
 
-        it("should work with MaterialId schema (TypedArray default is 0)", () => {
-            const volume: DenseVolume<MaterialId> = {
+        it("should work with Material.Id schema (TypedArray default is 0)", () => {
+            const volume: DenseVolume<Material.Id> = {
                 type: "dense",
                 size: [2, 2, 2],
-                data: createTypedBuffer(MaterialId.schema, 8),
+                data: createTypedBuffer(Material.Id.schema, 8),
             };
 
-            // MaterialId uses I32.schema, which is TypedArray-backed (default is 0)
+            // Material.Id uses I32.schema, which is TypedArray-backed (default is 0)
             // This should work because TypedArray buffers have implicit default of 0
             const result = create(volume);
             expect(result.type).toBe("column");
@@ -56,10 +55,10 @@ describe("create", () => {
 
     describe("empty volume", () => {
         it("should produce column volume with no data for all-empty volume", () => {
-            const volume: DenseVolume<MaterialId> = {
+            const volume: DenseVolume<Material.Id> = {
                 type: "dense",
                 size: [2, 2, 2],
-                data: createTypedBuffer(MaterialId.schema, 8),
+                data: createTypedBuffer(Material.Id.schema, 8),
             };
 
             // All voxels are 0 (air/default)
@@ -79,15 +78,15 @@ describe("create", () => {
 
     describe("fully dense volume", () => {
         it("should produce column volume with all columns for fully dense volume", () => {
-            const volume: DenseVolume<MaterialId> = {
+            const volume: DenseVolume<Material.Id> = {
                 type: "dense",
                 size: [2, 2, 2],
-                data: createTypedBuffer(MaterialId.schema, 8),
+                data: createTypedBuffer(Material.Id.schema, 8),
             };
 
             // Fill all voxels with non-zero material
             for (let i = 0; i < 8; i++) {
-                volume.data.set(i, Material.id.concrete);
+                volume.data.set(i, Material.ids.concrete);
             }
 
             const result = create(volume);
@@ -113,7 +112,7 @@ describe("create", () => {
                 const columnInfo = result.tile[tileIdx];
                 expect(columnInfo).not.toBe(EMPTY_COLUMN);
 
-                const unpacked = ColumnVolume.unpackColumnInfo(columnInfo);
+                const unpacked = unpackColumnInfo(columnInfo);
                 expect(unpacked.dataOffset).toBe(expected.dataOffset);
                 expect(unpacked.length).toBe(expected.length);
                 expect(unpacked.zStart).toBe(expected.zStart);
@@ -123,17 +122,17 @@ describe("create", () => {
 
     describe("sparse volume", () => {
         it("should only store non-empty columns", () => {
-            const volume: DenseVolume<MaterialId> = {
+            const volume: DenseVolume<Material.Id> = {
                 type: "dense",
                 size: [3, 3, 3],
-                data: createTypedBuffer(MaterialId.schema, 27),
+                data: createTypedBuffer(Material.Id.schema, 27),
             };
 
             // Only fill column at (1,1) with material
             // Column (1,1) has voxels at z=0,1,2
-            volume.data.set(DenseVolumeNamespace.index(volume, 1, 1, 0), Material.id.concrete);
-            volume.data.set(DenseVolumeNamespace.index(volume, 1, 1, 1), Material.id.concrete);
-            volume.data.set(DenseVolumeNamespace.index(volume, 1, 1, 2), Material.id.concrete);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 1, 0), Material.ids.concrete);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 1, 1), Material.ids.concrete);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 1, 2), Material.ids.concrete);
 
             const result = create(volume);
 
@@ -154,16 +153,16 @@ describe("create", () => {
         });
 
         it("should handle column starting at non-zero z", () => {
-            const volume: DenseVolume<MaterialId> = {
+            const volume: DenseVolume<Material.Id> = {
                 type: "dense",
                 size: [2, 2, 5],
-                data: createTypedBuffer(MaterialId.schema, 20),
+                data: createTypedBuffer(Material.Id.schema, 20),
             };
 
             // Column (0,0) has voxels only at z=2,3,4
-            volume.data.set(DenseVolumeNamespace.index(volume, 0, 0, 2), Material.id.concrete);
-            volume.data.set(DenseVolumeNamespace.index(volume, 0, 0, 3), Material.id.concrete);
-            volume.data.set(DenseVolumeNamespace.index(volume, 0, 0, 4), Material.id.concrete);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 2), Material.ids.concrete);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 3), Material.ids.concrete);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 4), Material.ids.concrete);
 
             const result = create(volume);
 
@@ -176,7 +175,7 @@ describe("create", () => {
             const columnInfo = result.tile[tileIdx];
             expect(columnInfo).not.toBe(EMPTY_COLUMN);
 
-            const unpacked = ColumnVolume.unpackColumnInfo(columnInfo);
+            const unpacked = unpackColumnInfo(columnInfo);
             expect(unpacked.zStart).toBe(2); // Column starts at z=2
             expect(unpacked.length).toBe(3); // Column has 3 voxels
         });
@@ -184,15 +183,15 @@ describe("create", () => {
 
     describe("column bounds detection", () => {
         it("should include gaps between non-empty voxels in column", () => {
-            const volume: DenseVolume<MaterialId> = {
+            const volume: DenseVolume<Material.Id> = {
                 type: "dense",
                 size: [1, 1, 5],
-                data: createTypedBuffer(MaterialId.schema, 5),
+                data: createTypedBuffer(Material.Id.schema, 5),
             };
 
             // Column has voxels at z=0 and z=4, with gaps at z=1,2,3
-            volume.data.set(DenseVolumeNamespace.index(volume, 0, 0, 0), Material.id.concrete);
-            volume.data.set(DenseVolumeNamespace.index(volume, 0, 0, 4), Material.id.concrete);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 0), Material.ids.concrete);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 4), Material.ids.concrete);
 
             const result = create(volume);
 
@@ -200,7 +199,7 @@ describe("create", () => {
             expect(result.data.capacity).toBe(5); // All 5 voxels stored
 
             const tileIdx = 0 + 0 * 1;
-            const unpacked = ColumnVolume.unpackColumnInfo(result.tile[tileIdx]);
+            const unpacked = unpackColumnInfo(result.tile[tileIdx]);
             expect(unpacked.zStart).toBe(0);
             expect(unpacked.length).toBe(5); // Full range from 0 to 4
         });
@@ -209,24 +208,24 @@ describe("create", () => {
     describe("data correctness verification", () => {
         it("should preserve exact voxel values in conversion", () => {
             // Create a simple 2x2x3 volume with known values
-            const volume: DenseVolume<MaterialId> = {
+            const volume: DenseVolume<Material.Id> = {
                 type: "dense",
                 size: [2, 2, 3],
-                data: createTypedBuffer(MaterialId.schema, 12),
+                data: createTypedBuffer(Material.Id.schema, 12),
             };
 
             // Fill with specific materials at known positions
-            const { air, concrete, steel, woodHard, rock, iron } = Material.id;
+            const { air, concrete, steel, woodHard, rock, iron } = Material.ids;
             
             // Column (0,0): concrete at z=0, steel at z=1, air at z=2
-            volume.data.set(DenseVolumeNamespace.index(volume, 0, 0, 0), concrete);
-            volume.data.set(DenseVolumeNamespace.index(volume, 0, 0, 1), steel);
-            volume.data.set(DenseVolumeNamespace.index(volume, 0, 0, 2), air);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 0), concrete);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 1), steel);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 2), air);
 
             // Column (1,0): woodHard at z=0, rock at z=1, iron at z=2
-            volume.data.set(DenseVolumeNamespace.index(volume, 1, 0, 0), woodHard);
-            volume.data.set(DenseVolumeNamespace.index(volume, 1, 0, 1), rock);
-            volume.data.set(DenseVolumeNamespace.index(volume, 1, 0, 2), iron);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 0, 0), woodHard);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 0, 1), rock);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 0, 2), iron);
 
             // Columns (0,1) and (1,1) are all air (empty)
 
@@ -242,7 +241,7 @@ describe("create", () => {
 
             // Verify column (0,0) data (ends at z=1 because z=2 is air/default)
             const tileIdx00 = 0 + 0 * 2;
-            const info00 = ColumnVolume.unpackColumnInfo(result.tile[tileIdx00]);
+            const info00 = unpackColumnInfo(result.tile[tileIdx00]);
             expect(info00.zStart).toBe(0);
             expect(info00.length).toBe(2); // Only z=0,1 (z=2 is default/empty)
             expect(result.data.get(info00.dataOffset + 0)).toBe(concrete);
@@ -250,7 +249,7 @@ describe("create", () => {
 
             // Verify column (1,0) data
             const tileIdx10 = 1 + 0 * 2;
-            const info10 = ColumnVolume.unpackColumnInfo(result.tile[tileIdx10]);
+            const info10 = unpackColumnInfo(result.tile[tileIdx10]);
             expect(info10.zStart).toBe(0);
             expect(info10.length).toBe(3);
             expect(result.data.get(info10.dataOffset + 0)).toBe(woodHard);
@@ -265,15 +264,15 @@ describe("create", () => {
         });
 
         it("should correctly pack and unpack ColumnInfo", () => {
-            const volume: DenseVolume<MaterialId> = {
+            const volume: DenseVolume<Material.Id> = {
                 type: "dense",
                 size: [2, 2, 10],
-                data: createTypedBuffer(MaterialId.schema, 40),
+                data: createTypedBuffer(Material.Id.schema, 40),
             };
 
             // Column (0,0) starts at z=3 with 5 voxels
             for (let z = 3; z < 8; z++) {
-                volume.data.set(DenseVolumeNamespace.index(volume, 0, 0, z), Material.id.concrete);
+                volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, z), Material.ids.concrete);
             }
 
             const result = create(volume);
@@ -282,13 +281,13 @@ describe("create", () => {
             const columnInfo = result.tile[tileIdx];
             
             // Verify packed info
-            const unpacked = ColumnVolume.unpackColumnInfo(columnInfo);
+            const unpacked = unpackColumnInfo(columnInfo);
             expect(unpacked.zStart).toBe(3);
             expect(unpacked.length).toBe(5);
             expect(unpacked.dataOffset).toBe(0); // First column
 
             // Verify we can round-trip pack/unpack
-            const repacked = ColumnVolume.packColumnInfo(unpacked.dataOffset, unpacked.length, unpacked.zStart);
+            const repacked = packColumnInfo(unpacked.dataOffset, unpacked.length, unpacked.zStart);
             expect(repacked).toBe(columnInfo);
         });
     });
