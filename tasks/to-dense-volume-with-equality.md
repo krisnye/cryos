@@ -85,14 +85,14 @@ cryos/src/types/
   dense-volume/
     equals.ts              # DenseVolume.equals
     equals.test.ts         # Tests
-    public.ts           # Re-export
+    namespace.ts           # Re-export
   
   column-volume/
     equals.ts              # ColumnVolume.equals
     equals.test.ts         # Tests
     to-dense-volume.ts     # toDenseVolume implementation
     to-dense-volume.test.ts # Tests (includes round-trip)
-    public.ts           # Re-export both
+    namespace.ts           # Re-export both
 ```
 
 ---

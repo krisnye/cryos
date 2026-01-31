@@ -1,3 +1,4 @@
+// © 2026 Adobe. MIT License. See /LICENSE for details.
 import type { ColumnVolume } from "./column-volume.js";
 
 export type Index = number;
