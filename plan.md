@@ -118,6 +118,18 @@
    - LOD (Level of Detail) system for distant volumes
    - Frustum culling for off-screen volumes
 
+### Investigation: Material Physical Properties (Heat & Sunlight) 🔬
+
+**Status**: Investigation complete. See `tasks/material-physical-properties-investigation.md`.
+
+**Findings**:
+- ✅ Schema has `density`, `specificHeatCapacity`, `thermalConductivity`, `irReflectance` — values are physically plausible
+- ✅ PhysicalVoxel stores per-voxel temperature (bits 23–12, 0–4095 K)
+- ❌ Thermal properties are **not used** in simulation or rendering
+- ❌ No solar irradiance (W/m²) in scene; `irReflectance`/`irEmission` semantics undocumented
+
+**Feasibility**: Heat capacity and sunlight heating are **structurally ready**; a thermal simulation system is needed to use them. Recommended next steps: document irReflectance semantics, add `solarIrradiance` to scene, implement minimal thermal tick for sun-facing voxels.
+
 ### Medium-term Features
 
 1. **Volume Editing**:

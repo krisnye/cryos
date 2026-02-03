@@ -38,7 +38,7 @@ function getNormalIndex(dx: number, dy: number, dz: number): number {
     return 0; // fallback to +X
 }
 
-// Face data stored as flat array: [x, y, z, dx, dy, dz, materialIndex] per face
+// Face data stored as flat array: [x, y, z, dx, dy, dz, physicalVoxel] per face
 // Access pattern: faces[i * 7 + 0] = x, faces[i * 7 + 1] = y, etc.
 const FACE_DATA_SIZE = 7;
 
@@ -75,7 +75,7 @@ export function materialVolumeToVertexData(
     const [width, height, depth] = volume.size;
     
     // First pass: collect visible faces
-    // Pre-allocate faces array as flat number array: [x, y, z, dx, dy, dz, materialIndex] per face
+    // Pre-allocate faces array as flat number array: [x, y, z, dx, dy, dz, physicalVoxel] per face
     const estimatedCapacity = width * height * depth * 3; // conservative estimate
     const faces = new Array<number>(estimatedCapacity * FACE_DATA_SIZE);
     let faceCount = 0;
@@ -127,7 +127,7 @@ export function materialVolumeToVertexData(
                     const isAdjacentSolid = isSolid(adjacentMaterialId, opaque);
                     
                     // Generate face if adjacent is boundary or not solid
-                    // Store face data in flat array: [x, y, z, dx, dy, dz, materialIndex]
+                    // Store face data in flat array: [x, y, z, dx, dy, dz, physicalVoxel]
                     if (isBoundary || !isAdjacentSolid) {
                         const faceOffset = faceCount * FACE_DATA_SIZE;
                         faces[faceOffset + 0] = x;
@@ -136,7 +136,7 @@ export function materialVolumeToVertexData(
                         faces[faceOffset + 3] = dx;
                         faces[faceOffset + 4] = dy;
                         faces[faceOffset + 5] = dz;
-                        faces[faceOffset + 6] = materialId;
+                        faces[faceOffset + 6] = physicalVoxel;
                         faceCount++;
                     }
                 }
@@ -162,7 +162,7 @@ export function materialVolumeToVertexData(
     
     // Only iterate over initialized faces
     for (let i = 0; i < faceCount; i++) {
-        // Access face data from flat array: [x, y, z, dx, dy, dz, materialIndex]
+        // Access face data from flat array: [x, y, z, dx, dy, dz, physicalVoxel]
         const faceOffset = i * FACE_DATA_SIZE;
         const x = faces[faceOffset + 0];
         const y = faces[faceOffset + 1];
@@ -170,11 +170,11 @@ export function materialVolumeToVertexData(
         const dx = faces[faceOffset + 3];
         const dy = faces[faceOffset + 4];
         const dz = faces[faceOffset + 5];
-        const materialId = faces[faceOffset + 6];
+        const physicalVoxel = faces[faceOffset + 6];
         
         // Set normal once per face (reuse array)
         normal[0] = dx; normal[1] = dy; normal[2] = dz;
-        vertex.materialIndex = materialId; // Set material index once per face
+        vertex.materialIndex = physicalVoxel; // Full PhysicalVoxel (shader extracts material ID via mask)
 
         // Use pre-computed quad indices based on face direction
         // Direct integer index - no string operations!
