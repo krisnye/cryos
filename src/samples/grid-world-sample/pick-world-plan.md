@@ -109,7 +109,7 @@ actions: {
         const candidates: Array<{
             entity: Entity;
             position: Vec3;
-            volume: ColumnVolume<Material.Id>;
+            volume: ColumnVolume<PhysicalVoxel>;
             intersectionAlpha: number;
         }> = [];
         

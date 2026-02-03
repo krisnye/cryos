@@ -3,6 +3,7 @@ import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { ColumnVolume } from "../../types/column-volume/column-volume.js";
 import { Material } from "../../types/material/material.js";
+import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
 import * as ColumnVolumeNamespace from "../../types/column-volume/public.js";
 import { fractalNoise, MAX_TERRAIN_HEIGHT_BLOCKS } from "./terrain-height.js";
@@ -23,7 +24,7 @@ export const createCheckerboardChunk = (
     materialId: Material.Id,
     chunkX: number,
     chunkY: number
-): ColumnVolume<Material.Id> => {
+): ColumnVolume<PhysicalVoxel> => {
     // Chunks must be 16x16 in x/y to match blocksPerChunk
     const chunkSize = 16;
     // Max height in blocks
@@ -35,15 +36,15 @@ export const createCheckerboardChunk = (
     const crenelationHeight = 1; // Height of crenelations above main tower
     const size: Vec3 = [chunkSize, chunkSize, maxHeight + towerHeight + crenelationHeight];
     const capacity = size[0] * size[1] * size[2];
-    const denseVolume: DenseVolume<Material.Id> = {
+    const denseVolume: DenseVolume<PhysicalVoxel> = {
         type: "dense",
         size,
-        data: createTypedBuffer(Material.Id.schema, capacity),
+        data: createTypedBuffer(PhysicalVoxel.schema, capacity),
     };
-    
+
     // Initialize all voxels to air (0)
     for (let i = 0; i < capacity; i++) {
-        denseVolume.data.set(i, Material.ids.air);
+        denseVolume.data.set(i, PhysicalVoxel.pack(Material.ids.air));
     }
     
     // Create fractal noise-based elevation pattern
@@ -73,7 +74,7 @@ export const createCheckerboardChunk = (
             // Fill voxels from z=0 up to height
             for (let z = 0; z < height; z++) {
                 const index = DenseVolumeNamespace.getIndex(denseVolume, x, y, z);
-                denseVolume.data.set(index, materialId);
+                denseVolume.data.set(index, PhysicalVoxel.pack(materialId));
             }
         }
     }
@@ -135,7 +136,7 @@ export const createCheckerboardChunk = (
                     for (let z = minTerrainHeight; z < baseHeight; z++) {
                         if (z >= 0 && z < size[2]) {
                             const index = DenseVolumeNamespace.getIndex(denseVolume, x, y, z);
-                            denseVolume.data.set(index, Material.ids.woodHard);
+                            denseVolume.data.set(index, PhysicalVoxel.pack(Material.ids.woodHard));
                         }
                     }
                 }
@@ -154,13 +155,13 @@ export const createCheckerboardChunk = (
                             const patternZ = Math.floor(relativeZ / 1);
                             const isHardWood = (patternX + patternY + patternZ) % 2 === 0;
                             
-                            denseVolume.data.set(index, isHardWood ? Material.ids.woodHard : Material.ids.woodSoft);
+                            denseVolume.data.set(index, PhysicalVoxel.pack(isHardWood ? Material.ids.woodHard : Material.ids.woodSoft));
                         }
                         // Interior: hollow at top, solid woodSoft at bottom
                         else if (isInterior) {
                             if (relativeZ < towerHollowStart) {
                                 // Solid interior at bottom (foundation/platform)
-                                denseVolume.data.set(index, Material.ids.woodSoft);
+                                denseVolume.data.set(index, PhysicalVoxel.pack(Material.ids.woodSoft));
                             }
                             // Top is hollow (empty/air)
                         }
@@ -181,7 +182,7 @@ export const createCheckerboardChunk = (
                         const patternY = Math.floor((worldY - towerCenterY + towerHalfWidth) / 1);
                         const patternZ = Math.floor(towerHeight / 1);
                         const isHardWood = (patternX + patternY + patternZ) % 2 === 0;
-                        denseVolume.data.set(index, isHardWood ? Material.ids.woodHard : Material.ids.woodSoft);
+                        denseVolume.data.set(index, PhysicalVoxel.pack(isHardWood ? Material.ids.woodHard : Material.ids.woodSoft));
                     }
                     // Other positions remain at the lower height (crenelation gap)
                 }

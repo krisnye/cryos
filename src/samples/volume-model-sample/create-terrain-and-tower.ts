@@ -3,6 +3,7 @@ import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { ColumnVolume } from "../../types/column-volume/column-volume.js";
 import { Material } from "../../types/material/material.js";
+import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 
 /**
  * Creates a ColumnVolume with varied terrain elevations and a sci-fi tower.
@@ -16,7 +17,7 @@ import { Material } from "../../types/material/material.js";
  * This demonstrates sparse volume storage - most of the 16x16 area is empty air,
  * with only terrain columns and the tower columns containing voxels.
  */
-export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
+export function createTerrainAndTowerVolume(): ColumnVolume<PhysicalVoxel> {
     const width = 16;
     const height = 16;
     const maxDepth = 60; // Tall enough for smaller tower + spire
@@ -25,15 +26,15 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
     // This is easier for complex structures
     const denseSize: Vec3 = [width, height, maxDepth];
     const capacity = width * height * maxDepth;
-    const denseVolume: DenseVolume<Material.Id> = {
+    const denseVolume: DenseVolume<PhysicalVoxel> = {
         type: "dense",
         size: denseSize,
-        data: createTypedBuffer(Material.Id.schema, capacity),
+        data: createTypedBuffer(PhysicalVoxel.schema, capacity),
     };
-    
+
     // Initialize all voxels to air (0)
     for (let i = 0; i < capacity; i++) {
-        denseVolume.data.set(i, Material.ids.air);
+        denseVolume.data.set(i, PhysicalVoxel.pack(Material.ids.air));
     }
     
     // Material IDs for convenience
@@ -85,7 +86,7 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
             // Fill terrain column
             for (let z = 0; z < clampedElevation; z++) {
                 const index = DenseVolume.getIndex(denseVolume, x, y, z);
-                denseVolume.data.set(index, terrainMaterial);
+                denseVolume.data.set(index, PhysicalVoxel.pack(terrainMaterial));
             }
         }
     }
@@ -131,7 +132,7 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
                 } else {
                     // Middle layer: energy conduits (glowing cyan)
                     if ((tx === 0 && ty === 0) || (tx === 1 && ty === 1)) {
-                        denseVolume.data.set(index, metaCyan);
+                        denseVolume.data.set(index, PhysicalVoxel.pack(metaCyan));
                     } else {
                         denseVolume.data.set(index, steel);
                     }
@@ -159,27 +160,27 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
                         // Floor slabs with energy patterns
                         if (floorType === 0) {
                             // Pattern 1: Full steel floor
-                            denseVolume.data.set(index, steel);
+                            denseVolume.data.set(index, PhysicalVoxel.pack(steel));
                         } else if (floorType === 1) {
                             // Pattern 2: Steel with cyan energy lines
                             if (tx === 0 || ty === 0 || tx === towerWidth - 1 || ty === towerHeight - 1) {
-                                denseVolume.data.set(index, metaCyan);
+                                denseVolume.data.set(index, PhysicalVoxel.pack(metaCyan));
                             } else {
-                                denseVolume.data.set(index, steel);
+                                denseVolume.data.set(index, PhysicalVoxel.pack(steel));
                             }
                         } else if (floorType === 2) {
                             // Pattern 3: Glass floor with steel frame
                             if (tx === 0 || tx === towerWidth - 1 || ty === 0 || ty === towerHeight - 1) {
-                                denseVolume.data.set(index, steel);
+                                denseVolume.data.set(index, PhysicalVoxel.pack(steel));
                             } else {
-                                denseVolume.data.set(index, glass);
+                                denseVolume.data.set(index, PhysicalVoxel.pack(glass));
                             }
                         } else {
                             // Pattern 4: Steel with blue energy grid
                             if ((tx + ty) % 2 === 0) {
-                                denseVolume.data.set(index, metaBlue);
+                                denseVolume.data.set(index, PhysicalVoxel.pack(metaBlue));
                             } else {
-                                denseVolume.data.set(index, steel);
+                                denseVolume.data.set(index, PhysicalVoxel.pack(steel));
                             }
                         }
                     }
@@ -187,12 +188,12 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
                     else if (z === floorZStart + 1 || z === floorZEnd) {
                         // Outer frame: always steel
                         if (tx === 0 || tx === towerWidth - 1 || ty === 0 || ty === towerHeight - 1) {
-                            denseVolume.data.set(index, steel);
+                            denseVolume.data.set(index, PhysicalVoxel.pack(steel));
                         }
                         // Inner: glass or energy panels
                         else {
                             if (floorType === 0 || floorType === 2) {
-                                denseVolume.data.set(index, glass);
+                                denseVolume.data.set(index, PhysicalVoxel.pack(glass));
                             } else {
                                 // Energy panels for tech floors
                                 denseVolume.data.set(index, metaTeal);
@@ -207,9 +208,9 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
                         if (isCorner) {
                             // Corner columns: steel with energy conduits
                             if (floor % 3 === 0) {
-                                denseVolume.data.set(index, metaCyan);
+                                denseVolume.data.set(index, PhysicalVoxel.pack(metaCyan));
                             } else {
-                                denseVolume.data.set(index, steel);
+                                denseVolume.data.set(index, PhysicalVoxel.pack(steel));
                             }
                         } else {
                             // Interior air space
@@ -225,7 +226,7 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
             for (let z = floorZStart - 1; z < floorZStart; z++) {
                 // Energy conduit at center (for 2x2, use one corner)
                 const centerIndex = DenseVolume.getIndex(denseVolume, towerX, towerY, z);
-                denseVolume.data.set(centerIndex, metaCyan);
+                denseVolume.data.set(centerIndex, PhysicalVoxel.pack(metaCyan));
             }
         }
         
@@ -240,13 +241,13 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
                 const y = towerY + towerHeight; // One voxel north of tower
                 if (y < height) {
                     const balconyIndex = DenseVolume.getIndex(denseVolume, x, y, balconyZ);
-                    denseVolume.data.set(balconyIndex, steel);
+                    denseVolume.data.set(balconyIndex, PhysicalVoxel.pack(steel));
                     // Add a small extension
                     if (tx === 0 || tx === towerWidth - 1) {
                         const extY = towerY + towerHeight + 1;
                         if (extY < height) {
                             const extIndex = DenseVolume.getIndex(denseVolume, x, extY, balconyZ);
-                            denseVolume.data.set(extIndex, steel);
+                            denseVolume.data.set(extIndex, PhysicalVoxel.pack(steel));
                         }
                     }
                 }
@@ -258,13 +259,13 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
                 const y = towerY - 1; // One voxel south of tower
                 if (y >= 0) {
                     const balconyIndex = DenseVolume.getIndex(denseVolume, x, y, balconyZ);
-                    denseVolume.data.set(balconyIndex, steel);
+                    denseVolume.data.set(balconyIndex, PhysicalVoxel.pack(steel));
                     // Add a small extension
                     if (tx === 0 || tx === towerWidth - 1) {
                         const extY = towerY - 2;
                         if (extY >= 0) {
                             const extIndex = DenseVolume.getIndex(denseVolume, x, extY, balconyZ);
-                            denseVolume.data.set(extIndex, steel);
+                            denseVolume.data.set(extIndex, PhysicalVoxel.pack(steel));
                         }
                     }
                 }
@@ -276,13 +277,13 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
                 const y = towerY + ty;
                 if (x < width) {
                     const balconyIndex = DenseVolume.getIndex(denseVolume, x, y, balconyZ);
-                    denseVolume.data.set(balconyIndex, steel);
+                    denseVolume.data.set(balconyIndex, PhysicalVoxel.pack(steel));
                     // Add a small extension
                     if (ty === 0 || ty === towerHeight - 1) {
                         const extX = towerX + towerWidth + 1;
                         if (extX < width) {
                             const extIndex = DenseVolume.getIndex(denseVolume, extX, y, balconyZ);
-                            denseVolume.data.set(extIndex, steel);
+                            denseVolume.data.set(extIndex, PhysicalVoxel.pack(steel));
                         }
                     }
                 }
@@ -294,13 +295,13 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
                 const y = towerY + ty;
                 if (x >= 0) {
                     const balconyIndex = DenseVolume.getIndex(denseVolume, x, y, balconyZ);
-                    denseVolume.data.set(balconyIndex, steel);
+                    denseVolume.data.set(balconyIndex, PhysicalVoxel.pack(steel));
                     // Add a small extension
                     if (ty === 0 || ty === towerHeight - 1) {
                         const extX = towerX - 2;
                         if (extX >= 0) {
                             const extIndex = DenseVolume.getIndex(denseVolume, extX, y, balconyZ);
-                            denseVolume.data.set(extIndex, steel);
+                            denseVolume.data.set(extIndex, PhysicalVoxel.pack(steel));
                         }
                     }
                 }
@@ -317,7 +318,7 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
             for (const [cx, cy] of corners) {
                 if (cx >= 0 && cx < width && cy >= 0 && cy < height) {
                     const cornerIndex = DenseVolume.getIndex(denseVolume, cx, cy, balconyZ);
-                    denseVolume.data.set(cornerIndex, metaCyan); // Glowing corner extensions
+                    denseVolume.data.set(cornerIndex, PhysicalVoxel.pack(metaCyan)); // Glowing corner extensions
                 }
             }
         }
@@ -348,16 +349,16 @@ export function createTerrainAndTowerVolume(): ColumnVolume<Material.Id> {
         // Main spire: steel with energy core
         const spireIndex = DenseVolume.getIndex(denseVolume, spireX, spireY, z);
         if (z % 2 === 0) {
-            denseVolume.data.set(spireIndex, metaCyan);
+            denseVolume.data.set(spireIndex, PhysicalVoxel.pack(metaCyan));
         } else {
-            denseVolume.data.set(spireIndex, steel);
+            denseVolume.data.set(spireIndex, PhysicalVoxel.pack(steel));
         }
     }
     
     // Spire tip (glowing energy)
     const tipZ = spireStartZ + spireHeight;
     const tipIndex = DenseVolume.getIndex(denseVolume, spireX, spireY, tipZ);
-    denseVolume.data.set(tipIndex, metaCyan);
+    denseVolume.data.set(tipIndex, PhysicalVoxel.pack(metaCyan));
     
     // Convert dense volume to ColumnVolume (sparse representation)
     return ColumnVolume.create(denseVolume);

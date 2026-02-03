@@ -6,6 +6,7 @@ import { scene as gridWorld } from "./grid-world.js";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { ColumnVolume } from "../../types/column-volume/column-volume.js";
 import { Material } from "../../types/material/material.js";
+import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 import * as ColumnVolumeNamespace from "../../types/column-volume/public.js";
 import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
 
@@ -15,24 +16,24 @@ describe("gridWorld.pickWorld", () => {
     /**
      * Helper to create a simple test chunk with a single solid voxel at a specific position
      */
-    const createTestChunk = (solidX: number, solidY: number, solidZ: number, chunkSize: number = 16): ColumnVolume<Material.Id> => {
+    const createTestChunk = (solidX: number, solidY: number, solidZ: number, chunkSize: number = 16): ColumnVolume<PhysicalVoxel> => {
         // Create a dense volume with one solid voxel
         const size: Vec3 = [chunkSize, chunkSize, solidZ + 1];
         const capacity = size[0] * size[1] * size[2];
-        const denseVolume: DenseVolume<Material.Id> = {
+        const denseVolume: DenseVolume<PhysicalVoxel> = {
             type: "dense",
             size,
-            data: createTypedBuffer(Material.Id.schema, capacity),
+            data: createTypedBuffer(PhysicalVoxel.schema, capacity),
         };
 
         // Initialize all voxels to air
         for (let i = 0; i < capacity; i++) {
-            denseVolume.data.set(i, air);
+            denseVolume.data.set(i, PhysicalVoxel.pack(air));
         }
 
         // Set one solid voxel
         const index = DenseVolumeNamespace.getIndex(denseVolume, solidX, solidY, solidZ);
-        denseVolume.data.set(index, rock);
+        denseVolume.data.set(index, PhysicalVoxel.pack(rock));
 
         // Convert to ColumnVolume
         return ColumnVolumeNamespace.create(denseVolume);
@@ -41,20 +42,20 @@ describe("gridWorld.pickWorld", () => {
     /**
      * Helper to create a chunk with a solid floor at z=0
      */
-    const createFloorChunk = (chunkSize: number = 16, floorHeight: number = 1): ColumnVolume<Material.Id> => {
+    const createFloorChunk = (chunkSize: number = 16, floorHeight: number = 1): ColumnVolume<PhysicalVoxel> => {
         const size: Vec3 = [chunkSize, chunkSize, floorHeight];
         const capacity = size[0] * size[1] * size[2];
-        const denseVolume: DenseVolume<Material.Id> = {
+        const denseVolume: DenseVolume<PhysicalVoxel> = {
             type: "dense",
             size,
-            data: createTypedBuffer(Material.Id.schema, capacity),
+            data: createTypedBuffer(PhysicalVoxel.schema, capacity),
         };
 
         // Fill bottom layer with rock
         for (let y = 0; y < chunkSize; y++) {
             for (let x = 0; x < chunkSize; x++) {
                 const index = DenseVolumeNamespace.getIndex(denseVolume, x, y, 0);
-                denseVolume.data.set(index, rock);
+                denseVolume.data.set(index, PhysicalVoxel.pack(rock));
             }
         }
 

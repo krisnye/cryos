@@ -2,6 +2,7 @@ import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../dense-volume/dense-volume.js";
 import { Material } from "../material/material.js";
+import { PhysicalVoxel } from "../physical-voxel/physical-voxel.js";
 import type { DenseVolumeMaterial } from "./dense-volume-material.js";
 
 /**
@@ -14,12 +15,12 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
     const volume: DenseVolumeMaterial = {
         type: "dense",
         size,
-        data: createTypedBuffer(Material.Id.schema, capacity),
+        data: createTypedBuffer(PhysicalVoxel.schema, capacity),
     };
     
     // Initialize all voxels to air (0)
     for (let i = 0; i < capacity; i++) {
-        volume.data.set(i, Material.ids.air);
+        volume.data.set(i, PhysicalVoxel.pack(Material.ids.air));
     }
     
     // Material IDs for convenience
@@ -30,7 +31,7 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
         for (let y = 0; y < 16; y++) {
             for (let x = 0; x < 16; x++) {
                 const index = DenseVolume.getIndex(volume, x, y, z);
-                volume.data.set(index, reinforcedConcrete);
+                volume.data.set(index, PhysicalVoxel.pack(reinforcedConcrete));
             }
         }
     }
@@ -41,22 +42,22 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
         // Front wall (y=0)
         for (let x = 0; x < 16; x++) {
             const index = DenseVolume.getIndex(volume, x, 0, z);
-            volume.data.set(index, concrete);
+            volume.data.set(index, PhysicalVoxel.pack(concrete));
         }
         // Back wall (y=15)
         for (let x = 0; x < 16; x++) {
             const index = DenseVolume.getIndex(volume, x, 15, z);
-            volume.data.set(index, concrete);
+            volume.data.set(index, PhysicalVoxel.pack(concrete));
         }
         // Left wall (x=0)
         for (let y = 0; y < 16; y++) {
             const index = DenseVolume.getIndex(volume, 0, y, z);
-            volume.data.set(index, concrete);
+            volume.data.set(index, PhysicalVoxel.pack(concrete));
         }
         // Right wall (x=15)
         for (let y = 0; y < 16; y++) {
             const index = DenseVolume.getIndex(volume, 15, y, z);
-            volume.data.set(index, concrete);
+            volume.data.set(index, PhysicalVoxel.pack(concrete));
         }
     }
     
@@ -65,12 +66,12 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
         // Left window (x=2-7, 6 voxels wide)
         for (let x = 2; x < 8; x++) {
             const index = DenseVolume.getIndex(volume, x, 0, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
         // Right window (x=8-13, 6 voxels wide)
         for (let x = 8; x < 14; x++) {
             const index = DenseVolume.getIndex(volume, x, 0, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
     }
     
@@ -79,12 +80,12 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
         // Left window (x=2-7)
         for (let x = 2; x < 8; x++) {
             const index = DenseVolume.getIndex(volume, x, 15, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
         // Right window (x=8-13)
         for (let x = 8; x < 14; x++) {
             const index = DenseVolume.getIndex(volume, x, 15, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
     }
     
@@ -93,12 +94,12 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
         // Front window (y=2-7)
         for (let y = 2; y < 8; y++) {
             const index = DenseVolume.getIndex(volume, 0, y, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
         // Back window (y=8-13)
         for (let y = 8; y < 14; y++) {
             const index = DenseVolume.getIndex(volume, 0, y, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
     }
     
@@ -107,12 +108,12 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
         // Front window (y=2-7)
         for (let y = 2; y < 8; y++) {
             const index = DenseVolume.getIndex(volume, 15, y, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
         // Back window (y=8-13)
         for (let y = 8; y < 14; y++) {
             const index = DenseVolume.getIndex(volume, 15, y, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
     }
     
@@ -120,7 +121,7 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
     for (let z = 2; z < 9; z++) {
         for (let y = 4; y < 12; y++) {
             const index = DenseVolume.getIndex(volume, 8, y, z);
-            volume.data.set(index, concrete);
+            volume.data.set(index, PhysicalVoxel.pack(concrete));
         }
     }
     
@@ -128,7 +129,7 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
     for (let z = 2; z < 7; z++) {
         for (let y = 6; y < 9; y++) {
             const index = DenseVolume.getIndex(volume, 8, y, z);
-            volume.data.set(index, air);
+            volume.data.set(index, PhysicalVoxel.pack(air));
         }
     }
     
@@ -136,7 +137,7 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
     for (let y = 0; y < 16; y++) {
         for (let x = 0; x < 16; x++) {
             const index = DenseVolume.getIndex(volume, x, y, 8);
-            volume.data.set(index, woodHard);
+            volume.data.set(index, PhysicalVoxel.pack(woodHard));
         }
     }
     
@@ -146,23 +147,23 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
         for (let x = 0; x < 16; x++) {
             if (x < 4 || x >= 12) {
                 const index = DenseVolume.getIndex(volume, x, 0, z);
-                volume.data.set(index, concrete);
+                volume.data.set(index, PhysicalVoxel.pack(concrete));
             }
         }
         // Back wall (y=15)
         for (let x = 0; x < 16; x++) {
             const index = DenseVolume.getIndex(volume, x, 15, z);
-            volume.data.set(index, concrete);
+            volume.data.set(index, PhysicalVoxel.pack(concrete));
         }
         // Left wall (x=0)
         for (let y = 0; y < 16; y++) {
             const index = DenseVolume.getIndex(volume, 0, y, z);
-            volume.data.set(index, concrete);
+            volume.data.set(index, PhysicalVoxel.pack(concrete));
         }
         // Right wall (x=15)
         for (let y = 0; y < 16; y++) {
             const index = DenseVolume.getIndex(volume, 15, y, z);
-            volume.data.set(index, concrete);
+            volume.data.set(index, PhysicalVoxel.pack(concrete));
         }
     }
     
@@ -171,12 +172,12 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
         // Left window (x=2-7)
         for (let x = 2; x < 8; x++) {
             const index = DenseVolume.getIndex(volume, x, 0, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
         // Right window (x=8-13)
         for (let x = 8; x < 14; x++) {
             const index = DenseVolume.getIndex(volume, x, 0, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
     }
     
@@ -185,12 +186,12 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
         // Left window (x=2-7)
         for (let x = 2; x < 8; x++) {
             const index = DenseVolume.getIndex(volume, x, 15, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
         // Right window (x=8-13)
         for (let x = 8; x < 14; x++) {
             const index = DenseVolume.getIndex(volume, x, 15, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
     }
     
@@ -199,12 +200,12 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
         // Front window (y=2-7)
         for (let y = 2; y < 8; y++) {
             const index = DenseVolume.getIndex(volume, 0, y, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
         // Back window (y=8-13)
         for (let y = 8; y < 14; y++) {
             const index = DenseVolume.getIndex(volume, 0, y, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
     }
     
@@ -213,12 +214,12 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
         // Front window (y=2-7)
         for (let y = 2; y < 8; y++) {
             const index = DenseVolume.getIndex(volume, 15, y, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
         // Back window (y=8-13)
         for (let y = 8; y < 14; y++) {
             const index = DenseVolume.getIndex(volume, 15, y, z);
-            volume.data.set(index, glass);
+            volume.data.set(index, PhysicalVoxel.pack(glass));
         }
     }
     
@@ -228,7 +229,7 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
         for (let y = 0; y < 16; y++) {
             for (let x = 0; x < 16; x++) {
                 const index = DenseVolume.getIndex(volume, x, y, z);
-                volume.data.set(index, woodHard);
+                volume.data.set(index, PhysicalVoxel.pack(woodHard));
             }
         }
     }
@@ -236,10 +237,10 @@ export const createHouseChunk = (): DenseVolumeMaterial => {
     // Add some structural beams (steel) in corners
     for (let z = 2; z < 14; z++) {
         // Corner beams
-        volume.data.set(DenseVolume.getIndex(volume, 0, 0, z), steel);
-        volume.data.set(DenseVolume.getIndex(volume, 15, 0, z), steel);
-        volume.data.set(DenseVolume.getIndex(volume, 0, 15, z), steel);
-        volume.data.set(DenseVolume.getIndex(volume, 15, 15, z), steel);
+        volume.data.set(DenseVolume.getIndex(volume, 0, 0, z), PhysicalVoxel.pack(steel));
+        volume.data.set(DenseVolume.getIndex(volume, 15, 0, z), PhysicalVoxel.pack(steel));
+        volume.data.set(DenseVolume.getIndex(volume, 0, 15, z), PhysicalVoxel.pack(steel));
+        volume.data.set(DenseVolume.getIndex(volume, 15, 15, z), PhysicalVoxel.pack(steel));
     }
     
     return volume;

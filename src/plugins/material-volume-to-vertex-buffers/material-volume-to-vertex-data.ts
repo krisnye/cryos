@@ -5,6 +5,7 @@ import { PositionNormalMaterialVertex } from "../../types/vertices/position-norm
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
 import { Material } from "../../types/material/material.js";
+import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 
 // Pre-computed direction vectors for performance
 const DIRECTIONS: readonly Vec3[] = [
@@ -67,7 +68,7 @@ function isSolid(materialId: Material.Id, opaque: boolean): boolean {
 }
 
 export function materialVolumeToVertexData(
-    volume: DenseVolume<Material.Id>, 
+    volume: DenseVolume<PhysicalVoxel>,
     options: { center?: Vec3; opaque: boolean }
 ): TypedBuffer<PositionNormalMaterialVertex> {
     const { center = [0, 0, 0], opaque } = options;
@@ -103,8 +104,9 @@ export function materialVolumeToVertexData(
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 const voxelIndex = DenseVolumeNamespace.getIndex(volume, x, y, z);
-                const materialId = volume.data.get(voxelIndex);
-                
+                const physicalVoxel = volume.data.get(voxelIndex);
+                const materialId = PhysicalVoxel.getMaterialId(physicalVoxel);
+
                 // Skip if voxel is not solid for this rendering mode
                 if (!isSolid(materialId, opaque)) continue;
                 
@@ -120,7 +122,8 @@ export function materialVolumeToVertexData(
                                        nz < 0 || nz >= depth;
                     
                     // Check if adjacent voxel is not solid (empty or opposite type)
-                    const adjacentMaterialId = !isBoundary ? volume.data.get(DenseVolumeNamespace.getIndex(volume, nx, ny, nz)) : 0;
+                    const adjacentVoxel = !isBoundary ? volume.data.get(DenseVolumeNamespace.getIndex(volume, nx, ny, nz)) : 0;
+                    const adjacentMaterialId = PhysicalVoxel.getMaterialId(adjacentVoxel);
                     const isAdjacentSolid = isSolid(adjacentMaterialId, opaque);
                     
                     // Generate face if adjacent is boundary or not solid

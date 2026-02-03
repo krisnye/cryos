@@ -4,6 +4,7 @@ import { True } from "@adobe/data/schema";
 import { volumeModel } from "../volume-model.js";
 import { ColumnVolume } from "types/column-volume/column-volume.js";
 import { Material } from "types/material/material.js";
+import { PhysicalVoxel } from "types/physical-voxel/physical-voxel.js";
 import { Vec2, Vec3, Line3, Aabb } from "@adobe/data/math";
 import { PickResult } from "types/pick-result.js";
 import * as VolumeNamespace from "types/volume/public.js";
@@ -28,7 +29,7 @@ export const scene = Database.Plugin.create({
         createWorldChunk(t, props: {
             chunkX: number;
             chunkY: number;
-            volumeModel: ColumnVolume<Material.Id>;
+            volumeModel: ColumnVolume<PhysicalVoxel>;
         }) {
             const { chunkSize, blockSize } = t.resources.worldScale;
             const position: Vec3 = [props.chunkX * chunkSize, props.chunkY * chunkSize, 0];
@@ -68,7 +69,7 @@ export const scene = Database.Plugin.create({
             const candidates: Array<{
                 entity: Entity;
                 position: Vec3;
-                volume: ColumnVolume<Material.Id>;
+                volume: ColumnVolume<PhysicalVoxel>;
                 intersectionAlpha: number;
             }> = [];
             
@@ -94,7 +95,7 @@ export const scene = Database.Plugin.create({
                     
                     // Get chunk data
                     const chunkPosition = db.get(chunkEntity, "position");
-                    const chunkVolume = db.get(chunkEntity, "materialVolume") as ColumnVolume<Material.Id>;
+                    const chunkVolume = db.get(chunkEntity, "materialVolume") as ColumnVolume<PhysicalVoxel>;
                     
                     if (!chunkPosition || !chunkVolume) continue;
                     
@@ -152,7 +153,7 @@ export const scene = Database.Plugin.create({
                 const pickResult = VolumeNamespace.pick(
                     candidate.volume,
                     modelLine,
-                    (voxel) => voxel !== Material.ids.air
+                    (voxel) => PhysicalVoxel.getMaterialId(voxel) !== Material.ids.air
                 );
                 
                 if (pickResult) {

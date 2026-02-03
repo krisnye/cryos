@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
+import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 import { Material } from "../../types/material/material.js";
 import { materialVolumeToVertexData } from "./material-volume-to-vertex-data.js";
 
@@ -9,10 +10,10 @@ test("materialVolumeToVertexData generates vertices for visible faces only", () 
     // Create a 2x2x2 volume with one solid voxel
     const size: Vec3 = [2, 2, 2];
     const capacity = size[0] * size[1] * size[2];
-    const volume: DenseVolume<Material.Id> = {
+    const volume: DenseVolume<PhysicalVoxel> = {
         type: "dense",
         size,
-        data: createTypedBuffer(Material.Id.schema, capacity),
+        data: createTypedBuffer(PhysicalVoxel.schema, capacity),
     };
     
     // Fill all voxels with air (0)
@@ -30,7 +31,7 @@ test("materialVolumeToVertexData generates vertices for visible faces only", () 
         }
     }
     const index = 0; // x=0, y=0, z=0
-    volume.data.set(index, opaqueMaterialId);
+    volume.data.set(index, PhysicalVoxel.pack(opaqueMaterialId));
     
     // Generate vertex data (opaque rendering)
     const vertexData = materialVolumeToVertexData(volume, { opaque: true });
@@ -51,10 +52,10 @@ test("materialVolumeToVertexData skips empty voxels (MaterialId === 0)", () => {
     // Create a 2x2x2 volume with all air
     const size: Vec3 = [2, 2, 2];
     const capacity = size[0] * size[1] * size[2];
-    const volume: DenseVolume<Material.Id> = {
+    const volume: DenseVolume<PhysicalVoxel> = {
         type: "dense",
         size,
-        data: createTypedBuffer(Material.Id.schema, capacity),
+        data: createTypedBuffer(PhysicalVoxel.schema, capacity),
     };
     
     // Fill all voxels with air (0)
@@ -73,10 +74,10 @@ test("materialVolumeToVertexData renders in model space (0,0,0 at corner)", () =
     // Create a 2x2x2 volume
     const size: Vec3 = [2, 2, 2];
     const capacity = size[0] * size[1] * size[2];
-    const volume: DenseVolume<Material.Id> = {
+    const volume: DenseVolume<PhysicalVoxel> = {
         type: "dense",
         size,
-        data: createTypedBuffer(Material.Id.schema, capacity),
+        data: createTypedBuffer(PhysicalVoxel.schema, capacity),
     };
     
     // Find first opaque material (alpha === 1.0)
@@ -87,7 +88,7 @@ test("materialVolumeToVertexData renders in model space (0,0,0 at corner)", () =
             break;
         }
     }
-    volume.data.set(0, opaqueMaterialId);
+    volume.data.set(0, PhysicalVoxel.pack(opaqueMaterialId));
     
     // Generate vertex data (opaque rendering)
     const vertexData = materialVolumeToVertexData(volume, { opaque: true });
@@ -114,10 +115,10 @@ test("materialVolumeToVertexData generates bottom faces with correct winding (co
     // Create a 1x1x1 volume with one solid voxel at (0,0,0)
     const size: Vec3 = [1, 1, 1];
     const capacity = size[0] * size[1] * size[2];
-    const volume: DenseVolume<Material.Id> = {
+    const volume: DenseVolume<PhysicalVoxel> = {
         type: "dense",
         size,
-        data: createTypedBuffer(Material.Id.schema, capacity),
+        data: createTypedBuffer(PhysicalVoxel.schema, capacity),
     };
     
     // Find first opaque material
@@ -128,7 +129,7 @@ test("materialVolumeToVertexData generates bottom faces with correct winding (co
             break;
         }
     }
-    volume.data.set(0, opaqueMaterialId); // Voxel at (0,0,0)
+    volume.data.set(0, PhysicalVoxel.pack(opaqueMaterialId)); // Voxel at (0,0,0)
     
     // Generate vertex data (opaque rendering)
     const vertexData = materialVolumeToVertexData(volume, { opaque: true });

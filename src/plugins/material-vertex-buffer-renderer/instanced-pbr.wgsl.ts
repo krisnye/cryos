@@ -44,11 +44,15 @@ struct VertexOutput {
     @location(4) roughness: f32,
 }
 
+// PhysicalVoxel bit layout (bits 31→0): sediment(31) | bondX(30) bondY(29) bondZ(28) | amount/health(27-24) | temperature(23-12) | materialTypeId(11-0)
+// See: cryos/src/types/physical-voxel/pack.ts
+const MATERIAL_ID_MASK: u32 = 0xfffu;
+
 @vertex
 fn vertexMain(
     @location(0) vertexPosition: vec3<f32>,
     @location(1) vertexNormal: vec3<f32>,
-    @location(2) materialIndex: u32,
+    @location(2) physicalVoxel: u32,
     @location(4) instancePosition: vec3<f32>,
     @location(5) instanceScale: vec3<f32>,
     @location(6) instanceRotation: vec4<f32>,
@@ -61,7 +65,8 @@ fn vertexMain(
     // Transform normal to world space
     let worldNormal = rotateByQuaternion(vertexNormal, instanceRotation);
     
-    // Look up material
+    // Extract material ID from PhysicalVoxel (low 12 bits). Future-proof: works with raw material ID or full packed value.
+    let materialIndex = physicalVoxel & MATERIAL_ID_MASK;
     let material = materials[materialIndex];
     
     var output: VertexOutput;

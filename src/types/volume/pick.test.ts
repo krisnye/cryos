@@ -3,12 +3,14 @@ import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { Line3 } from "@adobe/data/math";
 import { DenseVolume } from "../dense-volume/dense-volume.js";
 import { ColumnVolume } from "../column-volume/column-volume.js";
+import { PhysicalVoxel } from "../physical-voxel/physical-voxel.js";
 import { Material } from "../material/material.js";
 import { create as createColumnVolume } from "../column-volume/create.js";
 import { pick } from "./pick.js";
 
 describe("Volume.pick", () => {
     const { air, rock, steel } = Material.ids;
+    const pickable = (voxel: number) => PhysicalVoxel.getMaterialId(voxel) !== air;
 
     describe("picking from DenseVolume", () => {
         it("should pick from dense volume", () => {
@@ -16,7 +18,7 @@ describe("Volume.pick", () => {
             const volume: DenseVolume<Material.Id> = {
                 type: "dense",
                 size: [5, 1, 1],
-                data: createTypedBuffer(Material.Id.schema, data)
+                data: createTypedBuffer(PhysicalVoxel.schema, data)
             };
 
             const line: Line3 = {
@@ -24,7 +26,7 @@ describe("Volume.pick", () => {
                 b: [10, 0.5, 0.5]
             };
 
-            const result = pick(volume, line, (voxel) => voxel !== air);
+            const result = pick(volume, line, pickable);
             
             expect(result).not.toBeNull();
             expect(result?.coordinates).toEqual([2, 0, 0]);
@@ -37,7 +39,7 @@ describe("Volume.pick", () => {
             const denseVolume: DenseVolume<Material.Id> = {
                 type: "dense",
                 size: [5, 1, 1],
-                data: createTypedBuffer(Material.Id.schema, data)
+                data: createTypedBuffer(PhysicalVoxel.schema, data)
             };
             const volume = createColumnVolume(denseVolume);
 
@@ -46,7 +48,7 @@ describe("Volume.pick", () => {
                 b: [10, 0.5, 0.5]
             };
 
-            const result = pick(volume, line, (voxel) => voxel !== air);
+            const result = pick(volume, line, pickable);
             
             expect(result).not.toBeNull();
             expect(result?.coordinates).toEqual([2, 0, 0]);
@@ -59,7 +61,7 @@ describe("Volume.pick", () => {
             const denseVolume: DenseVolume<Material.Id> = {
                 type: "dense",
                 size: [3, 1, 1],
-                data: createTypedBuffer(Material.Id.schema, data)
+                data: createTypedBuffer(PhysicalVoxel.schema, data)
             };
 
             const line: Line3 = {
@@ -67,7 +69,7 @@ describe("Volume.pick", () => {
                 b: [10, 0.5, 0.5]
             };
 
-            const result = pick(denseVolume, line, (voxel) => voxel !== air);
+            const result = pick(denseVolume, line, pickable);
             
             expect(result).not.toBeNull();
             expect(result?.coordinates).toEqual([1, 0, 0]);
@@ -78,7 +80,7 @@ describe("Volume.pick", () => {
             const denseVolume: DenseVolume<Material.Id> = {
                 type: "dense",
                 size: [3, 1, 1],
-                data: createTypedBuffer(Material.Id.schema, data)
+                data: createTypedBuffer(PhysicalVoxel.schema, data)
             };
             const columnVolume = createColumnVolume(denseVolume);
 
@@ -87,7 +89,7 @@ describe("Volume.pick", () => {
                 b: [10, 0.5, 0.5]
             };
 
-            const result = pick(columnVolume, line, (voxel) => voxel !== air);
+            const result = pick(columnVolume, line, pickable);
             
             expect(result).not.toBeNull();
             expect(result?.coordinates).toEqual([1, 0, 0]);

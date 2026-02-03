@@ -3,7 +3,7 @@ import { True } from "@adobe/data/schema";
 import { Vec3, Quat } from "@adobe/data/math";
 import { volumeModel } from "../../plugins/volume-model.js";
 import { Volume } from "../../types/volume/volume.js";
-import { Material } from "../../types/material/material.js";
+import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 
 export const playerModel = Database.Plugin.create({
     extends: volumeModel,
@@ -16,7 +16,7 @@ export const playerModel = Database.Plugin.create({
     transactions: {
         createPlayer(t, props: {
             position: Vec3;
-            materialVolume: Volume<Material.Id>;
+            materialVolume: Volume<PhysicalVoxel>;
         }) {
             return t.archetypes.Player.insert({
                 player: true as const,

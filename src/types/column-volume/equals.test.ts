@@ -2,6 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { ColumnVolume } from "./column-volume.js";
+import { PhysicalVoxel } from "../physical-voxel/physical-voxel.js";
 import { Material } from "../material/material.js";
 import { equals } from "./equals.js";
 import { EMPTY_COLUMN, packColumnInfo } from "./column-info.js";
@@ -9,11 +10,11 @@ import { EMPTY_COLUMN, packColumnInfo } from "./column-info.js";
 describe("ColumnVolume.equals", () => {
     describe("same reference", () => {
         it("should return true for identical references", () => {
-            const volume: ColumnVolume<Material.Id> = {
+            const volume: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [2, 2, 2],
                 tile: new Uint32Array(4),
-                data: createTypedBuffer(Material.Id.schema, 0),
+                data: createTypedBuffer(PhysicalVoxel.schema, 0),
             };
 
             expect(equals(volume, volume)).toBe(true);
@@ -22,36 +23,36 @@ describe("ColumnVolume.equals", () => {
 
     describe("structural differences", () => {
         it("should return false for different sizes", () => {
-            const volume1: ColumnVolume<Material.Id> = {
+            const volume1: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [2, 2, 2],
                 tile: new Uint32Array(4),
-                data: createTypedBuffer(Material.Id.schema, 0),
+                data: createTypedBuffer(PhysicalVoxel.schema, 0),
             };
 
-            const volume2: ColumnVolume<Material.Id> = {
+            const volume2: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [3, 3, 3],
                 tile: new Uint32Array(9),
-                data: createTypedBuffer(Material.Id.schema, 0),
+                data: createTypedBuffer(PhysicalVoxel.schema, 0),
             };
 
             expect(equals(volume1, volume2)).toBe(false);
         });
 
         it("should return false for different tile arrays", () => {
-            const volume1: ColumnVolume<Material.Id> = {
+            const volume1: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [2, 2, 2],
                 tile: new Uint32Array(4),
-                data: createTypedBuffer(Material.Id.schema, 0),
+                data: createTypedBuffer(PhysicalVoxel.schema, 0),
             };
 
-            const volume2: ColumnVolume<Material.Id> = {
+            const volume2: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [2, 2, 2],
                 tile: new Uint32Array(4),
-                data: createTypedBuffer(Material.Id.schema, 0),
+                data: createTypedBuffer(PhysicalVoxel.schema, 0),
             };
 
             volume1.tile[0] = packColumnInfo(0, 2, 0);
@@ -61,20 +62,20 @@ describe("ColumnVolume.equals", () => {
         });
 
         it("should return false for different data", () => {
-            const data1 = createTypedBuffer(Material.Id.schema, 2);
-            const data2 = createTypedBuffer(Material.Id.schema, 2);
+            const data1 = createTypedBuffer(PhysicalVoxel.schema, 2);
+            const data2 = createTypedBuffer(PhysicalVoxel.schema, 2);
 
             data1.set(0, Material.ids.concrete);
-            data2.set(0, Material.ids.steel);
+            data2.set(0, PhysicalVoxel.pack(Material.ids.steel));
 
-            const volume1: ColumnVolume<Material.Id> = {
+            const volume1: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [2, 2, 2],
                 tile: new Uint32Array(4),
                 data: data1,
             };
 
-            const volume2: ColumnVolume<Material.Id> = {
+            const volume2: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [2, 2, 2],
                 tile: new Uint32Array(4),
@@ -91,22 +92,22 @@ describe("ColumnVolume.equals", () => {
 
     describe("identical volumes", () => {
         it("should return true for volumes with same size, tile, and data", () => {
-            const data1 = createTypedBuffer(Material.Id.schema, 4);
-            const data2 = createTypedBuffer(Material.Id.schema, 4);
+            const data1 = createTypedBuffer(PhysicalVoxel.schema, 4);
+            const data2 = createTypedBuffer(PhysicalVoxel.schema, 4);
 
             data1.set(0, Material.ids.concrete);
-            data1.set(1, Material.ids.steel);
+            data1.set(1, PhysicalVoxel.pack(Material.ids.steel));
             data2.set(0, Material.ids.concrete);
-            data2.set(1, Material.ids.steel);
+            data2.set(1, PhysicalVoxel.pack(Material.ids.steel));
 
-            const volume1: ColumnVolume<Material.Id> = {
+            const volume1: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [2, 2, 2],
                 tile: new Uint32Array(4),
                 data: data1,
             };
 
-            const volume2: ColumnVolume<Material.Id> = {
+            const volume2: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [2, 2, 2],
                 tile: new Uint32Array(4),
@@ -121,18 +122,18 @@ describe("ColumnVolume.equals", () => {
         });
 
         it("should return true for empty volumes", () => {
-            const volume1: ColumnVolume<Material.Id> = {
+            const volume1: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [2, 2, 0],
                 tile: new Uint32Array(4),
-                data: createTypedBuffer(Material.Id.schema, 0),
+                data: createTypedBuffer(PhysicalVoxel.schema, 0),
             };
 
-            const volume2: ColumnVolume<Material.Id> = {
+            const volume2: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [2, 2, 0],
                 tile: new Uint32Array(4),
-                data: createTypedBuffer(Material.Id.schema, 0),
+                data: createTypedBuffer(PhysicalVoxel.schema, 0),
             };
 
             // Both have all EMPTY_COLUMN
@@ -143,8 +144,8 @@ describe("ColumnVolume.equals", () => {
         });
 
         it("should return true for volumes with same column structure", () => {
-            const data1 = createTypedBuffer(Material.Id.schema, 6);
-            const data2 = createTypedBuffer(Material.Id.schema, 6);
+            const data1 = createTypedBuffer(PhysicalVoxel.schema, 6);
+            const data2 = createTypedBuffer(PhysicalVoxel.schema, 6);
 
             // Fill with same values
             for (let i = 0; i < 6; i++) {
@@ -152,14 +153,14 @@ describe("ColumnVolume.equals", () => {
                 data2.set(i, Material.ids.concrete);
             }
 
-            const volume1: ColumnVolume<Material.Id> = {
+            const volume1: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [2, 2, 3],
                 tile: new Uint32Array(4),
                 data: data1,
             };
 
-            const volume2: ColumnVolume<Material.Id> = {
+            const volume2: ColumnVolume<PhysicalVoxel> = {
                 type: "column",
                 size: [2, 2, 3],
                 tile: new Uint32Array(4),

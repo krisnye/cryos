@@ -2,6 +2,7 @@ import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../dense-volume/dense-volume.js";
 import { Material } from "../material/material.js";
+import { PhysicalVoxel } from "../physical-voxel/physical-voxel.js";
 import type { DenseVolumeMaterial } from "./dense-volume-material.js";
 
 /**
@@ -22,31 +23,31 @@ export const createTestVolume = (options: { middleLayer?: "air" | "glass" } = {}
     const volume: DenseVolumeMaterial = {
         type: "dense",
         size,
-        data: createTypedBuffer(Material.Id.schema, capacity),
+        data: createTypedBuffer(PhysicalVoxel.schema, capacity),
     };
 
     for (let i = 0; i < capacity; i++) {
-        volume.data.set(i, Material.ids.air);
+        volume.data.set(i, PhysicalVoxel.pack(Material.ids.air));
     }
 
     const { concrete, steel, woodHard, rock, iron, dirt, sand, granite, glass } = Material.ids;
 
-    volume.data.set(DenseVolume.getIndex(volume, 0, 0, 0), concrete);
-    volume.data.set(DenseVolume.getIndex(volume, 1, 0, 0), steel);
-    volume.data.set(DenseVolume.getIndex(volume, 0, 1, 0), woodHard);
-    volume.data.set(DenseVolume.getIndex(volume, 1, 1, 0), rock);
+    volume.data.set(DenseVolume.getIndex(volume, 0, 0, 0), PhysicalVoxel.pack(concrete));
+    volume.data.set(DenseVolume.getIndex(volume, 1, 0, 0), PhysicalVoxel.pack(steel));
+    volume.data.set(DenseVolume.getIndex(volume, 0, 1, 0), PhysicalVoxel.pack(woodHard));
+    volume.data.set(DenseVolume.getIndex(volume, 1, 1, 0), PhysicalVoxel.pack(rock));
 
     if (middleLayer === "glass") {
-        volume.data.set(DenseVolume.getIndex(volume, 0, 0, 1), glass);
-        volume.data.set(DenseVolume.getIndex(volume, 1, 0, 1), glass);
-        volume.data.set(DenseVolume.getIndex(volume, 0, 1, 1), glass);
-        volume.data.set(DenseVolume.getIndex(volume, 1, 1, 1), glass);
+        volume.data.set(DenseVolume.getIndex(volume, 0, 0, 1), PhysicalVoxel.pack(glass));
+        volume.data.set(DenseVolume.getIndex(volume, 1, 0, 1), PhysicalVoxel.pack(glass));
+        volume.data.set(DenseVolume.getIndex(volume, 0, 1, 1), PhysicalVoxel.pack(glass));
+        volume.data.set(DenseVolume.getIndex(volume, 1, 1, 1), PhysicalVoxel.pack(glass));
     }
 
-    volume.data.set(DenseVolume.getIndex(volume, 0, 0, 2), iron);
-    volume.data.set(DenseVolume.getIndex(volume, 1, 0, 2), dirt);
-    volume.data.set(DenseVolume.getIndex(volume, 0, 1, 2), sand);
-    volume.data.set(DenseVolume.getIndex(volume, 1, 1, 2), granite);
+    volume.data.set(DenseVolume.getIndex(volume, 0, 0, 2), PhysicalVoxel.pack(iron));
+    volume.data.set(DenseVolume.getIndex(volume, 1, 0, 2), PhysicalVoxel.pack(dirt));
+    volume.data.set(DenseVolume.getIndex(volume, 0, 1, 2), PhysicalVoxel.pack(sand));
+    volume.data.set(DenseVolume.getIndex(volume, 1, 1, 2), PhysicalVoxel.pack(granite));
 
     return volume;
 };

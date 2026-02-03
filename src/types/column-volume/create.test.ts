@@ -2,6 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../dense-volume/dense-volume.js";
+import { PhysicalVoxel } from "../physical-voxel/physical-voxel.js";
 import { Material } from "../material/material.js";
 import { create } from "./create.js";
 import * as ColumnVolume from "./public.js";
@@ -40,10 +41,10 @@ describe("create", () => {
         });
 
         it("should work with Material.Id schema (TypedArray default is 0)", () => {
-            const volume: DenseVolume<Material.Id> = {
+            const volume: DenseVolume<PhysicalVoxel> = {
                 type: "dense",
                 size: [2, 2, 2],
-                data: createTypedBuffer(Material.Id.schema, 8),
+                data: createTypedBuffer(PhysicalVoxel.schema, 8),
             };
 
             // Material.Id uses I32.schema, which is TypedArray-backed (default is 0)
@@ -55,10 +56,10 @@ describe("create", () => {
 
     describe("empty volume", () => {
         it("should produce column volume with no data for all-empty volume", () => {
-            const volume: DenseVolume<Material.Id> = {
+            const volume: DenseVolume<PhysicalVoxel> = {
                 type: "dense",
                 size: [2, 2, 2],
-                data: createTypedBuffer(Material.Id.schema, 8),
+                data: createTypedBuffer(PhysicalVoxel.schema, 8),
             };
 
             // All voxels are 0 (air/default)
@@ -78,15 +79,15 @@ describe("create", () => {
 
     describe("fully dense volume", () => {
         it("should produce column volume with all columns for fully dense volume", () => {
-            const volume: DenseVolume<Material.Id> = {
+            const volume: DenseVolume<PhysicalVoxel> = {
                 type: "dense",
                 size: [2, 2, 2],
-                data: createTypedBuffer(Material.Id.schema, 8),
+                data: createTypedBuffer(PhysicalVoxel.schema, 8),
             };
 
             // Fill all voxels with non-zero material
             for (let i = 0; i < 8; i++) {
-                volume.data.set(i, Material.ids.concrete);
+                volume.data.set(i, PhysicalVoxel.pack(Material.ids.concrete));
             }
 
             const result = create(volume);
@@ -122,17 +123,17 @@ describe("create", () => {
 
     describe("sparse volume", () => {
         it("should only store non-empty columns", () => {
-            const volume: DenseVolume<Material.Id> = {
+            const volume: DenseVolume<PhysicalVoxel> = {
                 type: "dense",
                 size: [3, 3, 3],
-                data: createTypedBuffer(Material.Id.schema, 27),
+                data: createTypedBuffer(PhysicalVoxel.schema, 27),
             };
 
             // Only fill column at (1,1) with material
             // Column (1,1) has voxels at z=0,1,2
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 1, 0), Material.ids.concrete);
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 1, 1), Material.ids.concrete);
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 1, 2), Material.ids.concrete);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 1, 0), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 1, 1), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 1, 2), PhysicalVoxel.pack(Material.ids.concrete));
 
             const result = create(volume);
 
@@ -153,16 +154,16 @@ describe("create", () => {
         });
 
         it("should handle column starting at non-zero z", () => {
-            const volume: DenseVolume<Material.Id> = {
+            const volume: DenseVolume<PhysicalVoxel> = {
                 type: "dense",
                 size: [2, 2, 5],
-                data: createTypedBuffer(Material.Id.schema, 20),
+                data: createTypedBuffer(PhysicalVoxel.schema, 20),
             };
 
             // Column (0,0) has voxels only at z=2,3,4
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 2), Material.ids.concrete);
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 3), Material.ids.concrete);
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 4), Material.ids.concrete);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 2), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 3), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 4), PhysicalVoxel.pack(Material.ids.concrete));
 
             const result = create(volume);
 
@@ -183,15 +184,15 @@ describe("create", () => {
 
     describe("column bounds detection", () => {
         it("should include gaps between non-empty voxels in column", () => {
-            const volume: DenseVolume<Material.Id> = {
+            const volume: DenseVolume<PhysicalVoxel> = {
                 type: "dense",
                 size: [1, 1, 5],
-                data: createTypedBuffer(Material.Id.schema, 5),
+                data: createTypedBuffer(PhysicalVoxel.schema, 5),
             };
 
             // Column has voxels at z=0 and z=4, with gaps at z=1,2,3
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 0), Material.ids.concrete);
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 4), Material.ids.concrete);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 0), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 4), PhysicalVoxel.pack(Material.ids.concrete));
 
             const result = create(volume);
 
@@ -208,24 +209,24 @@ describe("create", () => {
     describe("data correctness verification", () => {
         it("should preserve exact voxel values in conversion", () => {
             // Create a simple 2x2x3 volume with known values
-            const volume: DenseVolume<Material.Id> = {
+            const volume: DenseVolume<PhysicalVoxel> = {
                 type: "dense",
                 size: [2, 2, 3],
-                data: createTypedBuffer(Material.Id.schema, 12),
+                data: createTypedBuffer(PhysicalVoxel.schema, 12),
             };
 
             // Fill with specific materials at known positions
             const { air, concrete, steel, woodHard, rock, iron } = Material.ids;
             
             // Column (0,0): concrete at z=0, steel at z=1, air at z=2
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 0), concrete);
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 1), steel);
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 2), air);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 0), PhysicalVoxel.pack(concrete));
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 1), PhysicalVoxel.pack(steel));
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 2), PhysicalVoxel.pack(air));
 
             // Column (1,0): woodHard at z=0, rock at z=1, iron at z=2
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 0, 0), woodHard);
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 0, 1), rock);
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 0, 2), iron);
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 0, 0), PhysicalVoxel.pack(woodHard));
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 0, 1), PhysicalVoxel.pack(rock));
+            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 0, 2), PhysicalVoxel.pack(iron));
 
             // Columns (0,1) and (1,1) are all air (empty)
 
@@ -252,9 +253,9 @@ describe("create", () => {
             const info10 = unpackColumnInfo(result.tile[tileIdx10]);
             expect(info10.zStart).toBe(0);
             expect(info10.length).toBe(3);
-            expect(result.data.get(info10.dataOffset + 0)).toBe(woodHard);
-            expect(result.data.get(info10.dataOffset + 1)).toBe(rock);
-            expect(result.data.get(info10.dataOffset + 2)).toBe(iron);
+            expect(result.data.get(info10.dataOffset + 0)).toBe(PhysicalVoxel.pack(woodHard));
+            expect(result.data.get(info10.dataOffset + 1)).toBe(PhysicalVoxel.pack(rock));
+            expect(result.data.get(info10.dataOffset + 2)).toBe(PhysicalVoxel.pack(iron));
 
             // Verify empty columns
             const tileIdx01 = 0 + 1 * 2;
@@ -264,15 +265,15 @@ describe("create", () => {
         });
 
         it("should correctly pack and unpack ColumnInfo", () => {
-            const volume: DenseVolume<Material.Id> = {
+            const volume: DenseVolume<PhysicalVoxel> = {
                 type: "dense",
                 size: [2, 2, 10],
-                data: createTypedBuffer(Material.Id.schema, 40),
+                data: createTypedBuffer(PhysicalVoxel.schema, 40),
             };
 
             // Column (0,0) starts at z=3 with 5 voxels
             for (let z = 3; z < 8; z++) {
-                volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, z), Material.ids.concrete);
+                volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, z), PhysicalVoxel.pack(Material.ids.concrete));
             }
 
             const result = create(volume);

@@ -2,10 +2,11 @@ import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { Material } from "../../types/material/material.js";
+import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
 
 /**
- * Creates a mech robot model using DenseVolume<Material.Id>.
+ * Creates a mech robot model using DenseVolume<PhysicalVoxel>.
  * Uses technical materials: steel, iron, and meta colors for a futuristic look.
  * 
  * Structure:
@@ -16,18 +17,18 @@ import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
  * 
  * Total size: 8x8x12 voxels
  */
-export const createMechRobot = (): DenseVolume<Material.Id> => {
+export const createMechRobot = (): DenseVolume<PhysicalVoxel> => {
     const size: Vec3 = [8, 8, 12];
     const capacity = size[0] * size[1] * size[2];
-    const volume: DenseVolume<Material.Id> = {
+    const volume: DenseVolume<PhysicalVoxel> = {
         type: "dense",
         size,
-        data: createTypedBuffer(Material.Id.schema, capacity),
+        data: createTypedBuffer(PhysicalVoxel.schema, capacity),
     };
-    
+
     // Initialize all voxels to air (0)
     for (let i = 0; i < capacity; i++) {
-        volume.data.set(i, Material.ids.air);
+        volume.data.set(i, PhysicalVoxel.pack(Material.ids.air));
     }
     
     // Material IDs for convenience
@@ -47,7 +48,7 @@ export const createMechRobot = (): DenseVolume<Material.Id> => {
                 const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
                 // Use steel for main body, iron for structural accents
                 const material = (x + y + z) % 3 === 0 ? iron : steel;
-                volume.data.set(index, material);
+                volume.data.set(index, PhysicalVoxel.pack(material));
             }
         }
     }
@@ -64,7 +65,7 @@ export const createMechRobot = (): DenseVolume<Material.Id> => {
         for (let y = headStartY; y < headStartY + headHeight; y++) {
             for (let x = headStartX; x < headStartX + headWidth; x++) {
                 const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
-                volume.data.set(index, metaCyan);
+                volume.data.set(index, PhysicalVoxel.pack(metaCyan));
             }
         }
     }
@@ -81,7 +82,7 @@ export const createMechRobot = (): DenseVolume<Material.Id> => {
         for (let y = leftArmY; y < leftArmY + leftArmHeight; y++) {
             for (let x = leftArmX; x < leftArmX + leftArmWidth; x++) {
                 const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
-                volume.data.set(index, steel);
+                volume.data.set(index, PhysicalVoxel.pack(steel));
             }
         }
     }
@@ -98,7 +99,7 @@ export const createMechRobot = (): DenseVolume<Material.Id> => {
         for (let y = rightArmY; y < rightArmY + rightArmHeight; y++) {
             for (let x = rightArmX; x < rightArmX + rightArmWidth; x++) {
                 const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
-                volume.data.set(index, steel);
+                volume.data.set(index, PhysicalVoxel.pack(steel));
             }
         }
     }
@@ -115,7 +116,7 @@ export const createMechRobot = (): DenseVolume<Material.Id> => {
         for (let y = leftLegY; y < leftLegY + leftLegHeight; y++) {
             for (let x = leftLegX; x < leftLegX + leftLegWidth; x++) {
                 const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
-                volume.data.set(index, iron);
+                volume.data.set(index, PhysicalVoxel.pack(iron));
             }
         }
     }
@@ -132,7 +133,7 @@ export const createMechRobot = (): DenseVolume<Material.Id> => {
         for (let y = rightLegY; y < rightLegY + rightLegHeight; y++) {
             for (let x = rightLegX; x < rightLegX + rightLegWidth; x++) {
                 const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
-                volume.data.set(index, iron);
+                volume.data.set(index, PhysicalVoxel.pack(iron));
             }
         }
     }
@@ -150,13 +151,13 @@ export const createMechRobot = (): DenseVolume<Material.Id> => {
     const leftShoulderY = 3;
     const leftShoulderZ = torsoStartZ + 4;
     const leftShoulderIndex = DenseVolumeNamespace.getIndex(volume, leftShoulderX, leftShoulderY, leftShoulderZ);
-    volume.data.set(leftShoulderIndex, metaTeal);
+    volume.data.set(leftShoulderIndex, PhysicalVoxel.pack(metaTeal));
     
     const rightShoulderX = 6;
     const rightShoulderY = 3;
     const rightShoulderZ = torsoStartZ + 4;
     const rightShoulderIndex = DenseVolumeNamespace.getIndex(volume, rightShoulderX, rightShoulderY, rightShoulderZ);
-    volume.data.set(rightShoulderIndex, metaTeal);
+    volume.data.set(rightShoulderIndex, PhysicalVoxel.pack(metaTeal));
     
     return volume;
 };

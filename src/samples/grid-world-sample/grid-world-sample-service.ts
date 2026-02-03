@@ -4,6 +4,7 @@ import { cameraControl } from "../../plugins/camera-control.js";
 import { materialVertexBufferRenderer } from "../../plugins/material-vertex-buffer-renderer/material-vertex-buffer-renderer.js";
 import { materialVolumeToVertexBuffers } from "../../plugins/material-volume-to-vertex-buffers/material-volume-to-vertex-buffers.js";
 import { scene as gridWorld } from "../../plugins/grid-world/grid-world.js";
+import { movement } from "../../plugins/grid-world/movement/movement.js";
 import { playerModelInput } from "./player-model-input.js";
 import { pickInput } from "./pick-input.js";
 import { createCheckerboardChunk } from "./create-simple-chunk.js";
@@ -18,6 +19,7 @@ export function createGridWorldSampleService() {
         Database.Plugin.create({
             extends: Database.Plugin.combine(
                 gridWorld,
+                movement,
                 playerModelInput,
                 pickInput,
                 particleRendering,
