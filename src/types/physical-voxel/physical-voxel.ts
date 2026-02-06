@@ -1,5 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
-
 /**
  * PhysicalVoxel is a u32 value that packs material state for a single voxel cell:
  * - Bit 31: sediment flag (1 = broken sediment, 0 = solid material)

@@ -1,4 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 import { describe, it, expect } from "vitest";
 import { packColumnInfo, unpackColumnInfo, isEmptyColumn, EMPTY_COLUMN } from "./column-info.js";
 

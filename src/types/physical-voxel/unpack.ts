@@ -1,5 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
-
 import type { PhysicalVoxel } from "./physical-voxel.js";
 import {
     AMOUNT_OR_HEALTH_MASK,

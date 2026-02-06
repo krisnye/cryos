@@ -3,10 +3,19 @@ import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { ColumnVolume } from "../../types/column-volume/column-volume.js";
 import { Material } from "../../types/material/material.js";
+import { Kelvin } from "../../types/kelvin/kelvin.js";
 import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
 import * as ColumnVolumeNamespace from "../../types/column-volume/public.js";
 import { fractalNoise, MAX_TERRAIN_HEIGHT_BLOCKS } from "./terrain-height.js";
+
+/** Options for chunk creation with atmospheric temperature. */
+export type CreateChunkOptions = {
+    /** Ambient air temperature in Kelvin (default room ambient). */
+    ambientTemperatureKelvin?: number;
+    /** Solar exposure 0-1, 1 = full sun (default 1.0). */
+    solarExposure?: number;
+};
 
 /**
  * Creates a seamless chunk with fractal noise-based elevation.
@@ -18,13 +27,19 @@ import { fractalNoise, MAX_TERRAIN_HEIGHT_BLOCKS } from "./terrain-height.js";
  * @param materialId The material to use for all blocks in this chunk
  * @param chunkX The chunk's X index (logical coordinate)
  * @param chunkY The chunk's Y index (logical coordinate)
+ * @param options Optional ambient temperature and solar exposure (defaults: 298K, sunny)
  * @returns A ColumnVolume with fractal noise elevation pattern
  */
 export const createCheckerboardChunk = (
     materialId: Material.Id,
     chunkX: number,
-    chunkY: number
+    chunkY: number,
+    options: CreateChunkOptions = {}
 ): ColumnVolume<PhysicalVoxel> => {
+    const ambientK = options.ambientTemperatureKelvin ?? Kelvin.roomAmbient;
+    const solarExposure = options.solarExposure ?? 1.0;
+    const pack = (mid: Material.Id) =>
+        Material.packVoxelWithEstimatedTemperature(mid, ambientK, solarExposure);
     // Chunks must be 16x16 in x/y to match blocksPerChunk
     const chunkSize = 16;
     // Max height in blocks
@@ -44,7 +59,7 @@ export const createCheckerboardChunk = (
 
     // Initialize all voxels to air (0)
     for (let i = 0; i < capacity; i++) {
-        denseVolume.data.set(i, PhysicalVoxel.pack(Material.ids.air));
+        denseVolume.data.set(i, pack(Material.ids.air));
     }
     
     // Create fractal noise-based elevation pattern
@@ -74,7 +89,7 @@ export const createCheckerboardChunk = (
             // Fill voxels from z=0 up to height
             for (let z = 0; z < height; z++) {
                 const index = DenseVolumeNamespace.getIndex(denseVolume, x, y, z);
-                denseVolume.data.set(index, PhysicalVoxel.pack(materialId));
+                denseVolume.data.set(index, pack(materialId));
             }
         }
     }
@@ -136,7 +151,7 @@ export const createCheckerboardChunk = (
                     for (let z = minTerrainHeight; z < baseHeight; z++) {
                         if (z >= 0 && z < size[2]) {
                             const index = DenseVolumeNamespace.getIndex(denseVolume, x, y, z);
-                            denseVolume.data.set(index, PhysicalVoxel.pack(Material.ids.woodHard));
+                            denseVolume.data.set(index, pack(Material.ids.woodHard));
                         }
                     }
                 }
@@ -155,13 +170,13 @@ export const createCheckerboardChunk = (
                             const patternZ = Math.floor(relativeZ / 1);
                             const isHardWood = (patternX + patternY + patternZ) % 2 === 0;
                             
-                            denseVolume.data.set(index, PhysicalVoxel.pack(isHardWood ? Material.ids.woodHard : Material.ids.woodSoft));
+                            denseVolume.data.set(index, pack(isHardWood ? Material.ids.woodHard : Material.ids.woodSoft));
                         }
                         // Interior: hollow at top, solid woodSoft at bottom
                         else if (isInterior) {
                             if (relativeZ < towerHollowStart) {
                                 // Solid interior at bottom (foundation/platform)
-                                denseVolume.data.set(index, PhysicalVoxel.pack(Material.ids.woodSoft));
+                                denseVolume.data.set(index, pack(Material.ids.woodSoft));
                             }
                             // Top is hollow (empty/air)
                         }
@@ -182,7 +197,7 @@ export const createCheckerboardChunk = (
                         const patternY = Math.floor((worldY - towerCenterY + towerHalfWidth) / 1);
                         const patternZ = Math.floor(towerHeight / 1);
                         const isHardWood = (patternX + patternY + patternZ) % 2 === 0;
-                        denseVolume.data.set(index, PhysicalVoxel.pack(isHardWood ? Material.ids.woodHard : Material.ids.woodSoft));
+                        denseVolume.data.set(index, pack(isHardWood ? Material.ids.woodHard : Material.ids.woodSoft));
                     }
                     // Other positions remain at the lower height (crenelation gap)
                 }

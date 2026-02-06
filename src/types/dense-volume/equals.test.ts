@@ -1,4 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 import { describe, it, expect } from "vitest";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "./dense-volume.js";

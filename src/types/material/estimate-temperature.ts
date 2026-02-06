@@ -1,7 +1,6 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
-
 import type { Material } from "./material.js";
 import { materials } from "./materials.js";
+import { PhysicalVoxel } from "../physical-voxel/physical-voxel.js";
 
 /**
  * Luminance of RGB (0-1) using standard weights.
@@ -50,8 +49,8 @@ function estimateForMaterial(
  * Uses a simplified steady-state model: absorption vs emission.
  *
  * @param materialOrId - The material object or Material.Id to estimate temperature for
- * @param ambientTemperatureKelvin - Ambient air temperature in Kelvin (e.g. 298 for 25°C)
- * @param solarExposure - Solar radiation exposure, 0-1 normalized (1 = full direct sun, ~1000 W/m²)
+ * @param ambientTemperatureKelvin - Ambient air temperature in Kelvin (e.g. Kelvin.roomAmbient)
+ * @param solarExposure - Solar radiation exposure, 0-1 normalized (1 = full direct sun). Defaults to 1.0 (sunny day).
  * @returns Estimated surface temperature in Kelvin
  *
  * @remarks
@@ -66,7 +65,7 @@ function estimateForMaterial(
 export const estimateTemperature = (
     materialOrId: Material | number,
     ambientTemperatureKelvin: number,
-    solarExposure: number
+    solarExposure = 1.0
 ): number => {
     const material =
         typeof materialOrId === "number"
@@ -80,4 +79,26 @@ export const estimateTemperature = (
         ambientTemperatureKelvin,
         solarExposure
     );
+};
+
+/**
+ * Packs a PhysicalVoxel with material and estimated temperature for sunlight.
+ * Air uses ambient temperature; solids use Material.estimateTemperature.
+ *
+ * @param materialId - Material ID (0 = air)
+ * @param ambientTemperatureKelvin - Ambient air temperature in Kelvin
+ * @param solarExposure - Solar exposure 0-1, defaults to 1.0 (sunny day)
+ * @returns Packed PhysicalVoxel
+ */
+export const packVoxelWithEstimatedTemperature = (
+    materialId: number,
+    ambientTemperatureKelvin: number,
+    solarExposure = 1.0
+): number => {
+    const tempK =
+        materialId === 0
+            ? ambientTemperatureKelvin
+            : estimateTemperature(materialId, ambientTemperatureKelvin, solarExposure);
+    const clamped = Math.round(Math.max(0, Math.min(4095, tempK)));
+    return PhysicalVoxel.pack(materialId, clamped);
 };

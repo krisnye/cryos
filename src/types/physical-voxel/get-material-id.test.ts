@@ -1,5 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
-
 import { describe, it, expect } from "vitest";
 import { PhysicalVoxel } from "./physical-voxel.js";
 

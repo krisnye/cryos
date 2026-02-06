@@ -1,4 +1,3 @@
-// © 2026 Adobe. MIT License. See /LICENSE for details.
 // PhysicalVoxel bit layout (bits 31→0): sediment(31) | bondX(30) bondY(29) bondZ(28) | amount/health(27-24) | temperature(23-12) | materialTypeId(11-0)
 // Not publicly exported; use via pack, unpack, getMaterialId.
 

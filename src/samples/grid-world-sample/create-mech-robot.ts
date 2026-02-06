@@ -1,9 +1,18 @@
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
+import { Kelvin } from "../../types/kelvin/kelvin.js";
 import { Material } from "../../types/material/material.js";
 import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
+
+/** Options for mech robot creation with atmospheric temperature. */
+export type CreateMechRobotOptions = {
+    /** Ambient air temperature in Kelvin (default room ambient). */
+    ambientTemperatureKelvin?: number;
+    /** Solar exposure 0-1, 1 = full sun (default 1.0). */
+    solarExposure?: number;
+};
 
 /**
  * Creates a mech robot model using DenseVolume<PhysicalVoxel>.
@@ -16,8 +25,16 @@ import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
  * - Legs: 2x2x4 blocks each (iron)
  * 
  * Total size: 8x8x12 voxels
+ * 
+ * @param options Optional ambient temperature and solar exposure (defaults: room ambient, sunny)
  */
-export const createMechRobot = (): DenseVolume<PhysicalVoxel> => {
+export const createMechRobot = (
+    options: CreateMechRobotOptions = {}
+): DenseVolume<PhysicalVoxel> => {
+    const ambientK = options.ambientTemperatureKelvin ?? Kelvin.roomAmbient;
+    const solarExposure = options.solarExposure ?? 1.0;
+    const pack = (mid: Material.Id) =>
+        Material.packVoxelWithEstimatedTemperature(mid, ambientK, solarExposure);
     const size: Vec3 = [8, 8, 12];
     const capacity = size[0] * size[1] * size[2];
     const volume: DenseVolume<PhysicalVoxel> = {
@@ -28,7 +45,7 @@ export const createMechRobot = (): DenseVolume<PhysicalVoxel> => {
 
     // Initialize all voxels to air (0)
     for (let i = 0; i < capacity; i++) {
-        volume.data.set(i, PhysicalVoxel.pack(Material.ids.air));
+        volume.data.set(i, pack(Material.ids.air));
     }
     
     // Material IDs for convenience
@@ -48,7 +65,7 @@ export const createMechRobot = (): DenseVolume<PhysicalVoxel> => {
                 const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
                 // Use steel for main body, iron for structural accents
                 const material = (x + y + z) % 3 === 0 ? iron : steel;
-                volume.data.set(index, PhysicalVoxel.pack(material));
+                volume.data.set(index, pack(material));
             }
         }
     }
@@ -65,7 +82,7 @@ export const createMechRobot = (): DenseVolume<PhysicalVoxel> => {
         for (let y = headStartY; y < headStartY + headHeight; y++) {
             for (let x = headStartX; x < headStartX + headWidth; x++) {
                 const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
-                volume.data.set(index, PhysicalVoxel.pack(metaCyan));
+                volume.data.set(index, pack(metaCyan));
             }
         }
     }
@@ -82,7 +99,7 @@ export const createMechRobot = (): DenseVolume<PhysicalVoxel> => {
         for (let y = leftArmY; y < leftArmY + leftArmHeight; y++) {
             for (let x = leftArmX; x < leftArmX + leftArmWidth; x++) {
                 const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
-                volume.data.set(index, PhysicalVoxel.pack(steel));
+                volume.data.set(index, pack(steel));
             }
         }
     }
@@ -99,7 +116,7 @@ export const createMechRobot = (): DenseVolume<PhysicalVoxel> => {
         for (let y = rightArmY; y < rightArmY + rightArmHeight; y++) {
             for (let x = rightArmX; x < rightArmX + rightArmWidth; x++) {
                 const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
-                volume.data.set(index, PhysicalVoxel.pack(steel));
+                volume.data.set(index, pack(steel));
             }
         }
     }
@@ -116,7 +133,7 @@ export const createMechRobot = (): DenseVolume<PhysicalVoxel> => {
         for (let y = leftLegY; y < leftLegY + leftLegHeight; y++) {
             for (let x = leftLegX; x < leftLegX + leftLegWidth; x++) {
                 const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
-                volume.data.set(index, PhysicalVoxel.pack(iron));
+                volume.data.set(index, pack(iron));
             }
         }
     }
@@ -133,7 +150,7 @@ export const createMechRobot = (): DenseVolume<PhysicalVoxel> => {
         for (let y = rightLegY; y < rightLegY + rightLegHeight; y++) {
             for (let x = rightLegX; x < rightLegX + rightLegWidth; x++) {
                 const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
-                volume.data.set(index, PhysicalVoxel.pack(iron));
+                volume.data.set(index, pack(iron));
             }
         }
     }
@@ -144,20 +161,20 @@ export const createMechRobot = (): DenseVolume<PhysicalVoxel> => {
     const chestY = 2;
     const chestZ = torsoStartZ + 2;
     const chestIndex = DenseVolumeNamespace.getIndex(volume, chestX, chestY, chestZ);
-    volume.data.set(chestIndex, metaBlue);
+    volume.data.set(chestIndex, pack(metaBlue));
     
     // Shoulder details
     const leftShoulderX = 1;
     const leftShoulderY = 3;
     const leftShoulderZ = torsoStartZ + 4;
     const leftShoulderIndex = DenseVolumeNamespace.getIndex(volume, leftShoulderX, leftShoulderY, leftShoulderZ);
-    volume.data.set(leftShoulderIndex, PhysicalVoxel.pack(metaTeal));
+    volume.data.set(leftShoulderIndex, pack(metaTeal));
     
     const rightShoulderX = 6;
     const rightShoulderY = 3;
     const rightShoulderZ = torsoStartZ + 4;
     const rightShoulderIndex = DenseVolumeNamespace.getIndex(volume, rightShoulderX, rightShoulderY, rightShoulderZ);
-    volume.data.set(rightShoulderIndex, PhysicalVoxel.pack(metaTeal));
+    volume.data.set(rightShoulderIndex, pack(metaTeal));
     
     return volume;
 };
