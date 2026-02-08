@@ -60,7 +60,7 @@ export function createRenderPipeline(
             }]
         },
         primitive: { topology: 'triangle-list', cullMode: 'back' },
-        depthStencil: { depthWriteEnabled: false, depthCompare: 'always', format: 'depth24plus' }
+        depthStencil: { depthWriteEnabled: true, depthCompare: 'less-equal', format: 'depth24plus' }
     });
 }
 

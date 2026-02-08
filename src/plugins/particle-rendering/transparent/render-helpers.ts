@@ -74,7 +74,7 @@ export function createTransparentRenderPipeline(
         primitive: { topology: 'triangle-list', cullMode: 'back' },
         depthStencil: { 
             depthWriteEnabled: false,
-            depthCompare: 'always',
+            depthCompare: 'less-equal',
             format: 'depth24plus' 
         }
     });
