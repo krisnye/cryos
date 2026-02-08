@@ -41,7 +41,8 @@ export const renderOpaqueVertexBuffers = Database.Plugin.create({
                     bindGroupLayout = getOrCreateBindGroupLayout(device, bindGroupLayout);
                     
                     const pipelineConfig: PipelineConfig = {
-                        depthWriteEnabled: true,
+                        depthWriteEnabled: false,
+                        depthCompare: 'always',
                         fragmentTarget: { format: canvasFormat }
                     };
                     pipeline = getOrCreatePipeline(device, pipeline, bindGroupLayout, pipelineConfig, depthTexture);

@@ -434,5 +434,116 @@ describe("ColumnVolume.pick", () => {
             expect(result?.coordinates).toEqual([1, 0, 0]); // Should pick first pickable voxel (ROCK at x=1)
         });
     });
+
+    describe("angled and grazing rays", () => {
+        it("should pick with shallow angle in XY plane", () => {
+            // 5x5x1 volume, solid at (2, 2, 0). Ray at shallow angle through center
+            const data = new Array(25).fill(air);
+            data[2 + 2 * 5] = rock;
+            const denseVolume: DenseVolume<number> = {
+                type: "dense",
+                size: [5, 5, 1],
+                data: createTypedBuffer(PhysicalVoxel.schema, data)
+            };
+            const volume = createColumnVolume(denseVolume);
+
+            // Ray from (-1, 1, 0.5) to (6, 3, 0.5) - passes through (2.5, 2, 0.5) at t=0.5
+            const line: Line3 = {
+                a: [-1, 1, 0.5],
+                b: [6, 3, 0.5]
+            };
+
+            const result = pick(volume, line, pickable);
+            expect(result).not.toBeNull();
+            expect(result?.coordinates).toEqual([2, 2, 0]);
+        });
+
+        it("should pick with diagonal ray entering at corner", () => {
+            // 3x3x1 volume, solid at (2, 2, 0). Ray enters at bottom-left corner
+            const data = new Array(9).fill(air);
+            data[8] = rock; // (2, 2, 0)
+            const denseVolume: DenseVolume<number> = {
+                type: "dense",
+                size: [3, 3, 1],
+                data: createTypedBuffer(PhysicalVoxel.schema, data)
+            };
+            const volume = createColumnVolume(denseVolume);
+
+            // Ray from (-1, -1, 0.5) through corner (0,0) to (4, 4, 0.5)
+            const line: Line3 = {
+                a: [-1, -1, 0.5],
+                b: [4, 4, 0.5]
+            };
+
+            const result = pick(volume, line, pickable);
+            expect(result).not.toBeNull();
+            expect(result?.coordinates).toEqual([2, 2, 0]);
+        });
+
+        it("should pick with grazing ray nearly parallel to X face", () => {
+            // 5x5x1 volume, solid at (2, 2, 0). Ray nearly parallel to Y (small dy)
+            const data = new Array(25).fill(air);
+            data[2 + 2 * 5] = rock;
+            const denseVolume: DenseVolume<number> = {
+                type: "dense",
+                size: [5, 5, 1],
+                data: createTypedBuffer(PhysicalVoxel.schema, data)
+            };
+            const volume = createColumnVolume(denseVolume);
+
+            // Ray with very shallow Y component: from (-1, 2.1, 0.5) to (6, 2.2, 0.5)
+            const line: Line3 = {
+                a: [-1, 2.1, 0.5],
+                b: [6, 2.2, 0.5]
+            };
+
+            const result = pick(volume, line, pickable);
+            expect(result).not.toBeNull();
+            expect(result?.coordinates).toEqual([2, 2, 0]);
+        });
+
+        it("should pick when entry point is exactly on voxel boundary", () => {
+            // Volume with solid at (1, 0, 0). Ray enters at x=1.0 exactly
+            const data = [air, rock, air];
+            const denseVolume: DenseVolume<number> = {
+                type: "dense",
+                size: [3, 1, 1],
+                data: createTypedBuffer(PhysicalVoxel.schema, data)
+            };
+            const volume = createColumnVolume(denseVolume);
+
+            // Ray from (0, 0.5, 0.5) to (3, 0.5, 0.5) - enters at x=0, passes through x=1
+            const line: Line3 = {
+                a: [0, 0.5, 0.5],
+                b: [3, 0.5, 0.5]
+            };
+
+            const result = pick(volume, line, pickable);
+            expect(result).not.toBeNull();
+            expect(result?.coordinates).toEqual([1, 0, 0]);
+        });
+
+        it("should pick with angled ray in 3D crossing multiple voxels", () => {
+            // 3x3x3 volume, solid at (1, 1, 1). Angled ray through center
+            const data = new Array(27).fill(air);
+            data[13] = rock; // (1, 1, 1)
+            const denseVolume: DenseVolume<number> = {
+                type: "dense",
+                size: [3, 3, 3],
+                data: createTypedBuffer(PhysicalVoxel.schema, data)
+            };
+            const volume = createColumnVolume(denseVolume);
+
+            // Ray from (-1, -1, -1) to (5, 5, 5) - diagonal through center
+            const line: Line3 = {
+                a: [-1, -1, -1],
+                b: [5, 5, 5]
+            };
+
+            const result = pick(volume, line, pickable);
+            expect(result).not.toBeNull();
+            expect(result?.coordinates).toEqual([1, 1, 1]);
+        });
+    });
 });
 

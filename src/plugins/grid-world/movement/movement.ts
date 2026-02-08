@@ -38,13 +38,13 @@ export const movement = Database.Plugin.create({
                                 ],
                             };
 
-                            const collisionAlpha = hasGridWorld ? pickWorldCollision(db, line) : null;
+                            const collision = hasGridWorld ? pickWorldCollision(db, line) : null;
 
-                            if (collisionAlpha !== null) {
-                                const t = Math.max(0, collisionAlpha - 0.0001);
-                                position[baseIndex] = line.a[0] + (line.b[0] - line.a[0]) * t;
-                                position[baseIndex + 1] = line.a[1] + (line.b[1] - line.a[1]) * t;
-                                position[baseIndex + 2] = line.a[2] + (line.b[2] - line.a[2]) * t;
+                            if (collision !== null) {
+                                const particleRadius = 1;
+                                position[baseIndex] = collision.worldHitPosition[0] + collision.faceNormal[0] * particleRadius;
+                                position[baseIndex + 1] = collision.worldHitPosition[1] + collision.faceNormal[1] * particleRadius;
+                                position[baseIndex + 2] = collision.worldHitPosition[2] + collision.faceNormal[2] * particleRadius;
                                 velocity[baseIndex] = 0;
                                 velocity[baseIndex + 1] = 0;
                                 velocity[baseIndex + 2] = 0;

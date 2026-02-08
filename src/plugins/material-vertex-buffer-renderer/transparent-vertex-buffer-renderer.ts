@@ -43,6 +43,7 @@ export const renderTransparentVertexBuffers = Database.Plugin.create({
                     
                     const pipelineConfig: PipelineConfig = {
                         depthWriteEnabled: false,
+                        depthCompare: 'always',
                         fragmentTarget: {
                             format: canvasFormat,
                             blend: {

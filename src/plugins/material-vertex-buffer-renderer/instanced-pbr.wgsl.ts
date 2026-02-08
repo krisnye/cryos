@@ -120,7 +120,8 @@ fn fragmentMain(input: VertexOutput) -> FragmentOutput {
     // Combine lighting
     let litRGB = ambient + diffuse + specular;
     
-    return FragmentOutput(vec4<f32>(litRGB, input.baseColor.a));
+    // DEBUG: 0.5 alpha for all models
+    return FragmentOutput(vec4<f32>(litRGB, 0.5));
 }
 `;
 

@@ -30,7 +30,7 @@ describe("pickWorldCollision", () => {
         return ColumnVolumeNamespace.create(denseVolume);
     };
 
-    it("given line hitting terrain, should return alpha in [0,1]", () => {
+    it("given line hitting terrain, should return hit position and face normal", () => {
         const db = Database.create(gridWorld);
         const { chunkSize, blockSize } = db.resources.worldScale;
         const chunk = createTestChunk(2, 2, 1, chunkSize);
@@ -40,9 +40,11 @@ describe("pickWorldCollision", () => {
         const result = pickWorldCollision(db, line);
 
         expect(result).not.toBeNull();
-        expect(typeof result).toBe("number");
-        expect(result).toBeGreaterThanOrEqual(0);
-        expect(result).toBeLessThanOrEqual(1);
+        expect(result).toHaveProperty("worldHitPosition");
+        expect(result).toHaveProperty("faceNormal");
+        expect(result!.worldHitPosition).toHaveLength(3);
+        expect(result!.faceNormal).toHaveLength(3);
+        expect(result!.faceNormal).toMatchObject([0, 0, 1]);
     });
 
     it("given line through air only, should return null", () => {
@@ -79,7 +81,7 @@ describe("pickWorldCollision", () => {
         expect(result).toBeNull();
     });
 
-    it("given diagonal line across chunks, should return alpha of first hit", () => {
+    it("given diagonal line across chunks, should return hit position and face normal", () => {
         const db = Database.create(gridWorld);
         const { chunkSize, blockSize } = db.resources.worldScale;
         for (let chunkY = 0; chunkY < 2; chunkY++) {
@@ -96,7 +98,7 @@ describe("pickWorldCollision", () => {
         const result = pickWorldCollision(db, line);
 
         expect(result).not.toBeNull();
-        expect(result).toBeGreaterThanOrEqual(0);
-        expect(result).toBeLessThanOrEqual(1);
+        expect(result).toHaveProperty("worldHitPosition");
+        expect(result).toHaveProperty("faceNormal");
     });
 });

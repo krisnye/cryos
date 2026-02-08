@@ -33,6 +33,7 @@ export type ModelGroup = {
 
 export type PipelineConfig = {
     depthWriteEnabled: boolean;
+    depthCompare?: GPUCompareFunction;
     fragmentTarget: GPUColorTargetState;
 };
 
@@ -169,7 +170,7 @@ export function getOrCreatePipeline(
         },
         depthStencil: {
             depthWriteEnabled: config.depthWriteEnabled,
-            depthCompare: 'less-equal',
+            depthCompare: config.depthCompare ?? 'less-equal',
             format: depthTexture?.format ?? 'depth24plus'
         }
     });

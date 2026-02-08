@@ -36,12 +36,6 @@ export const pick = <T>(
         return null; // Line doesn't intersect volume at all
     }
     
-    // Start position at box entry point (alpha is in range 0-1)
-    const startPoint = Line3.interpolate(line, alpha);
-    let x = startPoint[0];
-    let y = startPoint[1];
-    let z = startPoint[2];
-    
     // Calculate ray direction and normalize
     const dx = line.b[0] - line.a[0];
     const dy = line.b[1] - line.a[1];
@@ -54,7 +48,14 @@ export const pick = <T>(
     const dirY = dy / len;
     const dirZ = dz / len;
     
-    const startT = alpha * len;
+    // Start at box entry point. Nudge slightly along ray to avoid floor() on exact
+    // boundaries (e.g. 0.9999999999999999 vs 1.0) which can occur with angled rays.
+    const eps = 1e-10;
+    const startPoint = Line3.interpolate(line, alpha);
+    let x = startPoint[0] + eps * dirX;
+    let y = startPoint[1] + eps * dirY;
+    let z = startPoint[2] + eps * dirZ;
+    const startT = alpha * len + eps;
     
     // DDA algorithm: step along the ray, visiting voxels
     // Calculate step size for each axis (distance to travel for 1 voxel)
@@ -97,7 +98,8 @@ export const pick = <T>(
     // Track which face was hit when entering the current voxel
     let entryFace: AabbFace = AabbNamespace.Face.POS_Z; // Default for first voxel
     
-    while (iterations < maxIterations && currentDistance < maxDistance) {
+    // Use <= so we check the voxel at the segment endpoint (angled rays can hit there)
+    while (iterations < maxIterations && currentDistance <= maxDistance) {
         iterations++;
         
         // Check if current voxel is within bounds

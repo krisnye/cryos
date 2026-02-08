@@ -1,5 +1,5 @@
 import type { Entity } from "@adobe/data/ecs";
-import { Line3, Vec3 } from "@adobe/data/math";
+import { Aabb, Line3, Vec3 } from "@adobe/data/math";
 import { ColumnVolume } from "../../../types/column-volume/column-volume.js";
 import { Material } from "../../../types/material/material.js";
 import { PhysicalVoxel } from "../../../types/physical-voxel/physical-voxel.js";
@@ -10,11 +10,18 @@ const getWorldChunkKey = (chunkX: number, chunkY: number): number => {
     return chunkX * 10000 + chunkY;
 };
 
+export type CollisionResult = {
+    /** World-space position where the ray hit the voxel surface */
+    worldHitPosition: Vec3;
+    /** Face normal pointing outward from the surface (direction to push particle) */
+    faceNormal: Vec3;
+};
+
 /**
  * DDA-based broad-phase: step along the line visiting only chunks the line crosses.
- * Returns lineAlpha (0-1) of first solid voxel hit, or null if no hit.
+ * Returns the exact hit position and face normal for the first solid voxel hit, or null if no hit.
  */
-export const pickWorldCollision = (db: GridWorldDatabase, line: Line3): number | null => {
+export const pickWorldCollision = (db: GridWorldDatabase, line: Line3): CollisionResult | null => {
     const { worldChunks, worldScale } = db.resources;
     const { chunkSize, blockSize } = worldScale;
 
@@ -81,22 +88,9 @@ export const pickWorldCollision = (db: GridWorldDatabase, line: Line3): number |
                 );
 
                 if (pickResult) {
-                    const worldHitX = chunkPosition[0] + (pickResult.coordinates[0] + 0.5) * blockSize;
-                    const worldHitY = chunkPosition[1] + (pickResult.coordinates[1] + 0.5) * blockSize;
-                    const worldHitZ = chunkPosition[2] + (pickResult.coordinates[2] + 0.5) * blockSize;
-                    const lineDirX = line.b[0] - line.a[0];
-                    const lineDirY = line.b[1] - line.a[1];
-                    const lineDirZ = line.b[2] - line.a[2];
-                    const lenSq = lineDirX * lineDirX + lineDirY * lineDirY + lineDirZ * lineDirZ;
-                    if (lenSq > 1e-10) {
-                        const toHitX = worldHitX - line.a[0];
-                        const toHitY = worldHitY - line.a[1];
-                        const toHitZ = worldHitZ - line.a[2];
-                        const dot = toHitX * lineDirX + toHitY * lineDirY + toHitZ * lineDirZ;
-                        const lineAlpha = Math.max(0, Math.min(1, dot / lenSq));
-                        return lineAlpha;
-                    }
-                    return pickResult.alpha;
+                    const worldHitPosition = Line3.interpolate(line, pickResult.alpha);
+                    const faceNormal = Aabb.Face.getNormal(pickResult.face);
+                    return { worldHitPosition, faceNormal };
                 }
             }
         }

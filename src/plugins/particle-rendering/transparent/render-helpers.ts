@@ -73,8 +73,8 @@ export function createTransparentRenderPipeline(
         },
         primitive: { topology: 'triangle-list', cullMode: 'back' },
         depthStencil: { 
-            depthWriteEnabled: false, // Don't write depth for transparent particles
-            depthCompare: 'less-equal', // Still test depth for proper occlusion
+            depthWriteEnabled: false,
+            depthCompare: 'always',
             format: 'depth24plus' 
         }
     });
