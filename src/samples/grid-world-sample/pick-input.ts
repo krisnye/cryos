@@ -133,7 +133,7 @@ export const pickInput = Database.Plugin.create({
                             );
                             
                             // Pick from world
-                            const pickResult = (db.actions as any).pickWorld(line);
+                            const pickResult = db.resources.pick(line);
                             
                             // Get material and material name if pick result exists
                             let material: Material.Id | null = null;
@@ -165,6 +165,7 @@ export const pickInput = Database.Plugin.create({
                                     lineAlpha: pickResult.lineAlpha,
                                     worldPosition: pickResult.worldPosition,
                                     modelPosition: pickResult.modelPosition,
+                                    modelCoordinates: pickResult.modelCoordinates,
                                     material: material,
                                     materialName: materialName,
                                     face: pickResult.face,
@@ -276,15 +277,22 @@ export const pickInput = Database.Plugin.create({
                             const speed = number * 100;
                             const velocity = Vec3.scale(normalizedDirection, speed);
                             
-                            // Create bullet particle at robot position with velocity
+                            // Fire from slightly above and forward from robot (torso height, in front)
+                            const heightOffset = 2;
+                            const forwardOffset = 2;
+                            const firePosition = Vec3.add(
+                                Vec3.add(robotPosition, [0, 0, heightOffset]),
+                                Vec3.scale(normalizedDirection, forwardOffset)
+                            );
+                            
                             db.transactions.createBullet({
-                                position: robotPosition,
+                                position: firePosition,
                                 velocity: velocity,
                             });
                             
-                            // Console.log the number and line from robot to target
+                            // Console.log the number and line from fire point to target
                             const line: Line3 = {
-                                a: robotPosition,
+                                a: firePosition,
                                 b: pickTarget
                             };
                             

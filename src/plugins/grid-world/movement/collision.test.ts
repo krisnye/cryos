@@ -42,6 +42,7 @@ describe("pickGridWorld", () => {
         expect(result).not.toBeNull();
         expect(result).toHaveProperty("worldPosition");
         expect(result).toHaveProperty("faceNormal");
+        expect(result).toHaveProperty("modelCoordinates");
         expect(result!.worldPosition).toHaveLength(3);
         expect(result!.faceNormal).toHaveLength(3);
         expect(result!.faceNormal).toMatchObject([0, 0, 1]);

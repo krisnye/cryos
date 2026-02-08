@@ -10,7 +10,7 @@ import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 import * as ColumnVolumeNamespace from "../../types/column-volume/public.js";
 import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
 
-describe("gridWorld.pickWorld", () => {
+describe("gridWorld pick resource", () => {
     const { air, rock, steel, concrete } = Material.ids;
 
     /**
@@ -93,14 +93,15 @@ describe("gridWorld.pickWorld", () => {
                 b: [8, 8, 0],  // Through the voxel
             };
 
-            const result = (db.actions as any).pickWorld(line);
+            const result = db.resources.pick(line);
 
             expect(result).not.toBeNull();
             expect(result?.entity).toBeDefined();
-            // World position should be approximately at the voxel center
-            expect(result?.worldPosition[0]).toBeCloseTo(8 + 0.5 * blockSize, 0.1);
-            expect(result?.worldPosition[1]).toBeCloseTo(8 + 0.5 * blockSize, 0.1);
-            expect(result?.worldPosition[2]).toBeCloseTo(4 + 0.5 * blockSize, 0.1);
+            // World position is exact surface hit (top face when picking from above)
+            // Voxel at (2,2,1) model = world (8,8,4)..(12,12,8); ray enters top face at z=8
+            expect(result?.worldPosition[0]).toBeCloseTo(8, 0.1);
+            expect(result?.worldPosition[1]).toBeCloseTo(8, 0.1);
+            expect(result?.worldPosition[2]).toBeCloseTo(8, 0.1);
             expect(result?.lineAlpha).toBeGreaterThanOrEqual(0);
             expect(result?.lineAlpha).toBeLessThanOrEqual(1);
         });
@@ -124,12 +125,14 @@ describe("gridWorld.pickWorld", () => {
                 b: [40, 20, 8], // Through the voxel
             };
 
-            const result = (db.actions as any).pickWorld(line);
+            const result = db.resources.pick(line);
 
             expect(result).not.toBeNull();
-            expect(result?.worldPosition[0]).toBeCloseTo(20 + 0.5 * blockSize, 0.1);
-            expect(result?.worldPosition[1]).toBeCloseTo(20 + 0.5 * blockSize, 0.1);
-            expect(result?.worldPosition[2]).toBeCloseTo(8 + 0.5 * blockSize, 0.1);
+            // World position is exact surface hit (left face when picking from positive X)
+            // Voxel at (5,5,2) model = world (20,20,8)..(24,24,12); ray enters left face at x=20
+            expect(result?.worldPosition[0]).toBeCloseTo(20, 0.1);
+            expect(result?.worldPosition[1]).toBeCloseTo(20, 0.1);
+            expect(result?.worldPosition[2]).toBeCloseTo(8, 0.1);
         });
 
         it("should return null when picking through air", () => {
@@ -149,7 +152,7 @@ describe("gridWorld.pickWorld", () => {
                 b: [0, 0, 0],
             };
 
-            const result = (db.actions as any).pickWorld(line);
+            const result = db.resources.pick(line);
             expect(result).toBeNull();
         });
     });
@@ -183,13 +186,14 @@ describe("gridWorld.pickWorld", () => {
                 b: [200, 8, 4], // Through both chunks, at voxel height
             };
 
-            const result = (db.actions as any).pickWorld(line);
+            const result = db.resources.pick(line);
 
             expect(result).not.toBeNull();
             // Should pick chunk 0 (closer to line start)
             const chunk0Entity = (db.actions as any).getWorldChunkByIndex([0, 0]);
             expect(result?.entity).toBe(chunk0Entity);
-            expect(result?.worldPosition[0]).toBeCloseTo(8 + 0.5 * blockSize, 0.1);
+            // Surface hit: voxel (2,2,1) = world (8,8,4)..(12,12,8); ray enters left face at x=8
+            expect(result?.worldPosition[0]).toBeCloseTo(8, 0.1);
         });
 
         it("should pick from chunk at different Y coordinate", () => {
@@ -218,7 +222,7 @@ describe("gridWorld.pickWorld", () => {
                 b: [8, chunkSize * blockSize + 8, 4], // Through chunk (0,1), at voxel height
             };
 
-            const result = (db.actions as any).pickWorld(line);
+            const result = db.resources.pick(line);
 
             expect(result).not.toBeNull();
             // Should pick chunk (0,0) first (closer)
@@ -248,14 +252,14 @@ describe("gridWorld.pickWorld", () => {
                 b: [8 * blockSize, 8 * blockSize, -1],  // Through the voxel
             };
 
-            const result = (db.actions as any).pickWorld(line);
+            const result = db.resources.pick(line);
 
             expect(result).not.toBeNull();
             // Should hit the floor voxel at (8, 8, 0) in model space
-            // World position: (32 + 0.5*4, 32 + 0.5*4, 0 + 0.5*4) = (34, 34, 2)
-            expect(result?.worldPosition[0]).toBeCloseTo(8 * blockSize + 0.5 * blockSize, 0.1);
-            expect(result?.worldPosition[1]).toBeCloseTo(8 * blockSize + 0.5 * blockSize, 0.1);
-            expect(result?.worldPosition[2]).toBeCloseTo(0.5 * blockSize, 0.1);
+            // Surface hit: voxel (32,32,0)..(36,36,4); ray from above enters top face at z=4
+            expect(result?.worldPosition[0]).toBeCloseTo(8 * blockSize, 0.1);
+            expect(result?.worldPosition[1]).toBeCloseTo(8 * blockSize, 0.1);
+            expect(result?.worldPosition[2]).toBeCloseTo(4, 0.1);
         });
 
         it("should pick floor at chunk boundary", () => {
@@ -287,11 +291,11 @@ describe("gridWorld.pickWorld", () => {
                 b: [15 * blockSize, 8 * blockSize, -1],
             };
 
-            const result = (db.actions as any).pickWorld(line);
+            const result = db.resources.pick(line);
 
             expect(result).not.toBeNull();
-            // Should hit chunk 0's floor voxel
-            expect(result?.worldPosition[2]).toBeCloseTo(0.5 * blockSize, 0.1);
+            // Should hit chunk 0's floor voxel - surface hit at top face z=4
+            expect(result?.worldPosition[2]).toBeCloseTo(4, 0.1);
         });
     });
 
@@ -313,7 +317,7 @@ describe("gridWorld.pickWorld", () => {
                 b: [1000, 1000, 0],
             };
 
-            const result = (db.actions as any).pickWorld(line);
+            const result = db.resources.pick(line);
             expect(result).toBeNull();
         });
 
@@ -340,7 +344,7 @@ describe("gridWorld.pickWorld", () => {
                 b: [chunkSize * blockSize * 2, chunkSize * blockSize * 2, 4],
             };
 
-            const result = (db.actions as any).pickWorld(line);
+            const result = db.resources.pick(line);
 
             expect(result).not.toBeNull();
             // Should pick one of the chunks

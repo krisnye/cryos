@@ -1,6 +1,5 @@
 import { Database } from "@adobe/data/ecs";
 import { Line3 } from "@adobe/data/math";
-import { pickGridWorld } from "./collision.js";
 import { gridWorld } from "../grid-world.js";
 
 export const movement = Database.Plugin.create({
@@ -9,7 +8,6 @@ export const movement = Database.Plugin.create({
         applyVelocity: {
             create: (db) => {
                 const dt = 1 / 60;
-                const hasGridWorld = "worldChunks" in db.resources;
 
                 return () => {
                     const tables = db.store.queryArchetypes(["position", "velocity"]);
@@ -38,7 +36,7 @@ export const movement = Database.Plugin.create({
                                 ],
                             };
 
-                            const pick = hasGridWorld ? pickGridWorld(db, line) : null;
+                            const pick = db.resources.pick(line);
 
                             if (pick !== null) {
                                 const particleRadius = 1;

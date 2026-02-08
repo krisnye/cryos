@@ -1,9 +1,8 @@
-import type { Entity } from "@adobe/data/ecs";
 import { Aabb, Line3, Vec3 } from "@adobe/data/math";
-import type { AabbFace } from "@adobe/data/math/aabb/face/index";
 import { ColumnVolume } from "../../../types/column-volume/column-volume.js";
 import { Material } from "../../../types/material/material.js";
 import { PhysicalVoxel } from "../../../types/physical-voxel/physical-voxel.js";
+import type { PickResult } from "../../../types/pick-result.js";
 import * as VolumeNamespace from "../../../types/volume/public.js";
 import type { GridWorldDatabase } from "../grid-world.js";
 
@@ -11,21 +10,11 @@ const getWorldChunkKey = (chunkX: number, chunkY: number): number => {
     return chunkX * 10000 + chunkY;
 };
 
-/** Result of picking a voxel in the grid world. Matches PickResult shape plus faceNormal. */
-export type PickGridWorldResult = {
-    entity: Entity;
-    lineAlpha: number;
-    worldPosition: Vec3;
-    modelPosition: Vec3;
-    face: AabbFace;
-    faceNormal: Vec3;
-};
-
 /**
  * DDA-based broad-phase: step along the line visiting only chunks the line crosses.
  * Returns the first solid voxel hit, or null if no hit.
  */
-export const pickGridWorld = (db: GridWorldDatabase, line: Line3): PickGridWorldResult | null => {
+export const pickGridWorld = (db: GridWorldDatabase, line: Line3): PickResult | null => {
     const { worldChunks, worldScale } = db.resources;
     const { chunkSize, blockSize } = worldScale;
 
@@ -93,12 +82,14 @@ export const pickGridWorld = (db: GridWorldDatabase, line: Line3): PickGridWorld
 
                 if (pickResult) {
                     const worldPosition = Line3.interpolate(line, pickResult.alpha);
+                    const modelPosition = Line3.interpolate(modelLine, pickResult.alpha);
                     const faceNormal = Aabb.Face.getNormal(pickResult.face);
                     return {
                         entity: chunkEntity,
                         lineAlpha: pickResult.alpha,
                         worldPosition,
-                        modelPosition: pickResult.coordinates,
+                        modelPosition,
+                        modelCoordinates: pickResult.coordinates,
                         face: pickResult.face,
                         faceNormal,
                     };
