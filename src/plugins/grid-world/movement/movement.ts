@@ -1,16 +1,17 @@
 import { Database } from "@adobe/data/ecs";
-import { physics } from "../../physics/physics.js";
+import { Line3 } from "@adobe/data/math";
+import { pickWorldCollision } from "./collision.js";
+import { gridWorld } from "../grid-world.js";
 
 export const movement = Database.Plugin.create({
-    extends: physics,
+    extends: gridWorld,
     systems: {
         applyVelocity: {
             create: (db) => {
-                // Fixed timestep for 60fps (seconds per frame)
                 const dt = 1 / 60;
+                const hasGridWorld = "worldChunks" in db.resources;
 
                 return () => {
-                    // Query all entities that have both position and velocity
                     const tables = db.store.queryArchetypes(["position", "velocity"]);
 
                     if (tables.length === 0) {
@@ -18,16 +19,40 @@ export const movement = Database.Plugin.create({
                     }
 
                     for (const table of tables) {
-                        const position = table.columns.position.getTypedArray() as Float32Array;
-                        const velocity = table.columns.velocity.getTypedArray() as Float32Array;
+                        const position = table.columns.position.getTypedArray();
+                        const velocity = table.columns.velocity.getTypedArray();
                         const rowCount = table.rowCount;
 
-                        // Vec3 layout: [x0, y0, z0, x1, y1, z1, ...]
                         for (let i = 0; i < rowCount; i++) {
                             const baseIndex = i * 3;
-                            position[baseIndex] += velocity[baseIndex] * dt;
-                            position[baseIndex + 1] += velocity[baseIndex + 1] * dt;
-                            position[baseIndex + 2] += velocity[baseIndex + 2] * dt;
+                            const line: Line3 = {
+                                a: [
+                                    position[baseIndex + 0],
+                                    position[baseIndex + 1],
+                                    position[baseIndex + 2],
+                                ],
+                                b: [
+                                    position[baseIndex + 0] + velocity[baseIndex + 0] * dt,
+                                    position[baseIndex + 1] + velocity[baseIndex + 1] * dt,
+                                    position[baseIndex + 2] + velocity[baseIndex + 2] * dt,
+                                ],
+                            };
+
+                            const collisionAlpha = hasGridWorld ? pickWorldCollision(db, line) : null;
+
+                            if (collisionAlpha !== null) {
+                                const t = Math.max(0, collisionAlpha - 0.0001);
+                                position[baseIndex] = line.a[0] + (line.b[0] - line.a[0]) * t;
+                                position[baseIndex + 1] = line.a[1] + (line.b[1] - line.a[1]) * t;
+                                position[baseIndex + 2] = line.a[2] + (line.b[2] - line.a[2]) * t;
+                                velocity[baseIndex] = 0;
+                                velocity[baseIndex + 1] = 0;
+                                velocity[baseIndex + 2] = 0;
+                            } else {
+                                position[baseIndex] += velocity[baseIndex] * dt;
+                                position[baseIndex + 1] += velocity[baseIndex + 1] * dt;
+                                position[baseIndex + 2] += velocity[baseIndex + 2] * dt;
+                            }
                         }
                     }
                 };

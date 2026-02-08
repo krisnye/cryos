@@ -32,7 +32,7 @@ describe("renderOpaqueVertexBuffers", () => {
         );
 
         // Run system with no entities (should not error)
-        const system = db.system.functions.renderOpaqueVertexBuffers;
+        const system = db.system.functions.renderOpaqueVertexBuffers!;
         expect(() => system()).not.toThrow();
     });
 });

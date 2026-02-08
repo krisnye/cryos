@@ -8,13 +8,14 @@ import { PhysicalVoxel } from "types/physical-voxel/physical-voxel.js";
 import { Vec2, Vec3, Line3, Aabb } from "@adobe/data/math";
 import { PickResult } from "types/pick-result.js";
 import * as VolumeNamespace from "types/volume/public.js";
+import { physics } from "plugins/physics/physics.js";
 
 const getWorldChunkKey = (chunkX: number, chunkY: number): number => {
     return chunkX * 10000 + chunkY;
 };
 
-export const scene = Database.Plugin.create({
-    extends: volumeModel,
+export const gridWorld = Database.Plugin.create({
+    extends: Database.Plugin.combine(physics, volumeModel),
     components: {
         worldChunk: True.schema,
     },
@@ -211,3 +212,4 @@ export const scene = Database.Plugin.create({
     },
 });
 
+export type GridWorldDatabase = Database.FromPlugin<typeof gridWorld>;

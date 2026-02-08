@@ -2,7 +2,7 @@ import { Database } from "@adobe/data/ecs";
 import { Aabb, Line3, Vec3 } from "@adobe/data/math";
 import { pointerInput } from "../../plugins/pointer-input.js";
 import { keyInput } from "../../plugins/key-input.js";
-import { scene as gridWorld } from "../../plugins/grid-world/grid-world.js";
+import { gridWorld as gridWorld } from "../../plugins/grid-world/grid-world.js";
 import { scene } from "../../plugins/scene.js";
 import { particle } from "../../plugins/particle.js";
 import { playerModel } from "./player-model.js";
@@ -273,7 +273,7 @@ export const pickInput = Database.Plugin.create({
                             const normalizedDirection = Vec3.normalize(direction);
                             
                             // Calculate velocity: number * 10 meters per second
-                            const speed = number * 10;
+                            const speed = number * 100;
                             const velocity = Vec3.scale(normalizedDirection, speed);
                             
                             // Create bullet particle at robot position with velocity

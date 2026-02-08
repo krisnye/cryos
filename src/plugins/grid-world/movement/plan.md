@@ -125,10 +125,10 @@ cryos/src/plugins/grid-world/
 
 ---
 
-## Future Enhancements (Out of Scope)
+## Future Enhancements
 
+- **Collision detection** — See `collision-plan.md` for grid-based broad-phase design
 - Variable timestep support
-- Collision detection
 - Velocity damping/friction
 - Acceleration forces
 - Integration with physics solver

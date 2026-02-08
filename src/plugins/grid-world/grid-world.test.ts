@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Database } from "@adobe/data/ecs";
 import { Line3, Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
-import { scene as gridWorld } from "./grid-world.js";
+import { gridWorld as gridWorld } from "./grid-world.js";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { ColumnVolume } from "../../types/column-volume/column-volume.js";
 import { Material } from "../../types/material/material.js";

@@ -3,7 +3,7 @@ import { particleRendering } from "../../plugins/particle-rendering/particle-ren
 import { cameraControl } from "../../plugins/camera-control.js";
 import { materialVertexBufferRenderer } from "../../plugins/material-vertex-buffer-renderer/material-vertex-buffer-renderer.js";
 import { materialVolumeToVertexBuffers } from "../../plugins/material-volume-to-vertex-buffers/material-volume-to-vertex-buffers.js";
-import { scene as gridWorld } from "../../plugins/grid-world/grid-world.js";
+import { gridWorld as gridWorld } from "../../plugins/grid-world/grid-world.js";
 import { movement } from "../../plugins/grid-world/movement/movement.js";
 import { playerModelInput } from "./player-model-input.js";
 import { pickInput } from "./pick-input.js";

@@ -3,10 +3,10 @@ import { Entity } from "@adobe/data/ecs";
 import { True } from "@adobe/data/schema";
 import { Vec3, Quat } from "@adobe/data/math";
 import { geometry } from "./geometry.js";
-import { Material } from "../types/material/material.js";
 import { Volume } from "../types/volume/volume.js";
 import { PhysicalVoxel } from "../types/physical-voxel/physical-voxel.js";
 import { materialVertexBuffers } from "./material-vertex-buffers.js";
+import { Simplify } from "@adobe/data/types";
 
 export const volumeModel = Database.Plugin.create({
     extends: Database.Plugin.combine(geometry, materialVertexBuffers),
@@ -74,4 +74,3 @@ export const volumeModel = Database.Plugin.create({
         },
     },
 });
-

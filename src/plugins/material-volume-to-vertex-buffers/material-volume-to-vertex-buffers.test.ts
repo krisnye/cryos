@@ -32,7 +32,7 @@ describe("materialVolumeToVertexBuffers", () => {
         });
 
         // Run system (simulate update phase)
-        db.system.functions.materialVolumeToVertexBuffers();
+        db.system.functions.materialVolumeToVertexBuffers!();
 
         // Check that buffers were generated (if device is available)
         const opaqueBuffer = db.get(entityId, "opaqueVertexBuffer");
@@ -67,7 +67,7 @@ describe("materialVolumeToVertexBuffers", () => {
         });
 
         // Run system (should convert ColumnVolume to DenseVolume internally)
-        db.system.functions.materialVolumeToVertexBuffers();
+        db.system.functions.materialVolumeToVertexBuffers!();
 
         // System should run without errors
         // Buffers will be generated if device is available
@@ -99,7 +99,7 @@ describe("materialVolumeToVertexBuffers", () => {
             materialVolume: emptyVolume,
         });
 
-        db.system.functions.materialVolumeToVertexBuffers();
+        db.system.functions.materialVolumeToVertexBuffers!();
 
         // Empty volume should not have buffers (no visible faces)
         const opaqueBuffer = db.get(entityId, "opaqueVertexBuffer");
@@ -138,7 +138,7 @@ describe("materialVolumeToVertexBuffers", () => {
         });
 
         // Run system - memoization should cache the conversion
-        db.system.functions.materialVolumeToVertexBuffers();
+        db.system.functions.materialVolumeToVertexBuffers!();
 
         // Get the buffers for each entity
         const opaqueBuffer1 = db.get(entityId1, "opaqueVertexBuffer");
@@ -192,7 +192,7 @@ describe("materialVolumeToVertexBuffers", () => {
         });
 
         // Run system
-        db.system.functions.materialVolumeToVertexBuffers();
+        db.system.functions.materialVolumeToVertexBuffers!();
 
         // DenseVolume and ColumnVolume are different objects, so they cache separately
         // But entityId2 and entityId3 share the same ColumnVolume object, so that's cached
@@ -231,7 +231,7 @@ describe("materialVolumeToVertexBuffers", () => {
         });
 
         // Run system - should handle both types
-        db.system.functions.materialVolumeToVertexBuffers();
+        db.system.functions.materialVolumeToVertexBuffers!();
 
         // Both entities should be processed without errors
         expect(entityId1).toBeDefined();

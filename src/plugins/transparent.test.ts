@@ -23,10 +23,10 @@ test("markTransparentMaterials marks entities with non-opaque materials", () => 
     const db = Database.create(testDatabasePlugin);
     
     // Insert test entities
-    db.system.functions.init_test_database();
+    db.system.functions.init_test_database!();
     
     // Run the transparency marking system
-    db.system.functions.markTransparentMaterials();
+    db.system.functions.markTransparentMaterials!();
     
     // Verify transparent materials got the tag (should be 3: air, water, ice)
     const transparentEntities = db.select(["material", "transparent"]);

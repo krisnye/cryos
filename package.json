@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "pnpm lint && tsc --build && tsc-alias && vite build",
+    "typecheck": "tsc --build --noEmit",
     "dev": "rm -rf node_modules/.vite && run-p dev:*",
     "dev:build": "tsc --build --watch --preserveWatchOutput & tsc-alias --watch",
     "dev:build-vite": "vite build --watch",

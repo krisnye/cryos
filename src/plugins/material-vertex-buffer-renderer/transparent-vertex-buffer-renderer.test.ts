@@ -31,7 +31,7 @@ describe("renderTransparentVertexBuffers", () => {
         );
 
         // Run system with no entities (should not error)
-        const system = db.system.functions.renderTransparentVertexBuffers;
+        const system = db.system.functions.renderTransparentVertexBuffers!;
         expect(() => system()).not.toThrow();
     });
 });
