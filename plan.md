@@ -51,13 +51,21 @@
 
 ### Active Work
 
-1. **Dense Volume Type Renaming** ✅ (COMPLETED):
-   - Detailed plan: See `tasks/dense-volume-type-renaming.md`
+1. **Pick Resource in VolumeModel** ⬜ (PLANNED):
+   - Detailed plan: See `tasks/pick-resource-volume-model.md`
+   - **Phase 0**: Unify PickResult—single type with entity, lineAlpha, worldPosition, modelPosition, face, faceNormal (all required); remove PickGridWorldResult
+   - Add pluggable `pick` resource to volumeModel (default: general pick over VolumeModel entities)
+   - Grid-world overrides with `pickGridWorld` when present (DDA-based, efficient)
+   - Update pick-input and movement to use `db.resources.pick(line)` instead of direct calls
+   - No new plugin—extend volumeModel and grid-world only
+
+2. **Dense Volume Type Renaming** ✅ (COMPLETED):
+   - See `tasks/dense-volume-type-renaming.md`
    - Renamed `Volume<T>` to `DenseVolume<T>` with `type: "dense"` discriminator
    - Renamed `VolumeMaterial` to `DenseVolumeMaterial`
    - Updated all imports, type references, and documentation
 
-2. **DenseVolume to ColumnVolume Conversion** ✅ (COMPLETED):
+3. **DenseVolume to ColumnVolume Conversion** ✅ (COMPLETED):
    - Detailed plan: See `tasks/dense-to-column-volume-conversion.md`
    - Implemented `ColumnVolume.create()` function to convert DenseVolume to ColumnVolume
    - Enabled sparse storage for volumes with many empty regions
@@ -65,14 +73,14 @@
    - Helper functions: `packColumnInfo`, `unpackColumnInfo`, `isEmptyColumn`
    - Comprehensive test coverage (10 tests)
 
-3. **ColumnVolume to DenseVolume Conversion** ✅ (COMPLETED):
+4. **ColumnVolume to DenseVolume Conversion** ✅ (COMPLETED):
    - Detailed plan: See `tasks/column-volume-to-dense-volume-conversion.md`
    - Implemented `ColumnVolume.toDenseVolume()` function to convert ColumnVolume back to DenseVolume
    - Enabled round-trip conversion for testing and compatibility
    - Fill empty regions with schema default values
    - Handle columns with z-offsets and gaps correctly
 
-4. **Volume Type Unification** ⬜ (PLANNED):
+5. **Volume Type Unification** ⬜ (PLANNED):
    - Detailed plan: See `tasks/volume-type-unification.md`
    - Update `volumeModel` plugin to accept `Volume<MaterialId>` (union of DenseVolume and ColumnVolume)
    - Update `material-volume-to-vertex-buffers` to handle both types

@@ -9,9 +9,9 @@ import { Material } from "../../../types/material/material.js";
 import { PhysicalVoxel } from "../../../types/physical-voxel/physical-voxel.js";
 import * as ColumnVolumeNamespace from "../../../types/column-volume/public.js";
 import * as DenseVolumeNamespace from "../../../types/dense-volume/public.js";
-import { pickWorldCollision } from "./collision.js";
+import { pickGridWorld } from "./collision.js";
 
-describe("pickWorldCollision", () => {
+describe("pickGridWorld", () => {
     const { air, rock } = Material.ids;
 
     const createTestChunk = (solidX: number, solidY: number, solidZ: number, chunkSize: number = 16): ColumnVolume<PhysicalVoxel> => {
@@ -37,12 +37,12 @@ describe("pickWorldCollision", () => {
         db.transactions.createWorldChunk({ chunkX: 0, chunkY: 0, volumeModel: chunk });
 
         const line: Line3 = { a: [8, 8, 10], b: [8, 8, 0] };
-        const result = pickWorldCollision(db, line);
+        const result = pickGridWorld(db, line);
 
         expect(result).not.toBeNull();
-        expect(result).toHaveProperty("worldHitPosition");
+        expect(result).toHaveProperty("worldPosition");
         expect(result).toHaveProperty("faceNormal");
-        expect(result!.worldHitPosition).toHaveLength(3);
+        expect(result!.worldPosition).toHaveLength(3);
         expect(result!.faceNormal).toHaveLength(3);
         expect(result!.faceNormal).toMatchObject([0, 0, 1]);
     });
@@ -54,7 +54,7 @@ describe("pickWorldCollision", () => {
         db.transactions.createWorldChunk({ chunkX: 0, chunkY: 0, volumeModel: emptyChunk });
 
         const line: Line3 = { a: [0, 0, 10], b: [0, 0, 0] };
-        const result = pickWorldCollision(db, line);
+        const result = pickGridWorld(db, line);
 
         expect(result).toBeNull();
     });
@@ -65,7 +65,7 @@ describe("pickWorldCollision", () => {
         db.transactions.createWorldChunk({ chunkX: 0, chunkY: 0, volumeModel: chunk });
 
         const line: Line3 = { a: [1000, 1000, 10], b: [1000, 1000, 0] };
-        const result = pickWorldCollision(db, line);
+        const result = pickGridWorld(db, line);
 
         expect(result).toBeNull();
     });
@@ -76,7 +76,7 @@ describe("pickWorldCollision", () => {
         db.transactions.createWorldChunk({ chunkX: 0, chunkY: 0, volumeModel: chunk });
 
         const line: Line3 = { a: [8, 8, 5], b: [8, 8, 5] };
-        const result = pickWorldCollision(db, line);
+        const result = pickGridWorld(db, line);
 
         expect(result).toBeNull();
     });
@@ -95,10 +95,10 @@ describe("pickWorldCollision", () => {
             a: [0, 0, 4],
             b: [chunkSize * blockSize * 2, chunkSize * blockSize * 2, 4],
         };
-        const result = pickWorldCollision(db, line);
+        const result = pickGridWorld(db, line);
 
         expect(result).not.toBeNull();
-        expect(result).toHaveProperty("worldHitPosition");
+        expect(result).toHaveProperty("worldPosition");
         expect(result).toHaveProperty("faceNormal");
     });
 });

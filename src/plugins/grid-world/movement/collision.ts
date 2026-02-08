@@ -1,5 +1,6 @@
 import type { Entity } from "@adobe/data/ecs";
 import { Aabb, Line3, Vec3 } from "@adobe/data/math";
+import type { AabbFace } from "@adobe/data/math/aabb/face/index";
 import { ColumnVolume } from "../../../types/column-volume/column-volume.js";
 import { Material } from "../../../types/material/material.js";
 import { PhysicalVoxel } from "../../../types/physical-voxel/physical-voxel.js";
@@ -10,18 +11,21 @@ const getWorldChunkKey = (chunkX: number, chunkY: number): number => {
     return chunkX * 10000 + chunkY;
 };
 
-export type CollisionResult = {
-    /** World-space position where the ray hit the voxel surface */
-    worldHitPosition: Vec3;
-    /** Face normal pointing outward from the surface (direction to push particle) */
+/** Result of picking a voxel in the grid world. Matches PickResult shape plus faceNormal. */
+export type PickGridWorldResult = {
+    entity: Entity;
+    lineAlpha: number;
+    worldPosition: Vec3;
+    modelPosition: Vec3;
+    face: AabbFace;
     faceNormal: Vec3;
 };
 
 /**
  * DDA-based broad-phase: step along the line visiting only chunks the line crosses.
- * Returns the exact hit position and face normal for the first solid voxel hit, or null if no hit.
+ * Returns the first solid voxel hit, or null if no hit.
  */
-export const pickWorldCollision = (db: GridWorldDatabase, line: Line3): CollisionResult | null => {
+export const pickGridWorld = (db: GridWorldDatabase, line: Line3): PickGridWorldResult | null => {
     const { worldChunks, worldScale } = db.resources;
     const { chunkSize, blockSize } = worldScale;
 
@@ -88,9 +92,16 @@ export const pickWorldCollision = (db: GridWorldDatabase, line: Line3): Collisio
                 );
 
                 if (pickResult) {
-                    const worldHitPosition = Line3.interpolate(line, pickResult.alpha);
+                    const worldPosition = Line3.interpolate(line, pickResult.alpha);
                     const faceNormal = Aabb.Face.getNormal(pickResult.face);
-                    return { worldHitPosition, faceNormal };
+                    return {
+                        entity: chunkEntity,
+                        lineAlpha: pickResult.alpha,
+                        worldPosition,
+                        modelPosition: pickResult.coordinates,
+                        face: pickResult.face,
+                        faceNormal,
+                    };
                 }
             }
         }

@@ -1,6 +1,6 @@
 import { Database } from "@adobe/data/ecs";
 import { Line3 } from "@adobe/data/math";
-import { pickWorldCollision } from "./collision.js";
+import { pickGridWorld } from "./collision.js";
 import { gridWorld } from "../grid-world.js";
 
 export const movement = Database.Plugin.create({
@@ -38,13 +38,13 @@ export const movement = Database.Plugin.create({
                                 ],
                             };
 
-                            const collision = hasGridWorld ? pickWorldCollision(db, line) : null;
+                            const pick = hasGridWorld ? pickGridWorld(db, line) : null;
 
-                            if (collision !== null) {
+                            if (pick !== null) {
                                 const particleRadius = 1;
-                                position[baseIndex] = collision.worldHitPosition[0] + collision.faceNormal[0] * particleRadius;
-                                position[baseIndex + 1] = collision.worldHitPosition[1] + collision.faceNormal[1] * particleRadius;
-                                position[baseIndex + 2] = collision.worldHitPosition[2] + collision.faceNormal[2] * particleRadius;
+                                position[baseIndex] = pick.worldPosition[0] + pick.faceNormal[0] * particleRadius;
+                                position[baseIndex + 1] = pick.worldPosition[1] + pick.faceNormal[1] * particleRadius;
+                                position[baseIndex + 2] = pick.worldPosition[2] + pick.faceNormal[2] * particleRadius;
                                 velocity[baseIndex] = 0;
                                 velocity[baseIndex + 1] = 0;
                                 velocity[baseIndex + 2] = 0;
