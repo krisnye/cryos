@@ -1,7 +1,7 @@
 import { Database } from "@adobe/data/ecs";
 import { copyToGPUBuffer } from "@adobe/data/typed-buffer";
 import { memoize } from "@adobe/data/cache/functions/memoize";
-import { volumeModel } from "../volume-model.js";
+import { volumeModel } from "../volume-model/volume-model.js";
 import { Volume } from "../../types/volume/volume.js";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { ColumnVolume } from "../../types/column-volume/column-volume.js";

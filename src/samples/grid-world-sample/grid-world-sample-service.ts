@@ -10,9 +10,7 @@ import { pickInput } from "./pick-input.js";
 import { createCheckerboardChunk } from "./create-simple-chunk.js";
 import { createMechRobot } from "./create-mech-robot.js";
 import { getTerrainHeight, MAX_TERRAIN_HEIGHT_BLOCKS } from "./terrain-height.js";
-import { Material } from "../../types/material/material.js";
 import { materials } from "types/material/materials.js";
-import { Rgba } from "types/rgba/rgba.js";
 
 export function createGridWorldSampleService() {
     return Database.create(

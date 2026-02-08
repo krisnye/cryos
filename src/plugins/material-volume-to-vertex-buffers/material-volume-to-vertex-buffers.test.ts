@@ -1,7 +1,7 @@
 import { expect, test, describe, beforeEach } from "vitest";
 import { Database } from "@adobe/data/ecs";
 import { materialVolumeToVertexBuffers } from "./material-volume-to-vertex-buffers.js";
-import { volumeModel } from "../volume-model.js";
+import { volumeModel } from "../volume-model/volume-model.js";
 import { graphics } from "../graphics.js";
 import { DenseVolumeMaterial } from "../../types/dense-volume-material/dense-volume-material.js";
 import { Material } from "../../types/material/material.js";

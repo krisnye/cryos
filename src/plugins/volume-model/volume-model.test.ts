@@ -1,8 +1,8 @@
 import { expect, test, describe } from "vitest";
 import { Database } from "@adobe/data/ecs";
 import { volumeModel } from "./volume-model.js";
-import { graphics } from "./graphics.js";
-import { DenseVolumeMaterial } from "../types/dense-volume-material/dense-volume-material.js";
+import { graphics } from "../graphics.js";
+import { DenseVolumeMaterial } from "../../types/dense-volume-material/dense-volume-material.js";
 
 describe("volumeModel transactions", () => {
     test("setVolumeModel should update materialVolume and remove buffer components", () => {

@@ -1,7 +1,7 @@
 import { Database, Entity } from "@adobe/data/ecs";
 import { True } from "@adobe/data/schema";
 import { Vec3, Quat } from "@adobe/data/math";
-import { volumeModel } from "../../plugins/volume-model.js";
+import { volumeModel } from "../../plugins/volume-model/volume-model.js";
 import { Volume } from "../../types/volume/volume.js";
 import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 
