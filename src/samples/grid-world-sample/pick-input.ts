@@ -113,15 +113,15 @@ export const pickInput = Database.Plugin.create({
                     // Get canvas bounding rect to convert document coordinates to canvas-relative coordinates
                     const canvasBounds = canvas.getBoundingClientRect();
                     
-                    // Process each active pointer that was just clicked (frameCount === 0)
-                    Object.entries(activePointers).forEach(([pointerIdStr, pointerState]) => {
-                        // Only process left mouse button clicks (button === 0) on the first frame
-                        if (pointerState.button === 0 && pointerState.frameCount === 0) {
+                    // Process each active left pointer each frame while held down.
+                    Object.values(activePointers).forEach(pointerState => {
+                        // Only process left mouse button pointers.
+                        if (pointerState.button === 0) {
                             // Convert document-relative coordinates to canvas-relative coordinates
-                            // pointerState.initialPosition contains clientX/clientY (document-relative)
+                            // pointerState.currentPosition contains clientX/clientY (document-relative)
                             // We need to subtract canvas bounds to get canvas-relative coordinates
-                            const screenX = pointerState.initialPosition[0] - canvasBounds.left;
-                            const screenY = pointerState.initialPosition[1] - canvasBounds.top;
+                            const screenX = pointerState.currentPosition[0] - canvasBounds.left;
+                            const screenY = pointerState.currentPosition[1] - canvasBounds.top;
                             
                             // Convert screen coordinates to world space pick line (from near plane to far plane)
                             const line = Camera.screenToWorldRay(
@@ -218,7 +218,7 @@ export const pickInput = Database.Plugin.create({
                     });
                 };
             },
-            schedule: { during: ["input", "update"] } // Run during both input and update phases
+            schedule: { after: ["input"] }
         },
         pickSpaceHandler: {
             create: (db) => {
@@ -265,7 +265,7 @@ export const pickInput = Database.Plugin.create({
                             
                             // Get target position
                             if (pickTarget === null) {
-                                console.log("pickSpaceHandler: No pickTarget set (click somewhere first)");
+                                console.log("pickSpaceHandler: No pickTarget set (drag to pick first)");
                                 continue;
                             }
                             
