@@ -5,8 +5,8 @@ import { createStructBuffer, copyToGPUBuffer, getStructLayout, TypedBuffer } fro
 import { graphics } from "./graphics.js";
 import { Camera } from "../types/camera/camera.js";
 
-// Scene uniforms schema
-const SceneUniformsSchema = {
+/** Scene uniforms schema (default `wgsl` layout; matches `var<uniform>` structs in shaders). */
+export const SceneUniformsSchema = {
     type: 'object',
     properties: {
         viewProjectionMatrix: Mat4x4.schema,

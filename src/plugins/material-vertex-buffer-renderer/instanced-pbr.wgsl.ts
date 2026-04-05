@@ -10,7 +10,7 @@ struct SceneUniforms {
     cameraPosition: vec3<f32>,
 }
 
-// Material struct matching Material.schema (std140 layout)
+// Material struct matching Material.schema (WGSL host-shareable via TypedBuffer).
 struct Material {
     baseColor: vec4<f32>,
     metallic: f32,
@@ -23,6 +23,11 @@ struct Material {
     viscosity: f32,
     specificHeatCapacity: f32,
     thermalConductivity: f32,
+    tensileYieldStrainStress: vec2<f32>,
+    tensileFractureStrainStress: vec2<f32>,
+    compressiveYieldStrainStress: vec2<f32>,
+    compressiveFractureStrainStress: vec2<f32>,
+    restitution: f32,
 }
 
 @group(0) @binding(0) var<uniform> sceneUniforms: SceneUniforms;

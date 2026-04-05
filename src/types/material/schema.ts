@@ -1,33 +1,53 @@
-import { F32, Vec3, Vec4 } from "@adobe/data/math";
+import { F32, Vec2, Vec3, Vec4 } from "@adobe/data/math";
 import { Schema } from "@adobe/data/schema";
+import type { Assert, Equal } from "@adobe/data/types";
+import type { Material } from "./material.js";
 
+/** WGSL host-shareable material layout for TypedBuffer / `var<storage>`. Units and semantics: `material.ts` (`Material`). */
 export const schema = {
     type: "object",
-    layout: "std140",
+    layout: "wgsl",
     properties: {
-        // main base color vec4
         baseColor: Vec4.schema,
 
-        // metallic, roughness, irReflectance, irEmission
         metallic: { ...F32.schema, minimum: 0, maximum: 1 },
         roughness: { ...F32.schema, minimum: 0, maximum: 1 },
         irReflectance: { ...F32.schema, minimum: 0, maximum: 1 },
         irEmission: { ...F32.schema, minimum: 0, maximum: 1 },
 
-        // emission, vec4
         emissionRgb: Vec3.schema,
-        // 0: uv flourescence, 1: visible luminescence
         emissionMode: { ...F32.schema, minimum: 0, maximum: 1 },
 
-        // physical properties
-        // Density in kg/m³ (kilograms per cubic meter)
         density: F32.schema,
-        // Viscosity in Pa·s (Pascal-seconds)
         viscosity: F32.schema,
-        // Specific heat capacity in J/(kg·K) (Joules per kilogram per Kelvin)
         specificHeatCapacity: F32.schema,
-        // Thermal conductivity in W/(m·K) (Watts per meter per Kelvin)
         thermalConductivity: F32.schema,
+
+        tensileYieldStrainStress: Vec2.schema,
+        tensileFractureStrainStress: Vec2.schema,
+        compressiveYieldStrainStress: Vec2.schema,
+        compressiveFractureStrainStress: Vec2.schema,
+
+        restitution: { ...F32.schema, minimum: 0, maximum: 1 },
     },
-    required: ["baseColor", "metallic", "roughness", "irReflectance", "irEmission", "emissionRgb", "emissionMode", "density", "viscosity", "specificHeatCapacity", "thermalConductivity"],
+    required: [
+        "baseColor",
+        "metallic",
+        "roughness",
+        "irReflectance",
+        "irEmission",
+        "emissionRgb",
+        "emissionMode",
+        "density",
+        "viscosity",
+        "specificHeatCapacity",
+        "thermalConductivity",
+        "tensileYieldStrainStress",
+        "tensileFractureStrainStress",
+        "compressiveYieldStrainStress",
+        "compressiveFractureStrainStress",
+        "restitution",
+    ],
 } as const satisfies Schema;
+
+type _MaterialMatchesSchema = Assert<Equal<Material, Schema.ToType<typeof schema>>>;

@@ -13,7 +13,7 @@ export const materials = Database.Plugin.create({
         update_materials_buffer: {
             create: (db) => {
                 // copy materials into the data buffer.
-                // the materials are just an object, but within the data buffer they are store as linear std140 struct memory.
+                // Materials are authored as objects; the TypedBuffer stores them as a linear WGSL-layout struct array.
                 for (let i = 0; i < Material.materials.length; i++) {
                     db.store.resources.materialsDataBuffer.set(i, Material.materials[i]);
                 }
