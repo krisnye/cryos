@@ -1,6 +1,5 @@
 import { Vec3, Vec4, Mat4x4, Line3 } from "@adobe/data/math";
-import type { Camera } from "./camera.js";
-import * as CameraNamespace from "./public.js";
+import { Camera } from "./camera.js";
 
 /**
  * Converts screen coordinates to a world space pick line for ray casting.
@@ -34,7 +33,7 @@ export const screenToWorldRay = (
     const farPoint: Vec4 = [ndcX, ndcY, 1, 1];
     
     // Get view-projection matrix and invert it
-    const viewProjection = CameraNamespace.toViewProjection(camera);
+    const viewProjection = Camera.toViewProjection(camera);
     const invViewProjection = Mat4x4.inverse(viewProjection);
     
     // Transform to world space

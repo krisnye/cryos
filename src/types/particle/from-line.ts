@@ -1,5 +1,5 @@
 import { Line3, Vec3, Quat } from "@adobe/data/math";
-import type { Particle } from "./particle.js";
+import { Particle } from "./particle.js";
 
 /**
  * Creates transforms for a line particle by using a single voxel centered at the midpoint of the line

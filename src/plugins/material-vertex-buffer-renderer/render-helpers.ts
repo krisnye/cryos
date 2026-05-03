@@ -5,7 +5,7 @@ import { TypedBuffer, copyToGPUBuffer } from "@adobe/data/typed-buffer";
 import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/position-normal-material.js";
 import instancedShaderSource from "./instanced-pbr.wgsl.js";
 import { materialVertexBuffers } from "plugins/material-vertex-buffers.js";
-import { CombinePlugins } from "@adobe/data/ecs/database/combine-plugins";
+import type { CombinePlugins } from "@adobe/data/ecs";
 import { materials } from "plugins/materials.js";
 import { geometry } from "plugins/geometry.js";
 

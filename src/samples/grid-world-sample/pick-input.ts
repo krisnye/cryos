@@ -11,7 +11,7 @@ import { PickResult } from "../../types/pick-result.js";
 import { Volume } from "../../types/volume/volume.js";
 import { Material } from "../../types/material/material.js";
 import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
-import * as Particle from "../../types/particle/public.js";
+import { Particle } from "../../types/particle/particle.js";
 
 export const pickInput = Database.Plugin.create({
     extends: Database.Plugin.combine(pointerInput, keyInput, gridWorld, scene, particle, playerModel),

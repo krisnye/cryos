@@ -1,10 +1,8 @@
 import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import type { ColumnVolume } from "./column-volume.js";
-import { DenseVolume } from "types/dense-volume/dense-volume.js";
-import * as DenseVolumeNamespace from "types/dense-volume/public.js";
+import { DenseVolume } from "../dense-volume/dense-volume.js";
 import { ColumnInfo } from "./column-info/column-info.js";
-import { packColumnInfo, EMPTY_COLUMN } from "./column-info.js";
 
 /**
  * Creates a new column volume from a dense volume.
@@ -38,7 +36,7 @@ export const create = <T>(volume: DenseVolume<T>): ColumnVolume<T> => {
             let zEnd: number | undefined = undefined;
 
             for (let z = 0; z < depth; z++) {
-                const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
+                const index = DenseVolume.getIndex(volume, x, y, z);
                 const isEmpty = volume.data.isDefault(index);
 
                 if (!isEmpty) {
@@ -54,7 +52,7 @@ export const create = <T>(volume: DenseVolume<T>): ColumnVolume<T> => {
                 // Collect all voxels from zStart to zEnd (including gaps)
                 const voxels: T[] = [];
                 for (let z = zStart; z <= zEnd; z++) {
-                    const index = DenseVolumeNamespace.getIndex(volume, x, y, z);
+                    const index = DenseVolume.getIndex(volume, x, y, z);
                     voxels.push(volume.data.get(index));
                 }
 
@@ -90,13 +88,13 @@ export const create = <T>(volume: DenseVolume<T>): ColumnVolume<T> => {
     // Build tile array
     const tile = new Uint32Array(width * height);
     // Initialize all tiles as empty
-    tile.fill(EMPTY_COLUMN);
+    tile.fill(ColumnInfo.EMPTY_COLUMN);
 
     let columnDataOffset = 0;
     for (const column of columns) {
         const tileIdx = column.x + column.y * width;
         const length = column.zEnd - column.zStart + 1;
-        tile[tileIdx] = packColumnInfo(columnDataOffset, length, column.zStart);
+        tile[tileIdx] = ColumnInfo.pack(columnDataOffset, length, column.zStart);
         columnDataOffset += length;
     }
 

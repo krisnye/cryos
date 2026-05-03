@@ -5,8 +5,6 @@ import { ColumnVolume } from "../../types/column-volume/column-volume.js";
 import { Material } from "../../types/material/material.js";
 import { Kelvin } from "../../types/kelvin/kelvin.js";
 import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
-import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
-import * as ColumnVolumeNamespace from "../../types/column-volume/public.js";
 import { fractalNoise, MAX_TERRAIN_HEIGHT_BLOCKS } from "./terrain-height.js";
 
 /** Options for chunk creation with atmospheric temperature. */
@@ -88,7 +86,7 @@ export const createCheckerboardChunk = (
             
             // Fill voxels from z=0 up to height
             for (let z = 0; z < height; z++) {
-                const index = DenseVolumeNamespace.getIndex(denseVolume, x, y, z);
+                const index = DenseVolume.getIndex(denseVolume, x, y, z);
                 denseVolume.data.set(index, pack(materialId));
             }
         }
@@ -150,7 +148,7 @@ export const createCheckerboardChunk = (
                 if (isCorner) {
                     for (let z = minTerrainHeight; z < baseHeight; z++) {
                         if (z >= 0 && z < size[2]) {
-                            const index = DenseVolumeNamespace.getIndex(denseVolume, x, y, z);
+                            const index = DenseVolume.getIndex(denseVolume, x, y, z);
                             denseVolume.data.set(index, pack(Material.ids.woodHard));
                         }
                     }
@@ -159,7 +157,7 @@ export const createCheckerboardChunk = (
                 // Build tower structure
                 for (let z = baseHeight; z < baseHeight + towerHeight; z++) {
                     if (z < size[2]) {
-                        const index = DenseVolumeNamespace.getIndex(denseVolume, x, y, z);
+                        const index = DenseVolume.getIndex(denseVolume, x, y, z);
                         const relativeZ = z - baseHeight;
                         
                         // Exterior walls: alternating hard/soft wood pattern (checkerboard)
@@ -191,7 +189,7 @@ export const createCheckerboardChunk = (
                     
                     if (crenelationPattern && topZ + crenelationHeight < size[2]) {
                         // This position gets a crenelation (merlon) - one block taller
-                        const index = DenseVolumeNamespace.getIndex(denseVolume, x, y, topZ);
+                        const index = DenseVolume.getIndex(denseVolume, x, y, topZ);
                         // Use same material pattern as the wall below
                         const patternX = Math.floor((worldX - towerCenterX + towerHalfWidth) / 1);
                         const patternY = Math.floor((worldY - towerCenterY + towerHalfWidth) / 1);
@@ -205,6 +203,6 @@ export const createCheckerboardChunk = (
         }
     }
     
-    return ColumnVolumeNamespace.create(denseVolume);
+    return ColumnVolume.create(denseVolume);
 };
 

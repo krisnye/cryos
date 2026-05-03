@@ -1,8 +1,6 @@
 import { Aabb, Line3, Vec3 } from "@adobe/data/math";
-import type { AabbFace } from "@adobe/data/math/aabb/face/index";
-import { Aabb as AabbNamespace } from "@adobe/data/math";
 import type { ColumnVolume } from "./column-volume.js";
-import * as ColumnInfoNamespace from "./column-info/public.js";
+import { ColumnInfo } from "./column-info/column-info.js";
 import { tileIndex } from "./tile-index.js";
 
 /**
@@ -21,7 +19,7 @@ export const pick = <T>(
     volume: ColumnVolume<T>,
     line: Line3,
     pickable: (voxel: T) => boolean
-): { coordinates: Vec3; alpha: number; face: AabbFace } | null => {
+): { coordinates: Vec3; alpha: number; face: Aabb.Face } | null => {
     // Algorithm: Broad-phase AABB test, then DDA (Digital Differential Analyzer) voxel traversal.
     // DDA steps along the ray one voxel at a time by tracking distance to next boundary on each axis,
     // always advancing to the nearest boundary. Returns first pickable voxel encountered.
@@ -33,7 +31,7 @@ export const pick = <T>(
         min: [0, 0, 0],
         max: [width, height, depth]
     };
-    const alpha = AabbNamespace.lineIntersection(box, line);
+    const alpha = Aabb.lineIntersection(box, line);
     
     if (alpha === -1) {
         return null; // Line doesn't intersect volume at all
@@ -99,7 +97,7 @@ export const pick = <T>(
     let iterations = 0;
     
     // Track which face was hit when entering the current voxel
-    let entryFace: AabbFace = AabbNamespace.Face.POS_Z; // Default for first voxel
+    let entryFace: Aabb.Face = Aabb.Face.POS_Z; // Default for first voxel
     
     // Use <= so we check the voxel at the segment endpoint (angled rays can hit there)
     while (iterations < maxIterations && currentDistance <= maxDistance) {
@@ -117,7 +115,7 @@ export const pick = <T>(
             // If column exists (columnInfo !== 0), check if voxel exists in column
             if (columnInfo !== 0) {
                 // Unpack column metadata
-                const { dataOffset, length, zStart } = ColumnInfoNamespace.unpack(columnInfo);
+                const { dataOffset, length, zStart } = ColumnInfo.unpack(columnInfo);
                 
                 // Calculate relative z position within the column
                 const relativeZ = voxelZ - zStart;
@@ -147,13 +145,13 @@ export const pick = <T>(
                 voxelX += stepDirX;
                 tMaxX += stepX;
                 // Stepped along X axis - entry face is opposite to step direction
-                entryFace = stepDirX > 0 ? AabbNamespace.Face.NEG_X : AabbNamespace.Face.POS_X;
+                entryFace = stepDirX > 0 ? Aabb.Face.NEG_X : Aabb.Face.POS_X;
             } else {
                 currentDistance = tMaxZ;
                 voxelZ += stepDirZ;
                 tMaxZ += stepZ;
                 // Stepped along Z axis - entry face is opposite to step direction
-                entryFace = stepDirZ > 0 ? AabbNamespace.Face.NEG_Z : AabbNamespace.Face.POS_Z;
+                entryFace = stepDirZ > 0 ? Aabb.Face.NEG_Z : Aabb.Face.POS_Z;
             }
         } else {
             if (tMaxY < tMaxZ) {
@@ -161,13 +159,13 @@ export const pick = <T>(
                 voxelY += stepDirY;
                 tMaxY += stepY;
                 // Stepped along Y axis - entry face is opposite to step direction
-                entryFace = stepDirY > 0 ? AabbNamespace.Face.NEG_Y : AabbNamespace.Face.POS_Y;
+                entryFace = stepDirY > 0 ? Aabb.Face.NEG_Y : Aabb.Face.POS_Y;
             } else {
                 currentDistance = tMaxZ;
                 voxelZ += stepDirZ;
                 tMaxZ += stepZ;
                 // Stepped along Z axis - entry face is opposite to step direction
-                entryFace = stepDirZ > 0 ? AabbNamespace.Face.NEG_Z : AabbNamespace.Face.POS_Z;
+                entryFace = stepDirZ > 0 ? Aabb.Face.NEG_Z : Aabb.Face.POS_Z;
             }
         }
     }

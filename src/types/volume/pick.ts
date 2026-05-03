@@ -1,10 +1,7 @@
-import { Line3, Vec3 } from "@adobe/data/math";
-import type { AabbFace } from "@adobe/data/math/aabb/face/index";
-import type { Volume } from "./volume.js";
-import * as DenseVolumeNamespace from "../dense-volume/public.js";
-import * as ColumnVolumeNamespace from "../column-volume/public.js";
-import * as DenseVolumeIs from "../dense-volume/is.js";
-import * as ColumnVolumeIs from "../column-volume/is.js";
+import { Line3, Vec3, type Aabb } from "@adobe/data/math";
+import { Volume } from "./volume.js";
+import { DenseVolume } from "../dense-volume/dense-volume.js";
+import { ColumnVolume } from "../column-volume/column-volume.js";
 
 /**
  * Picks a voxel from a volume along a line.
@@ -19,13 +16,13 @@ export const pick = <T>(
     volume: Volume<T>,
     line: Line3,
     pickable: (voxel: T) => boolean
-): { coordinates: Vec3; alpha: number; face: AabbFace } | null => {
-    if (DenseVolumeIs.is(volume)) {
-        return DenseVolumeNamespace.pick(volume, line, pickable);
+): { coordinates: Vec3; alpha: number; face: Aabb.Face } | null => {
+    if (DenseVolume.is(volume)) {
+        return DenseVolume.pick(volume, line, pickable);
     }
     
-    if (ColumnVolumeIs.is(volume)) {
-        return ColumnVolumeNamespace.pick(volume, line, pickable);
+    if (ColumnVolume.is(volume)) {
+        return ColumnVolume.pick(volume, line, pickable);
     }
     
     // TypeScript exhaustiveness check - this should never happen

@@ -1,8 +1,6 @@
 import type { Volume } from "./volume.js";
-import * as DenseVolumeNamespace from "../dense-volume/public.js";
-import * as ColumnVolumeNamespace from "../column-volume/public.js";
-import * as DenseVolumeIs from "../dense-volume/is.js";
-import * as ColumnVolumeIs from "../column-volume/is.js";
+import { DenseVolume } from "../dense-volume/dense-volume.js";
+import { ColumnVolume } from "../column-volume/column-volume.js";
 
 /**
  * Gets the voxel value at the specified coordinates in a Volume.
@@ -19,12 +17,12 @@ export const get = <T>(
     y: number,
     z: number
 ): T | null => {
-    if (DenseVolumeIs.is(volume)) {
-        return DenseVolumeNamespace.get(volume, x, y, z);
+    if (DenseVolume.is(volume)) {
+        return DenseVolume.get(volume, x, y, z);
     }
     
-    if (ColumnVolumeIs.is(volume)) {
-        return ColumnVolumeNamespace.get(volume, x, y, z);
+    if (ColumnVolume.is(volume)) {
+        return ColumnVolume.get(volume, x, y, z);
     }
     
     // TypeScript exhaustiveness check - this should never happen

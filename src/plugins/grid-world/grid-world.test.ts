@@ -7,8 +7,6 @@ import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { ColumnVolume } from "../../types/column-volume/column-volume.js";
 import { Material } from "../../types/material/material.js";
 import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
-import * as ColumnVolumeNamespace from "../../types/column-volume/public.js";
-import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
 
 describe("gridWorld pick resource", () => {
     const { air, rock, steel, concrete } = Material.ids;
@@ -32,11 +30,11 @@ describe("gridWorld pick resource", () => {
         }
 
         // Set one solid voxel
-        const index = DenseVolumeNamespace.getIndex(denseVolume, solidX, solidY, solidZ);
+        const index = DenseVolume.getIndex(denseVolume, solidX, solidY, solidZ);
         denseVolume.data.set(index, PhysicalVoxel.pack(rock));
 
         // Convert to ColumnVolume
-        return ColumnVolumeNamespace.create(denseVolume);
+        return ColumnVolume.create(denseVolume);
     };
 
     /**
@@ -54,7 +52,7 @@ describe("gridWorld pick resource", () => {
         // Fill bottom layer with rock
         for (let y = 0; y < chunkSize; y++) {
             for (let x = 0; x < chunkSize; x++) {
-                const index = DenseVolumeNamespace.getIndex(denseVolume, x, y, 0);
+                const index = DenseVolume.getIndex(denseVolume, x, y, 0);
                 denseVolume.data.set(index, PhysicalVoxel.pack(rock));
             }
         }
@@ -63,13 +61,13 @@ describe("gridWorld pick resource", () => {
         for (let z = 1; z < floorHeight; z++) {
             for (let y = 0; y < chunkSize; y++) {
                 for (let x = 0; x < chunkSize; x++) {
-                    const index = DenseVolumeNamespace.getIndex(denseVolume, x, y, z);
+                    const index = DenseVolume.getIndex(denseVolume, x, y, z);
                     denseVolume.data.set(index, air);
                 }
             }
         }
 
-        return ColumnVolumeNamespace.create(denseVolume);
+        return ColumnVolume.create(denseVolume);
     };
 
     describe("picking within a single chunk", () => {

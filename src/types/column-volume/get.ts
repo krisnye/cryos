@@ -1,6 +1,6 @@
 import type { ColumnVolume } from "./column-volume.js";
 import { tileIndex } from "./tile-index.js";
-import * as ColumnInfoNamespace from "./column-info/public.js";
+import { ColumnInfo } from "./column-info/column-info.js";
 
 /**
  * Gets the voxel value at the specified coordinates in a ColumnVolume.
@@ -28,7 +28,7 @@ export const get = <T>(volume: ColumnVolume<T>, x: number, y: number, z: number)
     }
     
     // Unpack column metadata
-    const { dataOffset, length, zStart } = ColumnInfoNamespace.unpack(columnInfoPacked);
+    const { dataOffset, length, zStart } = ColumnInfo.unpack(columnInfoPacked);
     
     // Calculate relative z position within the column
     const relativeZ = z - zStart;

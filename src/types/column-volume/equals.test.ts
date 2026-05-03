@@ -4,7 +4,7 @@ import { ColumnVolume } from "./column-volume.js";
 import { PhysicalVoxel } from "../physical-voxel/physical-voxel.js";
 import { Material } from "../material/material.js";
 import { equals } from "./equals.js";
-import { EMPTY_COLUMN, packColumnInfo } from "./column-info.js";
+import { ColumnInfo } from "./column-info/column-info.js";
 
 describe("ColumnVolume.equals", () => {
     describe("same reference", () => {
@@ -54,8 +54,8 @@ describe("ColumnVolume.equals", () => {
                 data: createTypedBuffer(PhysicalVoxel.schema, 0),
             };
 
-            volume1.tile[0] = packColumnInfo(0, 2, 0);
-            volume2.tile[0] = EMPTY_COLUMN;
+            volume1.tile[0] = ColumnInfo.pack(0, 2, 0);
+            volume2.tile[0] = ColumnInfo.EMPTY_COLUMN;
 
             expect(equals(volume1, volume2)).toBe(false);
         });
@@ -82,8 +82,8 @@ describe("ColumnVolume.equals", () => {
             };
 
             // Set same tile structure
-            volume1.tile[0] = packColumnInfo(0, 2, 0);
-            volume2.tile[0] = packColumnInfo(0, 2, 0);
+            volume1.tile[0] = ColumnInfo.pack(0, 2, 0);
+            volume2.tile[0] = ColumnInfo.pack(0, 2, 0);
 
             expect(equals(volume1, volume2)).toBe(false);
         });
@@ -114,8 +114,8 @@ describe("ColumnVolume.equals", () => {
             };
 
             // Set same tile structure
-            volume1.tile[0] = packColumnInfo(0, 2, 0);
-            volume2.tile[0] = packColumnInfo(0, 2, 0);
+            volume1.tile[0] = ColumnInfo.pack(0, 2, 0);
+            volume2.tile[0] = ColumnInfo.pack(0, 2, 0);
 
             expect(equals(volume1, volume2)).toBe(true);
         });
@@ -135,9 +135,9 @@ describe("ColumnVolume.equals", () => {
                 data: createTypedBuffer(PhysicalVoxel.schema, 0),
             };
 
-            // Both have all EMPTY_COLUMN
-            volume1.tile.fill(EMPTY_COLUMN);
-            volume2.tile.fill(EMPTY_COLUMN);
+            // Both volumes use only empty tiles
+            volume1.tile.fill(ColumnInfo.EMPTY_COLUMN);
+            volume2.tile.fill(ColumnInfo.EMPTY_COLUMN);
 
             expect(equals(volume1, volume2)).toBe(true);
         });
@@ -167,10 +167,10 @@ describe("ColumnVolume.equals", () => {
             };
 
             // Set same tile structure for all columns
-            volume1.tile[0] = packColumnInfo(0, 3, 0);
-            volume1.tile[1] = packColumnInfo(3, 3, 0);
-            volume2.tile[0] = packColumnInfo(0, 3, 0);
-            volume2.tile[1] = packColumnInfo(3, 3, 0);
+            volume1.tile[0] = ColumnInfo.pack(0, 3, 0);
+            volume1.tile[1] = ColumnInfo.pack(3, 3, 0);
+            volume2.tile[0] = ColumnInfo.pack(0, 3, 0);
+            volume2.tile[1] = ColumnInfo.pack(3, 3, 0);
 
             expect(equals(volume1, volume2)).toBe(true);
         });

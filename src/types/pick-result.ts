@@ -1,6 +1,5 @@
 import { Entity } from "@adobe/data/ecs";
-import { Vec3 } from "@adobe/data/math";
-import type { AabbFace } from "@adobe/data/math/aabb/face/index";
+import type { Aabb, Vec3 } from "@adobe/data/math";
 
 /**
  * Result of picking an entity (e.g., a volume model).
@@ -37,7 +36,7 @@ export interface PickResult {
      */
     modelCoordinates: Vec3;
     /** The AABB face that was hit. */
-    face: AabbFace;
+    face: Aabb.Face;
     /** Face normal pointing outward from the surface. */
     faceNormal: Vec3;
 }

@@ -16,3 +16,4 @@ export interface Particle {
     rotation?: Quat;
 }
 
+export * as Particle from "./public.js";

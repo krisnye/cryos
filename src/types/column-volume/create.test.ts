@@ -4,9 +4,7 @@ import { DenseVolume } from "../dense-volume/dense-volume.js";
 import { PhysicalVoxel } from "../physical-voxel/physical-voxel.js";
 import { Material } from "../material/material.js";
 import { create } from "./create.js";
-import * as ColumnVolume from "./public.js";
-import * as DenseVolumeNamespace from "../dense-volume/public.js";
-import { EMPTY_COLUMN, unpackColumnInfo, packColumnInfo } from "./column-info.js";
+import { ColumnInfo } from "./column-info/column-info.js";
 
 describe("create", () => {
     describe("schema.default validation", () => {
@@ -71,7 +69,7 @@ describe("create", () => {
 
             // All tiles should be empty
             for (let i = 0; i < result.tile.length; i++) {
-                expect(result.tile[i]).toBe(EMPTY_COLUMN);
+                expect(result.tile[i]).toBe(ColumnInfo.EMPTY_COLUMN);
             }
         });
     });
@@ -110,9 +108,9 @@ describe("create", () => {
             for (const expected of expectedColumns) {
                 const tileIdx = expected.x + expected.y * 2;
                 const columnInfo = result.tile[tileIdx];
-                expect(columnInfo).not.toBe(EMPTY_COLUMN);
+                expect(columnInfo).not.toBe(ColumnInfo.EMPTY_COLUMN);
 
-                const unpacked = unpackColumnInfo(columnInfo);
+                const unpacked = ColumnInfo.unpack(columnInfo);
                 expect(unpacked.dataOffset).toBe(expected.dataOffset);
                 expect(unpacked.length).toBe(expected.length);
                 expect(unpacked.zStart).toBe(expected.zStart);
@@ -130,9 +128,9 @@ describe("create", () => {
 
             // Only fill column at (1,1) with material
             // Column (1,1) has voxels at z=0,1,2
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 1, 0), PhysicalVoxel.pack(Material.ids.concrete));
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 1, 1), PhysicalVoxel.pack(Material.ids.concrete));
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 1, 2), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolume.getIndex(volume, 1, 1, 0), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolume.getIndex(volume, 1, 1, 1), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolume.getIndex(volume, 1, 1, 2), PhysicalVoxel.pack(Material.ids.concrete));
 
             const result = create(volume);
 
@@ -142,12 +140,12 @@ describe("create", () => {
 
             // Check that only (1,1) column has data
             const tileIdx = 1 + 1 * 3; // x + y * width
-            expect(result.tile[tileIdx]).not.toBe(EMPTY_COLUMN);
+            expect(result.tile[tileIdx]).not.toBe(ColumnInfo.EMPTY_COLUMN);
 
             // All other tiles should be empty
             for (let i = 0; i < result.tile.length; i++) {
                 if (i !== tileIdx) {
-                    expect(result.tile[i]).toBe(EMPTY_COLUMN);
+                    expect(result.tile[i]).toBe(ColumnInfo.EMPTY_COLUMN);
                 }
             }
         });
@@ -160,9 +158,9 @@ describe("create", () => {
             };
 
             // Column (0,0) has voxels only at z=2,3,4
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 2), PhysicalVoxel.pack(Material.ids.concrete));
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 3), PhysicalVoxel.pack(Material.ids.concrete));
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 4), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolume.getIndex(volume, 0, 0, 2), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolume.getIndex(volume, 0, 0, 3), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolume.getIndex(volume, 0, 0, 4), PhysicalVoxel.pack(Material.ids.concrete));
 
             const result = create(volume);
 
@@ -173,9 +171,9 @@ describe("create", () => {
             // Check column info for (0,0)
             const tileIdx = 0 + 0 * 2;
             const columnInfo = result.tile[tileIdx];
-            expect(columnInfo).not.toBe(EMPTY_COLUMN);
+            expect(columnInfo).not.toBe(ColumnInfo.EMPTY_COLUMN);
 
-            const unpacked = unpackColumnInfo(columnInfo);
+            const unpacked = ColumnInfo.unpack(columnInfo);
             expect(unpacked.zStart).toBe(2); // Column starts at z=2
             expect(unpacked.length).toBe(3); // Column has 3 voxels
         });
@@ -190,8 +188,8 @@ describe("create", () => {
             };
 
             // Column has voxels at z=0 and z=4, with gaps at z=1,2,3
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 0), PhysicalVoxel.pack(Material.ids.concrete));
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 4), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolume.getIndex(volume, 0, 0, 0), PhysicalVoxel.pack(Material.ids.concrete));
+            volume.data.set(DenseVolume.getIndex(volume, 0, 0, 4), PhysicalVoxel.pack(Material.ids.concrete));
 
             const result = create(volume);
 
@@ -199,7 +197,7 @@ describe("create", () => {
             expect(result.data.capacity).toBe(5); // All 5 voxels stored
 
             const tileIdx = 0 + 0 * 1;
-            const unpacked = unpackColumnInfo(result.tile[tileIdx]);
+            const unpacked = ColumnInfo.unpack(result.tile[tileIdx]);
             expect(unpacked.zStart).toBe(0);
             expect(unpacked.length).toBe(5); // Full range from 0 to 4
         });
@@ -218,14 +216,14 @@ describe("create", () => {
             const { air, concrete, steel, woodHard, rock, iron } = Material.ids;
             
             // Column (0,0): concrete at z=0, steel at z=1, air at z=2
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 0), PhysicalVoxel.pack(concrete));
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 1), PhysicalVoxel.pack(steel));
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, 2), PhysicalVoxel.pack(air));
+            volume.data.set(DenseVolume.getIndex(volume, 0, 0, 0), PhysicalVoxel.pack(concrete));
+            volume.data.set(DenseVolume.getIndex(volume, 0, 0, 1), PhysicalVoxel.pack(steel));
+            volume.data.set(DenseVolume.getIndex(volume, 0, 0, 2), PhysicalVoxel.pack(air));
 
             // Column (1,0): woodHard at z=0, rock at z=1, iron at z=2
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 0, 0), PhysicalVoxel.pack(woodHard));
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 0, 1), PhysicalVoxel.pack(rock));
-            volume.data.set(DenseVolumeNamespace.getIndex(volume, 1, 0, 2), PhysicalVoxel.pack(iron));
+            volume.data.set(DenseVolume.getIndex(volume, 1, 0, 0), PhysicalVoxel.pack(woodHard));
+            volume.data.set(DenseVolume.getIndex(volume, 1, 0, 1), PhysicalVoxel.pack(rock));
+            volume.data.set(DenseVolume.getIndex(volume, 1, 0, 2), PhysicalVoxel.pack(iron));
 
             // Columns (0,1) and (1,1) are all air (empty)
 
@@ -241,7 +239,7 @@ describe("create", () => {
 
             // Verify column (0,0) data (ends at z=1 because z=2 is air/default)
             const tileIdx00 = 0 + 0 * 2;
-            const info00 = unpackColumnInfo(result.tile[tileIdx00]);
+            const info00 = ColumnInfo.unpack(result.tile[tileIdx00]);
             expect(info00.zStart).toBe(0);
             expect(info00.length).toBe(2); // Only z=0,1 (z=2 is default/empty)
             expect(result.data.get(info00.dataOffset + 0)).toBe(concrete);
@@ -249,7 +247,7 @@ describe("create", () => {
 
             // Verify column (1,0) data
             const tileIdx10 = 1 + 0 * 2;
-            const info10 = unpackColumnInfo(result.tile[tileIdx10]);
+            const info10 = ColumnInfo.unpack(result.tile[tileIdx10]);
             expect(info10.zStart).toBe(0);
             expect(info10.length).toBe(3);
             expect(result.data.get(info10.dataOffset + 0)).toBe(PhysicalVoxel.pack(woodHard));
@@ -259,8 +257,8 @@ describe("create", () => {
             // Verify empty columns
             const tileIdx01 = 0 + 1 * 2;
             const tileIdx11 = 1 + 1 * 2;
-            expect(result.tile[tileIdx01]).toBe(EMPTY_COLUMN);
-            expect(result.tile[tileIdx11]).toBe(EMPTY_COLUMN);
+            expect(result.tile[tileIdx01]).toBe(ColumnInfo.EMPTY_COLUMN);
+            expect(result.tile[tileIdx11]).toBe(ColumnInfo.EMPTY_COLUMN);
         });
 
         it("should correctly pack and unpack ColumnInfo", () => {
@@ -272,7 +270,7 @@ describe("create", () => {
 
             // Column (0,0) starts at z=3 with 5 voxels
             for (let z = 3; z < 8; z++) {
-                volume.data.set(DenseVolumeNamespace.getIndex(volume, 0, 0, z), PhysicalVoxel.pack(Material.ids.concrete));
+                volume.data.set(DenseVolume.getIndex(volume, 0, 0, z), PhysicalVoxel.pack(Material.ids.concrete));
             }
 
             const result = create(volume);
@@ -281,13 +279,13 @@ describe("create", () => {
             const columnInfo = result.tile[tileIdx];
             
             // Verify packed info
-            const unpacked = unpackColumnInfo(columnInfo);
+            const unpacked = ColumnInfo.unpack(columnInfo);
             expect(unpacked.zStart).toBe(3);
             expect(unpacked.length).toBe(5);
             expect(unpacked.dataOffset).toBe(0); // First column
 
             // Verify we can round-trip pack/unpack
-            const repacked = packColumnInfo(unpacked.dataOffset, unpacked.length, unpacked.zStart);
+            const repacked = ColumnInfo.pack(unpacked.dataOffset, unpacked.length, unpacked.zStart);
             expect(repacked).toBe(columnInfo);
         });
     });

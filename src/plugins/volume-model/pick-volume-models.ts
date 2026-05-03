@@ -3,7 +3,7 @@ import { Aabb, Line3, Vec3 } from "@adobe/data/math";
 import { Material } from "../../types/material/material.js";
 import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 import type { PickResult } from "../../types/pick-result.js";
-import * as VolumeNamespace from "../../types/volume/public.js";
+import { Volume } from "../../types/volume/volume.js";
 import type { VolumeModelDatabase } from "./volume-model.js";
 
 /**
@@ -46,7 +46,7 @@ export const pickVolumeModels = (
                 ],
             };
 
-            const pickResult = VolumeNamespace.pick(
+            const pickResult = Volume.pick(
                 volume,
                 modelLine,
                 (voxel) => PhysicalVoxel.getMaterialId(voxel) !== Material.ids.air

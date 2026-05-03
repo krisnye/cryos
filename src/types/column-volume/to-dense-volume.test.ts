@@ -6,9 +6,7 @@ import { ColumnVolume } from "./column-volume.js";
 import { Material } from "../material/material.js";
 import { toDenseVolume } from "./to-dense-volume.js";
 import { create } from "./create.js";
-import * as ColumnVolumeNamespace from "./public.js";
-import * as DenseVolumeNamespace from "../dense-volume/public.js";
-import { EMPTY_COLUMN, packColumnInfo } from "./column-info.js";
+import { ColumnInfo } from "./column-info/column-info.js";
 
 describe("toDenseVolume", () => {
     describe("empty volume", () => {
@@ -21,7 +19,7 @@ describe("toDenseVolume", () => {
             };
 
             // All tiles are empty
-            columnVolume.tile.fill(EMPTY_COLUMN);
+            columnVolume.tile.fill(ColumnInfo.EMPTY_COLUMN);
 
             const result = toDenseVolume(columnVolume);
 
@@ -51,10 +49,10 @@ describe("toDenseVolume", () => {
             };
 
             // All columns have data
-            columnVolume.tile[0] = packColumnInfo(0, 2, 0); // (0,0): offset 0, length 2, zStart 0
-            columnVolume.tile[1] = packColumnInfo(2, 2, 0); // (1,0): offset 2, length 2, zStart 0
-            columnVolume.tile[2] = packColumnInfo(4, 2, 0); // (0,1): offset 4, length 2, zStart 0
-            columnVolume.tile[3] = packColumnInfo(6, 2, 0); // (1,1): offset 6, length 2, zStart 0
+            columnVolume.tile[0] = ColumnInfo.pack(0, 2, 0); // (0,0): offset 0, length 2, zStart 0
+            columnVolume.tile[1] = ColumnInfo.pack(2, 2, 0); // (1,0): offset 2, length 2, zStart 0
+            columnVolume.tile[2] = ColumnInfo.pack(4, 2, 0); // (0,1): offset 4, length 2, zStart 0
+            columnVolume.tile[3] = ColumnInfo.pack(6, 2, 0); // (1,1): offset 6, length 2, zStart 0
 
             const result = toDenseVolume(columnVolume);
 
@@ -84,9 +82,9 @@ describe("toDenseVolume", () => {
             };
 
             // Only column (1,1) has data
-            columnVolume.tile.fill(EMPTY_COLUMN);
+            columnVolume.tile.fill(ColumnInfo.EMPTY_COLUMN);
             const tileIdx = 1 + 1 * 3;
-            columnVolume.tile[tileIdx] = packColumnInfo(0, 3, 0);
+            columnVolume.tile[tileIdx] = ColumnInfo.pack(0, 3, 0);
 
             const result = toDenseVolume(columnVolume);
 
@@ -94,13 +92,13 @@ describe("toDenseVolume", () => {
             expect(result.size).toEqual([3, 3, 3]);
 
             // Check that column (1,1) has concrete
-            expect(result.data.get(DenseVolumeNamespace.getIndex(result, 1, 1, 0))).toBe(PhysicalVoxel.pack(Material.ids.concrete));
-            expect(result.data.get(DenseVolumeNamespace.getIndex(result, 1, 1, 1))).toBe(PhysicalVoxel.pack(Material.ids.concrete));
-            expect(result.data.get(DenseVolumeNamespace.getIndex(result, 1, 1, 2))).toBe(PhysicalVoxel.pack(Material.ids.concrete));
+            expect(result.data.get(DenseVolume.getIndex(result, 1, 1, 0))).toBe(PhysicalVoxel.pack(Material.ids.concrete));
+            expect(result.data.get(DenseVolume.getIndex(result, 1, 1, 1))).toBe(PhysicalVoxel.pack(Material.ids.concrete));
+            expect(result.data.get(DenseVolume.getIndex(result, 1, 1, 2))).toBe(PhysicalVoxel.pack(Material.ids.concrete));
 
             // Check that other columns are default (0)
-            expect(result.data.get(DenseVolumeNamespace.getIndex(result, 0, 0, 0))).toBe(0);
-            expect(result.data.get(DenseVolumeNamespace.getIndex(result, 2, 2, 2))).toBe(0);
+            expect(result.data.get(DenseVolume.getIndex(result, 0, 0, 0))).toBe(0);
+            expect(result.data.get(DenseVolume.getIndex(result, 2, 2, 2))).toBe(0);
         });
 
         it("should handle column starting at non-zero z", () => {
@@ -117,8 +115,8 @@ describe("toDenseVolume", () => {
             };
 
             // Column (0,0) starts at z=2 with 3 voxels
-            columnVolume.tile.fill(EMPTY_COLUMN);
-            columnVolume.tile[0] = packColumnInfo(0, 3, 2);
+            columnVolume.tile.fill(ColumnInfo.EMPTY_COLUMN);
+            columnVolume.tile[0] = ColumnInfo.pack(0, 3, 2);
 
             const result = toDenseVolume(columnVolume);
 
@@ -126,13 +124,13 @@ describe("toDenseVolume", () => {
             expect(result.size).toEqual([2, 2, 5]);
 
             // Check z=0,1 are default
-            expect(result.data.get(DenseVolumeNamespace.getIndex(result, 0, 0, 0))).toBe(0);
-            expect(result.data.get(DenseVolumeNamespace.getIndex(result, 0, 0, 1))).toBe(0);
+            expect(result.data.get(DenseVolume.getIndex(result, 0, 0, 0))).toBe(0);
+            expect(result.data.get(DenseVolume.getIndex(result, 0, 0, 1))).toBe(0);
 
             // Check z=2,3,4 are concrete
-            expect(result.data.get(DenseVolumeNamespace.getIndex(result, 0, 0, 2))).toBe(PhysicalVoxel.pack(Material.ids.concrete));
-            expect(result.data.get(DenseVolumeNamespace.getIndex(result, 0, 0, 3))).toBe(PhysicalVoxel.pack(Material.ids.concrete));
-            expect(result.data.get(DenseVolumeNamespace.getIndex(result, 0, 0, 4))).toBe(PhysicalVoxel.pack(Material.ids.concrete));
+            expect(result.data.get(DenseVolume.getIndex(result, 0, 0, 2))).toBe(PhysicalVoxel.pack(Material.ids.concrete));
+            expect(result.data.get(DenseVolume.getIndex(result, 0, 0, 3))).toBe(PhysicalVoxel.pack(Material.ids.concrete));
+            expect(result.data.get(DenseVolume.getIndex(result, 0, 0, 4))).toBe(PhysicalVoxel.pack(Material.ids.concrete));
         });
     });
 
@@ -147,18 +145,18 @@ describe("toDenseVolume", () => {
             const { concrete, steel, woodHard, rock, iron } = Material.ids;
 
             // Fill with specific materials
-            original.data.set(DenseVolumeNamespace.getIndex(original, 0, 0, 0), PhysicalVoxel.pack(concrete));
-            original.data.set(DenseVolumeNamespace.getIndex(original, 0, 0, 1), PhysicalVoxel.pack(steel));
-            original.data.set(DenseVolumeNamespace.getIndex(original, 1, 0, 0), PhysicalVoxel.pack(woodHard));
-            original.data.set(DenseVolumeNamespace.getIndex(original, 1, 0, 1), PhysicalVoxel.pack(rock));
-            original.data.set(DenseVolumeNamespace.getIndex(original, 1, 0, 2), PhysicalVoxel.pack(iron));
+            original.data.set(DenseVolume.getIndex(original, 0, 0, 0), PhysicalVoxel.pack(concrete));
+            original.data.set(DenseVolume.getIndex(original, 0, 0, 1), PhysicalVoxel.pack(steel));
+            original.data.set(DenseVolume.getIndex(original, 1, 0, 0), PhysicalVoxel.pack(woodHard));
+            original.data.set(DenseVolume.getIndex(original, 1, 0, 1), PhysicalVoxel.pack(rock));
+            original.data.set(DenseVolume.getIndex(original, 1, 0, 2), PhysicalVoxel.pack(iron));
 
             // Round-trip conversion
             const column = create(original);
             const result = toDenseVolume(column);
 
             // Verify using DenseVolume.equals
-            expect(DenseVolumeNamespace.equals(original, result)).toBe(true);
+            expect(DenseVolume.equals(original, result)).toBe(true);
         });
 
         it("should produce equivalent ColumnVolume in ColumnVolume → DenseVolume → ColumnVolume", () => {
@@ -171,8 +169,8 @@ describe("toDenseVolume", () => {
             const { concrete, steel } = Material.ids;
 
             // Fill column (0,0) with materials
-            original.data.set(DenseVolumeNamespace.getIndex(original, 0, 0, 0), PhysicalVoxel.pack(concrete));
-            original.data.set(DenseVolumeNamespace.getIndex(original, 0, 0, 1), PhysicalVoxel.pack(steel));
+            original.data.set(DenseVolume.getIndex(original, 0, 0, 0), PhysicalVoxel.pack(concrete));
+            original.data.set(DenseVolume.getIndex(original, 0, 0, 1), PhysicalVoxel.pack(steel));
 
             // Create column volume
             const column1 = create(original);
@@ -182,7 +180,7 @@ describe("toDenseVolume", () => {
             const column2 = create(dense);
 
             // Verify using ColumnVolume.equals
-            expect(ColumnVolumeNamespace.equals(column1, column2)).toBe(true);
+            expect(ColumnVolume.equals(column1, column2)).toBe(true);
         });
     });
 });

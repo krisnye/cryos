@@ -3,7 +3,6 @@ import { Mutable } from "@adobe/data";
 import { Vec3 } from "@adobe/data/math";
 import { PositionNormalMaterialVertex } from "../../types/vertices/position-normal-material/position-normal-material.js";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
-import * as DenseVolumeNamespace from "../../types/dense-volume/public.js";
 import { Material } from "../../types/material/material.js";
 import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 
@@ -103,7 +102,7 @@ export function materialVolumeToVertexData(
     for (let z = 0; z < depth; z++) {
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
-                const voxelIndex = DenseVolumeNamespace.getIndex(volume, x, y, z);
+                const voxelIndex = DenseVolume.getIndex(volume, x, y, z);
                 const physicalVoxel = volume.data.get(voxelIndex);
                 const materialId = PhysicalVoxel.getMaterialId(physicalVoxel);
 
@@ -122,7 +121,7 @@ export function materialVolumeToVertexData(
                                        nz < 0 || nz >= depth;
                     
                     // Check if adjacent voxel is not solid (empty or opposite type)
-                    const adjacentVoxel = !isBoundary ? volume.data.get(DenseVolumeNamespace.getIndex(volume, nx, ny, nz)) : 0;
+                    const adjacentVoxel = !isBoundary ? volume.data.get(DenseVolume.getIndex(volume, nx, ny, nz)) : 0;
                     const adjacentMaterialId = PhysicalVoxel.getMaterialId(adjacentVoxel);
                     const isAdjacentSolid = isSolid(adjacentMaterialId, opaque);
                     

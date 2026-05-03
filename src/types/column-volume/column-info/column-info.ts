@@ -1,4 +1,3 @@
-
 /**
  * ColumnInfo is a u32 value that packs three pieces of information:
  * - High 16 bits: data offset for column start (0-65535)
@@ -8,5 +7,3 @@
 export type ColumnInfo = number;
 
 export * as ColumnInfo from "./public.js";
-
-

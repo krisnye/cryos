@@ -4,8 +4,6 @@ import { DenseVolume } from "./dense-volume.js";
 import { PhysicalVoxel } from "../physical-voxel/physical-voxel.js";
 import { Material } from "../material/material.js";
 import { equals } from "./equals.js";
-import * as DenseVolumeNamespace from "./public.js";
-
 describe("DenseVolume.equals", () => {
     describe("same reference", () => {
         it("should return true for identical references", () => {

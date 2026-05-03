@@ -7,8 +7,6 @@ import { DenseVolume } from "../../../types/dense-volume/dense-volume.js";
 import { ColumnVolume } from "../../../types/column-volume/column-volume.js";
 import { Material } from "../../../types/material/material.js";
 import { PhysicalVoxel } from "../../../types/physical-voxel/physical-voxel.js";
-import * as ColumnVolumeNamespace from "../../../types/column-volume/public.js";
-import * as DenseVolumeNamespace from "../../../types/dense-volume/public.js";
 import { pickGridWorld } from "./collision.js";
 
 describe("pickGridWorld", () => {
@@ -25,9 +23,9 @@ describe("pickGridWorld", () => {
         for (let i = 0; i < capacity; i++) {
             denseVolume.data.set(i, PhysicalVoxel.pack(air));
         }
-        const index = DenseVolumeNamespace.getIndex(denseVolume, solidX, solidY, solidZ);
+        const index = DenseVolume.getIndex(denseVolume, solidX, solidY, solidZ);
         denseVolume.data.set(index, PhysicalVoxel.pack(rock));
-        return ColumnVolumeNamespace.create(denseVolume);
+        return ColumnVolume.create(denseVolume);
     };
 
     it("given line hitting terrain, should return hit position and face normal", () => {

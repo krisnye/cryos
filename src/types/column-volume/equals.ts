@@ -1,5 +1,5 @@
+import { TypedBuffer } from "@adobe/data/typed-buffer";
 import type { ColumnVolume } from "./column-volume.js";
-import { typedBufferEquals } from "@adobe/data/typed-buffer/typed-buffer-equals";
 
 /**
  * Compare two Vec3 arrays for equality.
@@ -31,6 +31,6 @@ export const equals = <T>(a: ColumnVolume<T>, b: ColumnVolume<T>): boolean => {
     if (a.type !== b.type) return false;
     if (!vec3Equals(a.size, b.size)) return false;
     if (!uint32ArrayEquals(a.tile, b.tile)) return false;
-    return typedBufferEquals(a.data, b.data);
+    return TypedBuffer.equals(a.data, b.data);
 };
 

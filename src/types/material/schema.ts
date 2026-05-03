@@ -3,10 +3,10 @@ import { Schema } from "@adobe/data/schema";
 import type { Assert, Equal } from "@adobe/data/types";
 import type { Material } from "./material.js";
 
-/** WGSL host-shareable material layout for TypedBuffer / `var<storage>`. Units and semantics: `material.ts` (`Material`). */
+/** Material struct layout for TypedBuffer / GPU storage (`Material` in WGSL must match `getStructLayout` for this schema). Units and semantics: `material.ts` (`Material`). */
 export const schema = {
     type: "object",
-    layout: "wgsl",
+    layout: "std140",
     properties: {
         baseColor: Vec4.schema,
 

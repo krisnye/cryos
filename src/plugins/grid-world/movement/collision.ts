@@ -3,7 +3,7 @@ import { ColumnVolume } from "../../../types/column-volume/column-volume.js";
 import { Material } from "../../../types/material/material.js";
 import { PhysicalVoxel } from "../../../types/physical-voxel/physical-voxel.js";
 import type { PickResult } from "../../../types/pick-result.js";
-import * as VolumeNamespace from "../../../types/volume/public.js";
+import { Volume } from "../../../types/volume/volume.js";
 import type { GridWorldDatabase } from "../grid-world.js";
 
 const getWorldChunkKey = (chunkX: number, chunkY: number): number => {
@@ -74,7 +74,7 @@ export const pickGridWorld = (db: GridWorldDatabase, line: Line3): PickResult | 
                     ],
                 };
 
-                const pickResult = VolumeNamespace.pick(
+                const pickResult = Volume.pick(
                     chunkVolume,
                     modelLine,
                     (voxel) => PhysicalVoxel.getMaterialId(voxel) !== Material.ids.air
