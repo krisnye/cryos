@@ -1,7 +1,7 @@
 import { Database, Entity } from "@adobe/data/ecs";
 import { GridWorldScale } from "types/grid-world-scale/grid-world-scale.js";
 import { True } from "@adobe/data/schema";
-import { volumeModel } from "../volume-model/volume-model.js";
+import { materialVolumeModel } from "../material-volume-model/material-volume-model.js";
 import type { Pick } from "types/pick.js";
 import { ColumnVolume } from "types/column-volume/column-volume.js";
 import { PhysicalVoxel } from "types/physical-voxel/physical-voxel.js";
@@ -14,7 +14,7 @@ const getWorldChunkKey = (chunkX: number, chunkY: number): number => {
 };
 
 export const gridWorld = Database.Plugin.create({
-    extends: Database.Plugin.combine(physics, volumeModel),
+    extends: Database.Plugin.combine(physics, materialVolumeModel),
     components: {
         worldChunk: True.schema,
     },
@@ -23,7 +23,7 @@ export const gridWorld = Database.Plugin.create({
         worldChunks: { default: new Map<number, Entity>() },
     },
     archetypes: {
-        WorldChunk: ["worldChunk", "position", "volumeModel", "materialVolume", "scale"],
+        WorldChunk: ["worldChunk", "position", "materialVolumeModel", "materialVolume", "scale"],
     },
     transactions: {
         createWorldChunk(t, props: {
@@ -35,7 +35,7 @@ export const gridWorld = Database.Plugin.create({
             const position: Vec3 = [props.chunkX * chunkSize, props.chunkY * chunkSize, 0];
             const entity = t.archetypes.WorldChunk.insert({
                 worldChunk: true,
-                volumeModel: true,
+                materialVolumeModel: true,
                 position,
                 materialVolume: props.volumeModel,
                 scale: [blockSize, blockSize, blockSize],

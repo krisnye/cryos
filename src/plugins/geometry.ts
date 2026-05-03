@@ -1,6 +1,6 @@
 import { Database } from "@adobe/data/ecs";
 import { Quat, Vec3, Vec4 } from "@adobe/data/math";
-import { Aabb } from "@adobe/data/math";
+import { Aabb } from "types/aabb/index.js";
 import { graphics } from "plugins/graphics.js";
 
 export const geometry = Database.Plugin.create({

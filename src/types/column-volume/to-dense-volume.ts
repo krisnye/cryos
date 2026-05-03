@@ -1,4 +1,3 @@
-import { Vec3 } from "@adobe/data/math";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
 import type { ColumnVolume } from "./column-volume.js";
 import { DenseVolume } from "../dense-volume/dense-volume.js";

@@ -3,10 +3,14 @@ import { Schema } from "@adobe/data/schema";
 import type { Assert, Equal } from "@adobe/data/types";
 import type { Material } from "./material.js";
 
-/** Material struct layout for TypedBuffer / GPU storage (`Material` in WGSL must match `getStructLayout` for this schema). Units and semantics: `material.ts` (`Material`). */
+/**
+ * Material struct layout for TypedBuffer / GPU storage. The matching WGSL `Material` struct
+ * must list the same fields in the same order; `getStructLayout` uses WGSL host-shareable
+ * rules so the host bytes line up with `array<Material>` in `var<storage>` automatically.
+ */
 export const schema = {
     type: "object",
-    layout: "std140",
+    layout: "storage",
     properties: {
         baseColor: Vec4.schema,
 

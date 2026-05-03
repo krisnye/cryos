@@ -7,25 +7,22 @@ import { materialVolumeToVertexBuffers } from "../../plugins/material-volume-to-
 import { DenseVolumeMaterial } from "../../types/dense-volume-material/dense-volume-material.js";
 import { createTerrainAndTowerVolume } from "./create-terrain-and-tower.js";
 
-export function createVolumeModelSampleService() {
+export function createMaterialVolumeModelSampleService() {
     return Database.create(
         Database.Plugin.create({
             extends: Database.Plugin.combine(particleRendering, materialVolumeToVertexBuffers, materialVertexBufferRenderer, cameraControl),
             systems: {
-                volume_model_sample_init: {
+                material_volume_model_sample_init: {
                     create: db => {
-                        // Create axis using particle rendering
                         db.transactions.createAxis();
                         
                         const voxelSize = 0.25; // 25cm per voxel
                         
-                        // Create house chunk volume model (DenseVolume)
                         // Each voxel is 25cm, so 16x16x16 = 4m x 4m x 4m
                         const houseVolume = DenseVolumeMaterial.createHouseChunk();
                         const houseSize = 16 * voxelSize; // 4m
                         
-                        // Position house to the left
-                        db.transactions.createVolumeModel({
+                        db.transactions.createMaterialVolumeModel({
                             position: [-6, 0, 0],
                             materialVolume: houseVolume,
                             scale: [voxelSize, voxelSize, voxelSize] as Vec3,
@@ -45,7 +42,7 @@ export function createVolumeModelSampleService() {
                                 const positionX = startOffset + x * spacing;
                                 const positionY = startOffset + y * spacing;
                                 
-                                db.transactions.createVolumeModel({
+                                db.transactions.createMaterialVolumeModel({
                                     position: [positionX, positionY, 0],
                                     materialVolume: terrainTowerVolume, // Reuse the same volume object
                                     scale: [voxelSize, voxelSize, voxelSize] as Vec3,
@@ -55,7 +52,7 @@ export function createVolumeModelSampleService() {
                         
                         // Also keep the original single tower for comparison
                         // Position terrain and tower to the right
-                        db.transactions.createVolumeModel({
+                        db.transactions.createMaterialVolumeModel({
                             position: [6, 0, 0],
                             materialVolume: terrainTowerVolume,
                             scale: [voxelSize, voxelSize, voxelSize] as Vec3,
@@ -71,7 +68,6 @@ export function createVolumeModelSampleService() {
                             up: [0, 0, 1]
                         };
                         
-                        // Enable orbit camera control
                         db.store.resources.cameraControlType = "orbit";
                         // this is an init only system so it doesn't return a system function.
                     }
@@ -81,5 +77,4 @@ export function createVolumeModelSampleService() {
     );
 }
 
-export type VolumeModelSampleService = ReturnType<typeof createVolumeModelSampleService>;
-
+export type MaterialVolumeModelSampleService = ReturnType<typeof createMaterialVolumeModelSampleService>;

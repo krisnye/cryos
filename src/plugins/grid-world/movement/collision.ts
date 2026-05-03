@@ -1,4 +1,5 @@
-import { Aabb, Line3, Vec3 } from "@adobe/data/math";
+import { Line3, Vec3 } from "@adobe/data/math";
+import { Aabb } from "types/aabb/index.js";
 import { ColumnVolume } from "../../../types/column-volume/column-volume.js";
 import { Material } from "../../../types/material/material.js";
 import { PhysicalVoxel } from "../../../types/physical-voxel/physical-voxel.js";

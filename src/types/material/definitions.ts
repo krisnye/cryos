@@ -381,4 +381,5 @@ export const definitions = {
         ...metaMaterialBase,
     },
 } as const satisfies Record<string, Material>;
+
 export type MaterialName = keyof typeof definitions;

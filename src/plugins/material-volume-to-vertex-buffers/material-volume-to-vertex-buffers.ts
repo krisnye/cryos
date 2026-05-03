@@ -1,7 +1,7 @@
 import { Database } from "@adobe/data/ecs";
 import { copyToGPUBuffer } from "@adobe/data/typed-buffer";
 import { memoize } from "@adobe/data/cache";
-import { volumeModel } from "../volume-model/volume-model.js";
+import { materialVolumeModel } from "../material-volume-model/material-volume-model.js";
 import { Volume } from "../../types/volume/volume.js";
 import { DenseVolume } from "../../types/dense-volume/dense-volume.js";
 import { ColumnVolume } from "../../types/column-volume/column-volume.js";
@@ -14,7 +14,7 @@ import { materialVolumeToVertexData } from "./material-volume-to-vertex-data.js"
  * Supports both DenseVolume and ColumnVolume types, converting ColumnVolume to DenseVolume on-the-fly for rendering.
  */
 export const materialVolumeToVertexBuffers = Database.Plugin.create({
-    extends: volumeModel,
+    extends: materialVolumeModel,
     systems: {
         materialVolumeToVertexBuffers: {
             create: (db) => {
@@ -100,7 +100,7 @@ export const materialVolumeToVertexBuffers = Database.Plugin.create({
                     // Query entities with materialVolume that are missing at least one buffer
                     // We query for entities without both buffers, then check individually which ones are missing
                     const volumeTables = db.store.queryArchetypes(
-                        ["volumeModel", "materialVolume"],
+                        ["materialVolumeModel", "materialVolume"],
                         { exclude: ["opaqueVertexBuffer", "transparentVertexBuffer"] }
                     );
 

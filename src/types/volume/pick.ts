@@ -1,4 +1,5 @@
-import { Line3, Vec3, type Aabb } from "@adobe/data/math";
+import { Line3, Vec3 } from "@adobe/data/math";
+import type { Aabb } from "types/aabb/index.js";
 import { Volume } from "./volume.js";
 import { DenseVolume } from "../dense-volume/dense-volume.js";
 import { ColumnVolume } from "../column-volume/column-volume.js";

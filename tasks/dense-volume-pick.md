@@ -19,7 +19,7 @@ Implement `DenseVolume.pick()` function using the DDA (Digital Differential Anal
 ### Old Implementation Reference
 - `cryos-old/src/data/volume/volume.ts` - Contains `Volume.pick()` with DDA algorithm
 - Returns `VolumePickResult` with `{ index, alpha, face }`
-- Uses `AabbFace` constants directly (e.g., `AabbFace.POS_Z`)
+- Uses face bitmask constants directly (old code used `AabbFace.POS_Z` style names)
 
 ## Implementation Plan
 
@@ -33,7 +33,7 @@ export const pick = <T>(
     volume: DenseVolume<T>,
     line: Line3,
     pickable: (voxel: T) => boolean
-): { coordinates: Vec3; alpha: number; face: AabbFace } | null
+): { coordinates: Vec3; alpha: number; face: Aabb.Face } | null
 ```
 
 **Return Type**: Object with `coordinates`, `alpha`, and `face` (matches `VoxelPickResult.voxel` structure)
@@ -42,10 +42,10 @@ export const pick = <T>(
 
 1. **Return Type**: 
    - Old: `VolumePickResult` with `index: number`
-   - New: Object with `coordinates: Vec3` (convert index to coordinates), `alpha`, and `face: AabbFace`
+   - New: Object with `coordinates: Vec3` (convert index to coordinates), `alpha`, and `face: Aabb.Face`
 
-2. **AabbFace Type**:
-   - Import `AabbFace` from `@adobe/data/math/aabb/face/index` (already exists)
+2. **Face type (`Aabb.Face`)**:
+   - Import `Aabb` from `types/aabb/index.js` (includes `Face` via `Aabb.Face` namespace)
    - Use `Aabb.Face.POS_Z` etc. for constants (namespace access)
 
 3. **Index Calculation**:
@@ -59,9 +59,8 @@ export const pick = <T>(
    - Return first pickable voxel
 
 **Dependencies**:
-- `@adobe/data/math`: `Aabb`, `Line3`, `Vec3`
-- `@adobe/data/math/aabb/face/index`: `AabbFace` type
-- `Aabb.Face` namespace for face constants (POS_Z, NEG_X, etc.)
+- `types/aabb/index.js`: `Aabb` (type + namespace: `lineIntersection`, `Face.*`, etc.)
+- `@adobe/data/math`: `Line3`, `Vec3`
 - `DenseVolume.getIndex()` and `DenseVolume.getCoordinates()`
 
 ### Phase 2: Unit Tests
@@ -118,7 +117,7 @@ export * from "./pick.js";
 ### Phase 4: Type Safety & Validation
 
 **Considerations**:
-- Use existing `AabbFace` type (import from `@adobe/data/math/aabb/face/index`)
+- Use existing `Aabb.Face` type (via `Aabb` from `types/aabb/index.js`)
 - Return structure matches `VoxelPickResult.voxel` (can be used to construct full `VoxelPickResult` later)
 - Verify coordinates are correctly calculated from index
 - Ensure face constants match expected values
@@ -149,7 +148,7 @@ export * from "./pick.js";
    - Convert voxel index to coordinates using `DenseVolume.getCoordinates()`
    - Return object with:
      - `coordinates`: Vec3 from `getCoordinates()`
-     - `face`: AabbFace from step direction
+     - `face`: `Aabb.Face` from step direction
      - `alpha`: Alpha along ray
 
 ### Return Type Decision
@@ -184,9 +183,9 @@ cryos/src/types/dense-volume/
 
 ## Dependencies
 
-- `@adobe/data/math`: `Aabb`, `Line3`, `Vec3`
-- `@adobe/data/math/aabb/face/index`: `AabbFace` type
-- `Aabb.Face` namespace for face constants
+- `types/aabb/index.js`: `Aabb`
+- `@adobe/data/math`: `Line3`, `Vec3`
+- `Aabb.Face` namespace for face constants and the face bitmask type
 - `DenseVolume.getIndex()` - For index calculation
 - `DenseVolume.getCoordinates()` - For coordinate conversion
 - `Material.ids` - For test data
@@ -200,7 +199,7 @@ cryos/src/types/dense-volume/
 5. ✅ Unit tests pass (19+ test cases)
 6. ✅ Follows type standards (single function file)
 7. ✅ Exported from namespace
-8. ✅ Uses existing `AabbFace` type (no new types)
+8. ✅ Uses existing `Aabb.Face` type (no new types)
 9. ✅ No Adobe license headers
 10. ✅ TypeScript compiles without errors
 

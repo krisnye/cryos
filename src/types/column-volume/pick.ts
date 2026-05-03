@@ -1,4 +1,5 @@
-import { Aabb, Line3, Vec3 } from "@adobe/data/math";
+import { Line3, Vec3 } from "@adobe/data/math";
+import { Aabb } from "types/aabb/index.js";
 import type { ColumnVolume } from "./column-volume.js";
 import { ColumnInfo } from "./column-info/column-info.js";
 import { tileIndex } from "./tile-index.js";

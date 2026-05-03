@@ -1,17 +1,17 @@
 import { Database, Entity } from "@adobe/data/ecs";
 import { True } from "@adobe/data/schema";
 import { Vec3, Quat } from "@adobe/data/math";
-import { volumeModel } from "../../plugins/volume-model/volume-model.js";
+import { materialVolumeModel } from "../../plugins/material-volume-model/material-volume-model.js";
 import { Volume } from "../../types/volume/volume.js";
 import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 
 export const playerModel = Database.Plugin.create({
-    extends: volumeModel,
+    extends: materialVolumeModel,
     components: {
         player: True.schema,
     },
     archetypes: {
-        Player: ["player", "volumeModel", "materialVolume", "position", "rotation"],
+        Player: ["player", "materialVolumeModel", "materialVolume", "position", "rotation"],
     },
     transactions: {
         createPlayer(t, props: {
@@ -20,7 +20,7 @@ export const playerModel = Database.Plugin.create({
         }) {
             return t.archetypes.Player.insert({
                 player: true as const,
-                volumeModel: true as const,
+                materialVolumeModel: true as const,
                 position: props.position,
                 materialVolume: props.materialVolume,
                 rotation: Quat.identity, // Start facing forward (positive Y)

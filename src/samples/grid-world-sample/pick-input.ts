@@ -1,5 +1,6 @@
 import { Database } from "@adobe/data/ecs";
-import { Aabb, Line3, Vec3 } from "@adobe/data/math";
+import { Line3, Vec3 } from "@adobe/data/math";
+import { Aabb } from "types/aabb/index.js";
 import { pointerInput } from "../../plugins/pointer-input.js";
 import { keyInput } from "../../plugins/key-input.js";
 import { gridWorld as gridWorld } from "../../plugins/grid-world/grid-world.js";

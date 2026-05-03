@@ -7,34 +7,33 @@ import { Volume } from "../../types/volume/volume.js";
 import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 import { materialVertexBuffers } from "../material-vertex-buffers.js";
 import { Pick } from "../../types/pick.js";
-import { pickVolumeModels } from "./pick-volume-models.js";
+import { pickMaterialVolumeModels } from "./pick-material-volume-models.js";
 
-export const volumeModel = Database.Plugin.create({
+export const materialVolumeModel = Database.Plugin.create({
     extends: Database.Plugin.combine(geometry, materialVertexBuffers),
     components: {
-        volumeModel: True.schema,
+        materialVolumeModel: True.schema,
         materialVolume: { default: null as unknown as Volume<PhysicalVoxel> },
     },
     resources: {
         pick: { default: null as unknown as Pick },
     },
     archetypes: {
-        VolumeModel: ["volumeModel", "materialVolume", "position"],
-        VolumeModelScale: ["volumeModel", "materialVolume", "position", "scale"],
-        VolumeModelRotation: ["volumeModel", "materialVolume", "position", "rotation"],
-        VolumeModelScaleRotation: ["volumeModel", "materialVolume", "position", "scale", "rotation"],
+        MaterialVolumeModel: ["materialVolumeModel", "materialVolume", "position"],
+        MaterialVolumeModelScale: ["materialVolumeModel", "materialVolume", "position", "scale"],
+        MaterialVolumeModelRotation: ["materialVolumeModel", "materialVolume", "position", "rotation"],
+        MaterialVolumeModelScaleRotation: ["materialVolumeModel", "materialVolume", "position", "scale", "rotation"],
     },
     transactions: {
-        createVolumeModel(t, props: {
+        createMaterialVolumeModel(t, props: {
             position: Vec3;
             materialVolume: Volume<PhysicalVoxel>;
             scale?: Vec3;
             rotation?: Quat;
         }) {
-            // Add optional scale and rotation if provided
             if (props.scale && props.rotation) {
-                return t.archetypes.VolumeModelScaleRotation.insert({
-                    volumeModel: true as const,
+                return t.archetypes.MaterialVolumeModelScaleRotation.insert({
+                    materialVolumeModel: true as const,
                     position: props.position,
                     materialVolume: props.materialVolume,
                     scale: props.scale,
@@ -42,34 +41,32 @@ export const volumeModel = Database.Plugin.create({
                 });
             }
             if (props.scale) {
-                return t.archetypes.VolumeModelScale.insert({
-                    volumeModel: true as const,
+                return t.archetypes.MaterialVolumeModelScale.insert({
+                    materialVolumeModel: true as const,
                     position: props.position,
                     materialVolume: props.materialVolume,
                     scale: props.scale,
                 });
             }
             if (props.rotation) {
-                return t.archetypes.VolumeModelRotation.insert({
-                    volumeModel: true as const,
+                return t.archetypes.MaterialVolumeModelRotation.insert({
+                    materialVolumeModel: true as const,
                     position: props.position,
                     materialVolume: props.materialVolume,
                     rotation: props.rotation,
                 });
             }
-            
-            return t.archetypes.VolumeModel.insert({
-                volumeModel: true,
+
+            return t.archetypes.MaterialVolumeModel.insert({
+                materialVolumeModel: true,
                 position: props.position,
                 materialVolume: props.materialVolume,
             });
         },
-        setVolumeModel(t, props: {
+        setMaterialVolumeModel(t, props: {
             entityId: Entity;
             materialVolume: Volume<PhysicalVoxel>;
         }) {
-            // Update materialVolume and remove buffer components
-            // Setting components to undefined removes them from the entity
             t.update(props.entityId, {
                 materialVolume: props.materialVolume,
                 opaqueVertexBuffer: undefined,
@@ -78,13 +75,13 @@ export const volumeModel = Database.Plugin.create({
         },
     },
     systems: {
-        volume_model_initialize: {
+        material_volume_model_initialize: {
             create: (db) => {
                 db.store.resources.pick = (line: Line3) =>
-                    pickVolumeModels(db, line);
+                    pickMaterialVolumeModels(db, line);
             },
         },
     },
 });
 
-export type VolumeModelDatabase = Database.FromPlugin<typeof volumeModel>;
+export type MaterialVolumeModelDatabase = Database.FromPlugin<typeof materialVolumeModel>;

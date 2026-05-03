@@ -1,20 +1,21 @@
 import type { Entity } from "@adobe/data/ecs";
-import { Aabb, Line3, Vec3 } from "@adobe/data/math";
+import { Line3, Vec3 } from "@adobe/data/math";
+import { Aabb } from "types/aabb/index.js";
 import { Material } from "../../types/material/material.js";
 import { PhysicalVoxel } from "../../types/physical-voxel/physical-voxel.js";
 import type { PickResult } from "../../types/pick-result.js";
 import { Volume } from "../../types/volume/volume.js";
-import type { VolumeModelDatabase } from "./volume-model.js";
+import type { MaterialVolumeModelDatabase } from "./material-volume-model.js";
 
 /**
- * General pick: iterate over VolumeModel entities, transform ray to model space,
+ * General pick: iterate over MaterialVolumeModel entities, transform ray to model space,
  * call Volume.pick, return closest hit. Position + scale (no rotation).
  */
-export const pickVolumeModels = (
-    db: VolumeModelDatabase,
+export const pickMaterialVolumeModels = (
+    db: MaterialVolumeModelDatabase,
     line: Line3
 ): PickResult | null => {
-    const tables = db.queryArchetypes(["volumeModel", "materialVolume", "position"] as const);
+    const tables = db.queryArchetypes(["materialVolumeModel", "materialVolume", "position"] as const);
 
     let closest: PickResult | null = null;
 

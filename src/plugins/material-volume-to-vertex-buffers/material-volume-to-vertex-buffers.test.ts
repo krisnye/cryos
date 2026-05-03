@@ -1,7 +1,7 @@
 import { expect, test, describe, beforeEach } from "vitest";
 import { Database } from "@adobe/data/ecs";
 import { materialVolumeToVertexBuffers } from "./material-volume-to-vertex-buffers.js";
-import { volumeModel } from "../volume-model/volume-model.js";
+import { materialVolumeModel } from "../material-volume-model/material-volume-model.js";
 import { graphics } from "../graphics.js";
 import { DenseVolumeMaterial } from "../../types/dense-volume-material/dense-volume-material.js";
 import { Material } from "../../types/material/material.js";
@@ -18,7 +18,7 @@ describe("materialVolumeToVertexBuffers", () => {
         const db = Database.create(
             Database.Plugin.combine(
                 graphics,
-                volumeModel,
+                materialVolumeModel,
                 materialVolumeToVertexBuffers
             )
         );
@@ -26,7 +26,7 @@ describe("materialVolumeToVertexBuffers", () => {
         const volume = DenseVolumeMaterial.createTestVolume({ middleLayer: "glass" });
         
         // Create entity with volume model
-        const entityId = db.transactions.createVolumeModel({
+        const entityId = db.transactions.createMaterialVolumeModel({
             position: [0, 0, 0],
             materialVolume: volume,
         });
@@ -48,7 +48,7 @@ describe("materialVolumeToVertexBuffers", () => {
         const db = Database.create(
             Database.Plugin.combine(
                 graphics,
-                volumeModel,
+                materialVolumeModel,
                 materialVolumeToVertexBuffers
             )
         );
@@ -61,7 +61,7 @@ describe("materialVolumeToVertexBuffers", () => {
         expect(columnVolume.type).toBe("column");
         
         // Create entity with ColumnVolume
-        const entityId = db.transactions.createVolumeModel({
+        const entityId = db.transactions.createMaterialVolumeModel({
             position: [0, 0, 0],
             materialVolume: columnVolume,
         });
@@ -82,7 +82,7 @@ describe("materialVolumeToVertexBuffers", () => {
         const db = Database.create(
             Database.Plugin.combine(
                 graphics,
-                volumeModel,
+                materialVolumeModel,
                 materialVolumeToVertexBuffers
             )
         );
@@ -94,7 +94,7 @@ describe("materialVolumeToVertexBuffers", () => {
             emptyVolume.data.set(i, Material.ids.air);
         }
         
-        const entityId = db.transactions.createVolumeModel({
+        const entityId = db.transactions.createMaterialVolumeModel({
             position: [0, 0, 0],
             materialVolume: emptyVolume,
         });
@@ -114,7 +114,7 @@ describe("materialVolumeToVertexBuffers", () => {
         const db = Database.create(
             Database.Plugin.combine(
                 graphics,
-                volumeModel,
+                materialVolumeModel,
                 materialVolumeToVertexBuffers
             )
         );
@@ -122,17 +122,17 @@ describe("materialVolumeToVertexBuffers", () => {
         const volume = DenseVolumeMaterial.createTestVolume({ middleLayer: "glass" });
         
         // Create multiple entities with the SAME volume object (same reference)
-        const entityId1 = db.transactions.createVolumeModel({
+        const entityId1 = db.transactions.createMaterialVolumeModel({
             position: [0, 0, 0],
             materialVolume: volume, // Same object reference
         });
         
-        const entityId2 = db.transactions.createVolumeModel({
+        const entityId2 = db.transactions.createMaterialVolumeModel({
             position: [1, 0, 0],
             materialVolume: volume, // Same object reference
         });
         
-        const entityId3 = db.transactions.createVolumeModel({
+        const entityId3 = db.transactions.createMaterialVolumeModel({
             position: [2, 0, 0],
             materialVolume: volume, // Same object reference
         });
@@ -164,7 +164,7 @@ describe("materialVolumeToVertexBuffers", () => {
         const db = Database.create(
             Database.Plugin.combine(
                 graphics,
-                volumeModel,
+                materialVolumeModel,
                 materialVolumeToVertexBuffers
             )
         );
@@ -176,17 +176,17 @@ describe("materialVolumeToVertexBuffers", () => {
         const columnVolume = ColumnVolume.create(denseVolume);
         
         // Create entities with different volume types but same data
-        const entityId1 = db.transactions.createVolumeModel({
+        const entityId1 = db.transactions.createMaterialVolumeModel({
             position: [0, 0, 0],
             materialVolume: denseVolume,
         });
         
-        const entityId2 = db.transactions.createVolumeModel({
+        const entityId2 = db.transactions.createMaterialVolumeModel({
             position: [1, 0, 0],
             materialVolume: columnVolume, // Different object, but same data
         });
         
-        const entityId3 = db.transactions.createVolumeModel({
+        const entityId3 = db.transactions.createMaterialVolumeModel({
             position: [2, 0, 0],
             materialVolume: columnVolume, // Same ColumnVolume object
         });
@@ -211,21 +211,21 @@ describe("materialVolumeToVertexBuffers", () => {
         const db = Database.create(
             Database.Plugin.combine(
                 graphics,
-                volumeModel,
+                materialVolumeModel,
                 materialVolumeToVertexBuffers
             )
         );
         
         // Create one entity with DenseVolume
         const denseVolume = DenseVolumeMaterial.createTestVolume({ middleLayer: "glass" });
-        const entityId1 = db.transactions.createVolumeModel({
+        const entityId1 = db.transactions.createMaterialVolumeModel({
             position: [0, 0, 0],
             materialVolume: denseVolume,
         });
         
         // Create another entity with ColumnVolume (converted from same dense volume)
         const columnVolume = ColumnVolume.create(denseVolume);
-        const entityId2 = db.transactions.createVolumeModel({
+        const entityId2 = db.transactions.createMaterialVolumeModel({
             position: [1, 0, 0],
             materialVolume: columnVolume,
         });

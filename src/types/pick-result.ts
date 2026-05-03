@@ -1,5 +1,6 @@
 import { Entity } from "@adobe/data/ecs";
-import type { Aabb, Vec3 } from "@adobe/data/math";
+import type { Vec3 } from "@adobe/data/math";
+import type { Aabb } from "types/aabb/index.js";
 
 /**
  * Result of picking an entity (e.g., a volume model).

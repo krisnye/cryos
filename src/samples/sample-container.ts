@@ -1,7 +1,7 @@
 import { html, LitElement, TemplateResult, css, CSSResult } from "lit";
 import { customElement } from "lit/decorators.js";
 import { particleSample } from "./particle-sample/particle-sample.js";
-import { volumeModelSample } from "./volume-model-sample/volume-model-sample.js";
+import { materialVolumeModelSample } from "./material-volume-model-sample/material-volume-model-sample.js";
 import { gridWorldSample } from "./grid-world-sample/grid-world-sample.js";
 
 interface SampleDefinition {
@@ -14,9 +14,9 @@ const samples: Record<string, SampleDefinition> = {
         name: "Particle Sample",
         render: particleSample
     },
-    "volume-model-sample": {
-        name: "Volume Model Sample",
-        render: volumeModelSample
+    "material-volume-model-sample": {
+        name: "Material Volume Model Sample",
+        render: materialVolumeModelSample
     },
     "grid-world-sample": {
         name: "Grid World Sample",

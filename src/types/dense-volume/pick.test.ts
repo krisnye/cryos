@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createTypedBuffer } from "@adobe/data/typed-buffer";
-import { Line3, Aabb } from "@adobe/data/math";
+import { Line3 } from "@adobe/data/math";
+import { Aabb } from "types/aabb/index.js";
 import { DenseVolume } from "./dense-volume.js";
 import { PhysicalVoxel } from "../physical-voxel/physical-voxel.js";
 import { Material } from "../material/material.js";
