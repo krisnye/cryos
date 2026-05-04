@@ -1,17 +1,18 @@
 // Instanced PBR rendering shader for material vertex buffers
 // Generic shader that works with PositionNormalMaterialVertex and materials buffer
 
-import { materialWgslStructBody } from "../../types/material/schema.js";
-import { sceneUniformsWgslStructBody } from "../scene.js";
+import { wgslStructFields } from "@adobe/data/typed-buffer";
+import { Material } from "../../types/material/material.js";
+import { SceneUniforms } from "../../types/scene-uniforms/scene-uniforms.js";
 
 export default `
 struct SceneUniforms {
-${sceneUniformsWgslStructBody}
+${wgslStructFields(SceneUniforms.schema)}
 }
 
 // Material struct generated from Material.schema (WGSL host-shareable via TypedBuffer).
 struct Material {
-${materialWgslStructBody}
+${wgslStructFields(Material.schema)}
 }
 
 @group(0) @binding(0) var<uniform> sceneUniforms: SceneUniforms;

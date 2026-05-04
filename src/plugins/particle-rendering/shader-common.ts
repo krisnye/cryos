@@ -1,17 +1,18 @@
 // Common WGSL code shared across all particle rendering shaders
 // Exported as TypeScript string constants that can be concatenated
 
-import { materialWgslStructBody } from "../../types/material/schema.js";
-import { sceneUniformsWgslStructBody } from "../scene.js";
+import { wgslStructFields } from "@adobe/data/typed-buffer";
+import { Material } from "../../types/material/material.js";
+import { SceneUniforms } from "../../types/scene-uniforms/scene-uniforms.js";
 
 export const commonStructs = `
 struct SceneUniforms {
-${sceneUniformsWgslStructBody}
+${wgslStructFields(SceneUniforms.schema)}
 }
 
 // Material struct generated from Material.schema (WGSL host-shareable via TypedBuffer).
 struct Material {
-${materialWgslStructBody}
+${wgslStructFields(Material.schema)}
 }
 
 struct ParticlePosition {

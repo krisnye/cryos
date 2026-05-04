@@ -1,28 +1,9 @@
 import { Database } from "@adobe/data/ecs";
-import { F32, Mat4x4, Vec3 } from "@adobe/data/math";
-import { Schema } from "@adobe/data/schema";
-import { createStructBuffer, copyToGPUBuffer, getStructLayout, TypedBuffer, wgslStructFields } from "@adobe/data/typed-buffer";
+import { F32, Vec3 } from "@adobe/data/math";
+import { createStructBuffer, copyToGPUBuffer, getStructLayout, TypedBuffer } from "@adobe/data/typed-buffer";
 import { graphics } from "./graphics.js";
 import { Camera } from "../types/camera/camera.js";
-
-/** Scene uniforms schema (default `wgsl` layout; matches `var<uniform>` structs in shaders). */
-export const SceneUniformsSchema = {
-    type: 'object',
-    properties: {
-        viewProjectionMatrix: Mat4x4.schema,
-        lightDirection: Vec3.schema,
-        ambientStrength: F32.schema,
-        lightColor: Vec3.schema,
-        cameraPosition: Vec3.schema,
-    },
-    required: ["viewProjectionMatrix", "lightDirection", "ambientStrength", "lightColor", "cameraPosition"],
-    additionalProperties: false,
-} as const satisfies Schema;
-
-/** WGSL body for `struct SceneUniforms { ... }` — matches GPU uniform bytes from `SceneUniformsSchema`. */
-export const sceneUniformsWgslStructBody = wgslStructFields(SceneUniformsSchema);
-
-type SceneUniforms = Schema.ToType<typeof SceneUniformsSchema>;
+import { SceneUniforms } from "../types/scene-uniforms/scene-uniforms.js";
 
 export const scene = Database.Plugin.create({
     extends: graphics,
@@ -69,9 +50,9 @@ export const scene = Database.Plugin.create({
             create: (db) => {
                 // Retain the struct buffer for reuse across frames
                 let structBuffer: TypedBuffer<SceneUniforms> | null = null;
-                const structLayout = getStructLayout(SceneUniformsSchema);
+                const structLayout = getStructLayout(SceneUniforms.schema);
                 if (!structLayout) {
-                    throw new Error("SceneUniformsSchema is not a valid struct schema");
+                    throw new Error("Scene uniforms schema is not a valid struct schema");
                 }
 
                 return () => {
@@ -79,7 +60,7 @@ export const scene = Database.Plugin.create({
                     if (!device || !camera) return;
 
                     // Initialize struct buffer if needed
-                    structBuffer ??= createStructBuffer(SceneUniformsSchema, new ArrayBuffer(structLayout.size));
+                    structBuffer ??= createStructBuffer(SceneUniforms.schema, new ArrayBuffer(structLayout.size));
 
                     // Create GPU buffer if it doesn't exist
                     let gpuBuffer = db.store.resources.sceneUniformsBuffer;
