@@ -1,32 +1,17 @@
 // Common WGSL code shared across all particle rendering shaders
 // Exported as TypeScript string constants that can be concatenated
 
+import { materialWgslStructBody } from "../../types/material/schema.js";
+import { sceneUniformsWgslStructBody } from "../scene.js";
+
 export const commonStructs = `
 struct SceneUniforms {
-    viewProjectionMatrix: mat4x4<f32>,
-    lightDirection: vec3<f32>,
-    ambientStrength: f32,
-    lightColor: vec3<f32>,
+${sceneUniformsWgslStructBody}
 }
 
-// Material struct matching Material.schema (WGSL host-shareable via TypedBuffer).
+// Material struct generated from Material.schema (WGSL host-shareable via TypedBuffer).
 struct Material {
-    baseColor: vec4<f32>,
-    metallic: f32,
-    roughness: f32,
-    irReflectance: f32,
-    irEmission: f32,
-    emissionRgb: vec3<f32>,
-    emissionMode: f32,
-    density: f32,
-    viscosity: f32,
-    specificHeatCapacity: f32,
-    thermalConductivity: f32,
-    tensileYieldStrainStress: vec2<f32>,
-    tensileFractureStrainStress: vec2<f32>,
-    compressiveYieldStrainStress: vec2<f32>,
-    compressiveFractureStrainStress: vec2<f32>,
-    restitution: f32,
+${materialWgslStructBody}
 }
 
 struct ParticlePosition {

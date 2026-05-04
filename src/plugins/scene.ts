@@ -1,7 +1,7 @@
 import { Database } from "@adobe/data/ecs";
 import { F32, Mat4x4, Vec3 } from "@adobe/data/math";
 import { Schema } from "@adobe/data/schema";
-import { createStructBuffer, copyToGPUBuffer, getStructLayout, TypedBuffer } from "@adobe/data/typed-buffer";
+import { createStructBuffer, copyToGPUBuffer, getStructLayout, TypedBuffer, wgslStructFields } from "@adobe/data/typed-buffer";
 import { graphics } from "./graphics.js";
 import { Camera } from "../types/camera/camera.js";
 
@@ -18,6 +18,9 @@ export const SceneUniformsSchema = {
     required: ["viewProjectionMatrix", "lightDirection", "ambientStrength", "lightColor", "cameraPosition"],
     additionalProperties: false,
 } as const satisfies Schema;
+
+/** WGSL body for `struct SceneUniforms { ... }` — matches GPU uniform bytes from `SceneUniformsSchema`. */
+export const sceneUniformsWgslStructBody = wgslStructFields(SceneUniformsSchema);
 
 type SceneUniforms = Schema.ToType<typeof SceneUniformsSchema>;
 

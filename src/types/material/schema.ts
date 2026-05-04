@@ -1,5 +1,6 @@
 import { F32, Vec2, Vec3, Vec4 } from "@adobe/data/math";
 import { Schema } from "@adobe/data/schema";
+import { wgslStructFields } from "@adobe/data/typed-buffer";
 import type { Assert, Equal } from "@adobe/data/types";
 import type { Material } from "./material.js";
 
@@ -53,5 +54,8 @@ export const schema = {
         "restitution",
     ],
 } as const satisfies Schema;
+
+/** WGSL body for `struct Material { ... }` — kept in sync with TypedBuffer via `schema`. */
+export const materialWgslStructBody = wgslStructFields(schema);
 
 type _MaterialMatchesSchema = Assert<Equal<Material, Schema.ToType<typeof schema>>>;
